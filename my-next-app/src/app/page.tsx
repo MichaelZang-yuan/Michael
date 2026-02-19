@@ -1,14 +1,50 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const [count, setCount] = useState(0);
   const [inputName, setInputName] = useState("");
-  const [submittedName, setSubmittedName] = useState("");
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    setSubmittedName(inputName);
+  const handleSubmit = async () => {
+    const name = inputName.trim();
+    if (!name) {
+      setMessage({ type: "error", text: "请输入名字" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage(null);
+
+    try {
+      const { error } = await supabase.from("visitor_names").insert({
+        name: name,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setMessage({
+        type: "success",
+        text: `✅ 你的名字已保存！你好，${name}`,
+      });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "保存失败，请稍后重试";
+      setMessage({
+        type: "error",
+        text: `❌ ${errorMessage}`,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -46,14 +82,19 @@ export default function Home() {
           />
           <button
             onClick={handleSubmit}
-            className="shrink-0 rounded-lg bg-blue-600 px-8 py-4 font-bold text-white hover:bg-blue-700"
+            disabled={isSubmitting}
+            className="shrink-0 rounded-lg bg-blue-600 px-8 py-4 font-bold text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            提交
+            {isSubmitting ? "提交中..." : "提交"}
           </button>
         </div>
-        {submittedName && (
-          <p className="text-lg text-white sm:text-xl md:text-2xl">
-            你好，{submittedName}！欢迎来到我的网站 😊
+        {message && (
+          <p
+            className={`text-lg sm:text-xl md:text-2xl ${
+              message.type === "success" ? "text-green-300" : "text-red-300"
+            }`}
+          >
+            {message.text}
           </p>
         )}
       </div>
