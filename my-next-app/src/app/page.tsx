@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function Home() {
@@ -48,7 +49,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-blue-950 px-4 py-8 text-center sm:gap-8 sm:px-6 sm:py-12">
+    <div className="flex min-h-screen flex-col bg-blue-950">
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-8 text-center sm:gap-8 sm:px-6 sm:py-12">
       <div className="flex flex-col items-center gap-3 sm:gap-4">
         <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl">
           你是我的宝贝
@@ -97,6 +99,16 @@ export default function Home() {
             {message.text}
           </p>
         )}
+      </div>
+      </div>
+
+      <div className="flex justify-center pb-8">
+        <Link
+          href="/admin"
+          className="text-sm text-gray-400 underline hover:text-white"
+        >
+          管理员入口
+        </Link>
       </div>
     </div>
   );
