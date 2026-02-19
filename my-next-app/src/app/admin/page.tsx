@@ -22,38 +22,90 @@ function formatDate(dateString: string): string {
   });
 }
 
+const ADMIN_PASSWORD = "admin123";
+
 export default function AdminPage() {
-  const [visitors, setVisitors] = useState<Visitor[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setPassword("");
+    } else {
+      setError("密码错误");
+    }
+  };
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     async function fetchVisitors() {
       try {
         setIsLoading(true);
-        setError(null);
+        setFetchError(null);
 
-        const { data, error: fetchError } = await supabase
+        const { data, error: err } = await supabase
           .from("visitor_names")
           .select("id, name, created_at")
           .order("created_at", { ascending: false });
 
-        if (fetchError) {
-          throw fetchError;
+        if (err) {
+          throw err;
         }
 
         setVisitors(data ?? []);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "加载数据失败，请稍后重试";
-        setError(errorMessage);
+        setFetchError(errorMessage);
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchVisitors();
-  }, []);
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-blue-950 px-4">
+        <form
+          onSubmit={handleLogin}
+          className="flex w-full max-w-sm flex-col gap-6 rounded-xl border border-white/20 bg-white/5 p-8 shadow-lg"
+        >
+          <h1 className="text-center text-2xl font-bold text-white">
+            访问者管理
+          </h1>
+          <p className="text-center text-white/80">请输入密码以继续</p>
+          <div className="flex flex-col gap-2">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="密码"
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+            />
+            {error && (
+              <p className="text-sm text-red-400">{error}</p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
+          >
+            进入
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-blue-950 px-4 py-8 text-white sm:px-6 sm:py-12">
@@ -72,9 +124,9 @@ export default function AdminPage() {
           <div className="flex items-center justify-center py-20">
             <p className="text-xl text-white/80">加载中...</p>
           </div>
-        ) : error ? (
+        ) : fetchError ? (
           <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-6">
-            <p className="text-lg text-red-300">❌ {error}</p>
+            <p className="text-lg text-red-300">❌ {fetchError}</p>
           </div>
         ) : (
           <>
