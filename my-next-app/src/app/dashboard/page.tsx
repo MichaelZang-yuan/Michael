@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 type Profile = {
@@ -90,8 +91,20 @@ export default function DashboardPage() {
 
       {/* Main content */}
       <main className="mx-auto max-w-6xl px-6 py-10">
-        <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-        <p className="text-white/50 mb-10">Welcome back, {profile?.full_name}!</p>
+
+        {/* Header with Add Student button */}
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h2 className="text-3xl font-bold mb-1">Dashboard</h2>
+            <p className="text-white/50">Welcome back, {profile?.full_name}!</p>
+          </div>
+          <Link
+            href="/students/new"
+            className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
+          >
+            + Add Student
+          </Link>
+        </div>
 
         {/* Stats cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-10">
@@ -118,6 +131,7 @@ export default function DashboardPage() {
           <p className="text-2xl font-bold mb-2">🚧 Students & Commissions</p>
           <p className="text-white/50">Coming in Week 3 — student management and commission tracking will appear here.</p>
         </div>
+
       </main>
     </div>
   );
