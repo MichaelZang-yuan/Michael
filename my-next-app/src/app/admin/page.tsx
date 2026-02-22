@@ -10,15 +10,33 @@ type Visitor = {
   created_at: string;
 };
 
+type Profile = {
+  full_name: string;
+  role: string;
+  department: string;
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  accountant: "Accountant",
+  sales: "Sales",
+};
+
+const DEPT_LABELS: Record<string, string> = {
+  china: "China",
+  thailand: "Thailand",
+  myanmar: "Myanmar",
+  korea_japan: "Korea & Japan",
+};
+
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleString("zh-CN", {
+  return date.toLocaleString("en-NZ", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
   });
 }
 
@@ -28,33 +46,43 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // 页面加载时检查是否已登录
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setIsAuthenticated(true);
+        fetchProfile(session.user.id);
       }
     });
   }, []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name, role, department")
+      .eq("id", userId)
+      .single();
+    if (data) setProfile(data);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoggingIn(true);
 
-    const { error: loginError } = await supabase.auth.signInWithPassword({
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (loginError) {
-      setError("邮箱或密码错误，请重试");
-    } else {
+      setError("Invalid email or password");
+    } else if (data.user) {
       setIsAuthenticated(true);
+      fetchProfile(data.user.id);
     }
 
     setIsLoggingIn(false);
@@ -63,6 +91,7 @@ export default function AdminPage() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
+    setProfile(null);
     setVisitors([]);
   };
 
@@ -70,24 +99,13 @@ export default function AdminPage() {
     if (!isAuthenticated) return;
 
     async function fetchVisitors() {
-      try {
-        setIsLoading(true);
-        setFetchError(null);
-
-        const { data, error: err } = await supabase
-          .from("visitor_names")
-          .select("id, name, created_at")
-          .order("created_at", { ascending: false });
-
-        if (err) throw err;
-        setVisitors(data ?? []);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "加载数据失败，请稍后重试";
-        setFetchError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(true);
+      const { data } = await supabase
+        .from("visitor_names")
+        .select("id, name, created_at")
+        .order("created_at", { ascending: false });
+      setVisitors(data ?? []);
+      setIsLoading(false);
     }
 
     fetchVisitors();
@@ -101,16 +119,16 @@ export default function AdminPage() {
           className="flex w-full max-w-sm flex-col gap-6 rounded-xl border border-white/20 bg-white/5 p-8 shadow-lg"
         >
           <h1 className="text-center text-2xl font-bold text-white">
-            访问者管理
+            Commission Management System
           </h1>
-          <p className="text-center text-white/80">请登录以继续</p>
+          <p className="text-center text-white/60 text-sm">Please sign in to continue</p>
 
           <div className="flex flex-col gap-3">
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="邮箱"
+              placeholder="Email"
               required
               className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
             />
@@ -118,13 +136,11 @@ export default function AdminPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="密码"
+              placeholder="Password"
               required
               className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
             />
-            {error && (
-              <p className="text-sm text-red-400">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-400">{error}</p>}
           </div>
 
           <button
@@ -132,7 +148,7 @@ export default function AdminPage() {
             disabled={isLoggingIn}
             className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {isLoggingIn ? "登录中..." : "登录"}
+            {isLoggingIn ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>
@@ -142,68 +158,64 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-blue-950 px-4 py-8 text-white sm:px-6 sm:py-12">
       <div className="mx-auto max-w-4xl">
+
+        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-3xl font-bold sm:text-4xl">访问者管理</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Commission Management System</h1>
+            {profile && (
+              <p className="mt-1 text-white/60">
+                👋 {profile.full_name} ·{" "}
+                <span className="text-blue-400">{ROLE_LABELS[profile.role]}</span>
+                {" · "}
+                {DEPT_LABELS[profile.department]}
+              </p>
+            )}
+          </div>
           <div className="flex gap-3">
             <Link
               href="/"
-              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
+              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 font-bold text-white hover:bg-blue-700"
             >
-              返回主页
+              Home
             </Link>
             <button
               onClick={handleLogout}
-              className="rounded-lg border border-white/20 px-6 py-3 font-bold text-white hover:bg-white/10"
+              className="rounded-lg border border-white/20 px-5 py-2.5 font-bold text-white hover:bg-white/10"
             >
-              退出登录
+              Sign Out
             </button>
           </div>
         </div>
 
+        {/* Visitor list */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <p className="text-xl text-white/80">加载中...</p>
-          </div>
-        ) : fetchError ? (
-          <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-6">
-            <p className="text-lg text-red-300">❌ {fetchError}</p>
-          </div>
+          <p className="text-center text-white/60 py-20">Loading...</p>
         ) : (
           <>
-            <p className="mb-6 text-lg text-white/90">
-              共 <span className="font-bold text-white">{visitors.length}</span> 条记录
+            <p className="mb-6 text-white/90">
+              Total <span className="font-bold text-white">{visitors.length}</span> records
             </p>
-
             <div className="overflow-x-auto rounded-lg border border-white/20">
               <table className="w-full min-w-[400px] border-collapse">
                 <thead>
                   <tr className="border-b border-white/20 bg-white/5">
-                    <th className="px-4 py-4 text-left font-semibold sm:px-6">ID</th>
-                    <th className="px-4 py-4 text-left font-semibold sm:px-6">名字</th>
-                    <th className="px-4 py-4 text-left font-semibold sm:px-6">创建时间</th>
+                    <th className="px-6 py-4 text-left font-semibold">Name</th>
+                    <th className="px-6 py-4 text-left font-semibold">Created At</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visitors.map((visitor) => (
-                    <tr
-                      key={visitor.id}
-                      className="border-b border-white/10 transition-colors hover:bg-white/5 last:border-b-0"
-                    >
-                      <td className="px-4 py-3 font-mono text-sm text-white/80 sm:px-6">
-                        {String(visitor.id)}
-                      </td>
-                      <td className="px-4 py-3 sm:px-6">{visitor.name}</td>
-                      <td className="px-4 py-3 text-white/90 sm:px-6">
-                        {formatDate(visitor.created_at)}
-                      </td>
+                    <tr key={visitor.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
+                      <td className="px-6 py-3">{visitor.name}</td>
+                      <td className="px-6 py-3 text-white/70">{formatDate(visitor.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
             {visitors.length === 0 && (
-              <p className="mt-6 text-center text-white/60">暂无访问者记录</p>
+              <p className="mt-6 text-center text-white/60">No records found</p>
             )}
           </>
         )}
