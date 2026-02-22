@@ -22,25 +22,48 @@ function formatDate(dateString: string): string {
   });
 }
 
-const ADMIN_PASSWORD = "admin123";
-
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // 页面加载时检查是否已登录
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+      }
+    });
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      setPassword("");
+    setIsLoggingIn(true);
+
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (loginError) {
+      setError("邮箱或密码错误，请重试");
     } else {
-      setError("密码错误");
+      setIsAuthenticated(true);
     }
+
+    setIsLoggingIn(false);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsAuthenticated(false);
+    setVisitors([]);
   };
 
   useEffect(() => {
@@ -56,10 +79,7 @@ export default function AdminPage() {
           .select("id, name, created_at")
           .order("created_at", { ascending: false });
 
-        if (err) {
-          throw err;
-        }
-
+        if (err) throw err;
         setVisitors(data ?? []);
       } catch (err) {
         const errorMessage =
@@ -83,24 +103,36 @@ export default function AdminPage() {
           <h1 className="text-center text-2xl font-bold text-white">
             访问者管理
           </h1>
-          <p className="text-center text-white/80">请输入密码以继续</p>
-          <div className="flex flex-col gap-2">
+          <p className="text-center text-white/80">请登录以继续</p>
+
+          <div className="flex flex-col gap-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="邮箱"
+              required
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+            />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="密码"
+              required
               className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
             />
             {error && (
               <p className="text-sm text-red-400">{error}</p>
             )}
           </div>
+
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
+            disabled={isLoggingIn}
+            className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            进入
+            {isLoggingIn ? "登录中..." : "登录"}
           </button>
         </form>
       </div>
@@ -112,12 +144,20 @@ export default function AdminPage() {
       <div className="mx-auto max-w-4xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl font-bold sm:text-4xl">访问者管理</h1>
-          <Link
-            href="/"
-            className="inline-flex shrink-0 items-center justify-center rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
-          >
-            返回主页
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
+            >
+              返回主页
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="rounded-lg border border-white/20 px-6 py-3 font-bold text-white hover:bg-white/10"
+            >
+              退出登录
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -138,15 +178,9 @@ export default function AdminPage() {
               <table className="w-full min-w-[400px] border-collapse">
                 <thead>
                   <tr className="border-b border-white/20 bg-white/5">
-                    <th className="px-4 py-4 text-left font-semibold sm:px-6">
-                      ID
-                    </th>
-                    <th className="px-4 py-4 text-left font-semibold sm:px-6">
-                      名字
-                    </th>
-                    <th className="px-4 py-4 text-left font-semibold sm:px-6">
-                      创建时间
-                    </th>
+                    <th className="px-4 py-4 text-left font-semibold sm:px-6">ID</th>
+                    <th className="px-4 py-4 text-left font-semibold sm:px-6">名字</th>
+                    <th className="px-4 py-4 text-left font-semibold sm:px-6">创建时间</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -169,9 +203,7 @@ export default function AdminPage() {
             </div>
 
             {visitors.length === 0 && (
-              <p className="mt-6 text-center text-white/60">
-                暂无访问者记录
-              </p>
+              <p className="mt-6 text-center text-white/60">暂无访问者记录</p>
             )}
           </>
         )}
