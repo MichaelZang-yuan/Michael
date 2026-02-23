@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hello, Michael!",
-  description: "这是我的第一个网站",
+  title: "PJ Commission Management System",
+  description: "PJ Commission Management System",
 };
 
 export default function RootLayout({

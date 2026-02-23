@@ -48,7 +48,7 @@ export default function Home() {
         {/* Hero */}
         <div className="flex flex-col items-center gap-3">
           <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl">
-            Commission Management System
+            PJ Commission Management System
           </h1>
           <p className="text-lg text-white/60 sm:text-xl max-w-lg">
             Track student enrolments, manage commissions, and stay on top of claims — all in one place.

@@ -22,7 +22,6 @@ export default function NewStudentPage() {
     school_id: "",
     department: "",
     enrollment_date: "",
-    tuition_fee: "",
     notes: "",
   });
 
@@ -55,7 +54,6 @@ export default function NewStudentPage() {
       school_id: form.school_id || null,
       department: form.department,
       enrollment_date: form.enrollment_date || null,
-      tuition_fee: form.tuition_fee ? parseFloat(form.tuition_fee) : 0,
       notes: form.notes || null,
       created_by: session?.user.id,
     });
@@ -73,7 +71,7 @@ export default function NewStudentPage() {
     <div className="min-h-screen bg-blue-950 text-white">
       <nav className="border-b border-white/10 px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <h1 className="text-xl font-bold">Commission Management System</h1>
+          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
           <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
             ← Back to Dashboard
           </Link>
@@ -94,7 +92,7 @@ export default function NewStudentPage() {
               onChange={handleChange}
               required
               placeholder="e.g. Zhang Wei"
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
             />
           </div>
 
@@ -106,7 +104,7 @@ export default function NewStudentPage() {
               value={form.student_number}
               onChange={handleChange}
               placeholder="e.g. ST123456"
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
             />
           </div>
 
@@ -119,9 +117,9 @@ export default function NewStudentPage() {
               onChange={handleChange}
               className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
             >
-              <option value="">Select a school...</option>
+              <option value="" className="bg-blue-900 text-white">Select a school...</option>
               {schools.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id} className="bg-blue-900 text-white">{s.name}</option>
               ))}
             </select>
           </div>
@@ -136,11 +134,11 @@ export default function NewStudentPage() {
               required
               className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
             >
-              <option value="">Select a department...</option>
-              <option value="china">China</option>
-              <option value="thailand">Thailand</option>
-              <option value="myanmar">Myanmar</option>
-              <option value="korea_japan">Korea & Japan</option>
+              <option value="" className="bg-blue-900 text-white">Select a department...</option>
+              <option value="china" className="bg-blue-900 text-white">China</option>
+              <option value="thailand" className="bg-blue-900 text-white">Thailand</option>
+              <option value="myanmar" className="bg-blue-900 text-white">Myanmar</option>
+              <option value="korea_japan" className="bg-blue-900 text-white">Korea & Japan</option>
             </select>
           </div>
 
@@ -152,20 +150,7 @@ export default function NewStudentPage() {
               name="enrollment_date"
               value={form.enrollment_date}
               onChange={handleChange}
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
-            />
-          </div>
-
-          {/* Tuition Fee */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Tuition Fee (NZD)</label>
-            <input
-              type="number"
-              name="tuition_fee"
-              value={form.tuition_fee}
-              onChange={handleChange}
-              placeholder="e.g. 20000"
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full"
             />
           </div>
 
@@ -178,7 +163,7 @@ export default function NewStudentPage() {
               onChange={handleChange}
               placeholder="Any additional notes..."
               rows={3}
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
             />
           </div>
 

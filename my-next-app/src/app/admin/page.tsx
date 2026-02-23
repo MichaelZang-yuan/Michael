@@ -46,7 +46,7 @@ export default function AdminPage() {
         className="flex w-full max-w-sm flex-col gap-6 rounded-xl border border-white/20 bg-white/5 p-8 shadow-lg"
       >
         <h1 className="text-center text-2xl font-bold text-white">
-          Commission Management System
+          PJ Commission Management System
         </h1>
         <p className="text-center text-white/60 text-sm">Please sign in to continue</p>
 
