@@ -122,7 +122,7 @@ export default function ProfilePage() {
         .lte("enrollment_date", dateTo)
         .order("enrollment_date", { ascending: true });
 
-      const students = (studentsData ?? []) as MyStudent[];
+      const students = (studentsData ?? []) as unknown as MyStudent[];
 
       if (students.length === 0) {
         setMyStudents([]);
