@@ -195,10 +195,10 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-blue-950 text-white">
 
       {/* Top nav */}
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
-          <div className="flex items-center gap-4">
+      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between">
+          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             {profile && (
               <span className="text-white/60 text-sm">
                 👋 {profile.full_name} ·{" "}
@@ -223,15 +223,15 @@ export default function DashboardPage() {
       </nav>
 
       {/* Main content */}
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex flex-col gap-4 mb-10 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-3xl font-bold mb-1">Dashboard</h2>
-            <p className="text-white/50">Welcome back, {profile?.full_name}!</p>
+            <h2 className="text-2xl font-bold mb-1 sm:text-3xl">Dashboard</h2>
+            <p className="text-sm text-white/50 sm:text-base">Welcome back, {profile?.full_name}!</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link
               href="/students"
               className="rounded-lg border border-white/20 px-6 py-3 font-bold text-white hover:bg-white/10"
@@ -263,34 +263,34 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-3 inline-block rounded-lg bg-blue-600 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+        {/* Stats cards - 2x2 on mobile, 4 cols on lg */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4 mb-10">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-blue-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Total Students
             </div>
-            <p className="text-5xl font-bold">{stats.totalStudents}</p>
+            <p className="text-3xl font-bold sm:text-5xl">{stats.totalStudents}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-3 inline-block rounded-lg bg-green-600 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-green-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Active
             </div>
-            <p className="text-5xl font-bold">{stats.activeStudents}</p>
+            <p className="text-3xl font-bold sm:text-5xl">{stats.activeStudents}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-3 inline-block rounded-lg bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Cancelled
             </div>
-            <p className="text-5xl font-bold">{stats.cancelledStudents}</p>
+            <p className="text-3xl font-bold sm:text-5xl">{stats.cancelledStudents}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-3 inline-block rounded-lg bg-yellow-600 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-yellow-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Pending Claims
             </div>
-            <p className={`text-5xl font-bold ${pendingClaimsColor}`}>{stats.pendingClaims}</p>
+            <p className={`text-3xl font-bold sm:text-5xl ${pendingClaimsColor}`}>{stats.pendingClaims}</p>
           </div>
         </div>
 
@@ -348,27 +348,27 @@ export default function DashboardPage() {
         )}
 
         {/* Pending Claims table */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-          <h3 className="mb-4 text-xl font-bold">Pending Claims</h3>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <h3 className="mb-4 text-lg font-bold sm:text-xl">Pending Claims</h3>
           {pendingClaims.length === 0 ? (
-            <p className="py-8 text-center text-white/60">🎉 All commissions have been claimed!</p>
+            <p className="py-8 text-center text-sm text-white/60 sm:text-base">🎉 All commissions have been claimed!</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px] border-collapse">
+              <table className="w-full min-w-[500px] border-collapse">
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Student</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Department</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Year</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Amount</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Enrollment Date</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/80"></th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Student</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Department</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Year</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Amount</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Enrollment Date</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {pendingClaims.map((claim) => (
                     <tr key={claim.id} className="border-b border-white/10 last:border-b-0">
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2 sm:px-4 sm:py-3">
                         <Link
                           href={`/students/${claim.student_id}`}
                           className="font-medium text-blue-400 hover:underline"
@@ -376,17 +376,17 @@ export default function DashboardPage() {
                           {claim.students?.full_name ?? "—"}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-white/90">
+                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">
                         {claim.students?.department ? DEPT_LABELS[claim.students.department] ?? claim.students.department : "—"}
                       </td>
-                      <td className="px-4 py-3 text-white/90">{claim.year}</td>
-                      <td className="px-4 py-3 text-white/90">{claim.amount}</td>
-                      <td className="px-4 py-3 text-white/90">
+                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">{claim.year}</td>
+                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">{claim.amount}</td>
+                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">
                         {claim.students?.enrollment_date
                           ? new Date(claim.students.enrollment_date).toLocaleDateString()
                           : "—"}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2 sm:px-4 sm:py-3">
                         <Link
                           href={`/students/${claim.student_id}`}
                           className="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"

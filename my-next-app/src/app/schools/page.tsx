@@ -176,22 +176,22 @@ export default function SchoolsPage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
+      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
           <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
             ← Back to Dashboard
           </Link>
         </div>
       </nav>
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold">Schools</h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">Schools</h2>
           <p className="text-white/50 mt-1">{schools.length} total</p>
         </div>
 
-        <form onSubmit={handleAddSchool} className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+        <form onSubmit={handleAddSchool} className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
           <h3 className="text-lg font-bold mb-4">Add School</h3>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div className="flex flex-col gap-1.5">
@@ -294,17 +294,17 @@ export default function SchoolsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-white/10">
-            <table className="w-full min-w-[900px] border-collapse">
+            <table className="w-full min-w-[600px] border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Course Type A</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Rate A</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Course Type B</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Rate B</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Contact Email</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Notes</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Actions</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Name</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Course Type A</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Rate A</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Course Type B</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Rate B</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Contact Email</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Notes</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -312,29 +312,29 @@ export default function SchoolsPage() {
                   <tr key={school.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
                     {editingId === school.id ? (
                       <>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
                           <input name="name" value={editForm.name} onChange={handleEditChange} required className={inputClass} />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
                           <input name="course_type_a_name" value={editForm.course_type_a_name} onChange={handleEditChange} className={inputClass} />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
                           <input type="number" name="course_type_a_rate" value={editForm.course_type_a_rate} onChange={handleEditChange} placeholder="15" min="0" max="100" step="0.1" className={inputClass} />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
                           <input name="course_type_b_name" value={editForm.course_type_b_name} onChange={handleEditChange} className={inputClass} />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
                           <input type="number" name="course_type_b_rate" value={editForm.course_type_b_rate} onChange={handleEditChange} placeholder="10" min="0" max="100" step="0.1" className={inputClass} />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
                           <input type="email" name="contact_email" value={editForm.contact_email} onChange={handleEditChange} className={inputClass} />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
                           <textarea name="notes" value={editForm.notes} onChange={handleEditChange} rows={2} className={inputClass} />
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
+                          <div className="flex flex-wrap gap-2">
                             <button type="button" onClick={handleSaveEdit} disabled={isSubmitting} className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">Save</button>
                             <button type="button" onClick={cancelEdit} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10">Cancel</button>
                           </div>
@@ -342,19 +342,19 @@ export default function SchoolsPage() {
                       </>
                     ) : (
                       <>
-                        <td className="px-4 py-3 font-semibold">
+                        <td className="px-3 py-2 font-semibold text-xs sm:px-4 sm:py-3 sm:text-base">
                             <Link href={`/schools/${school.id}`} className="text-blue-400 hover:underline">
                               {school.name}
                             </Link>
                           </td>
-                        <td className="px-4 py-3 text-white/70">{school.course_type_a_name ?? "—"}</td>
-                        <td className="px-4 py-3 text-white/70">{formatRate(school.course_type_a_rate)}</td>
-                        <td className="px-4 py-3 text-white/70">{school.course_type_b_name ?? "—"}</td>
-                        <td className="px-4 py-3 text-white/70">{formatRate(school.course_type_b_rate)}</td>
-                        <td className="px-4 py-3 text-white/70">{school.contact_email ?? "—"}</td>
-                        <td className="px-4 py-3 text-white/70 max-w-[150px] truncate" title={school.notes ?? undefined}>{school.notes ?? "—"}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
+                        <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{school.course_type_a_name ?? "—"}</td>
+                        <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{formatRate(school.course_type_a_rate)}</td>
+                        <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{school.course_type_b_name ?? "—"}</td>
+                        <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{formatRate(school.course_type_b_rate)}</td>
+                        <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base max-w-[120px] sm:max-w-[150px] truncate">{school.contact_email ?? "—"}</td>
+                        <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base max-w-[100px] sm:max-w-[150px] truncate" title={school.notes ?? undefined}>{school.notes ?? "—"}</td>
+                        <td className="px-3 py-2 sm:px-4 sm:py-3">
+                          <div className="flex flex-wrap gap-2">
                             <button onClick={() => startEdit(school)} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10">Edit</button>
                             <button onClick={() => handleDelete(school.id)} className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-400 hover:bg-red-500/20">Delete</button>
                           </div>

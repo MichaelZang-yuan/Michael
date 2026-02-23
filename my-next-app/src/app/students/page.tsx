@@ -112,24 +112,24 @@ export default function StudentsPage() {
     <div className="min-h-screen bg-blue-950 text-white">
 
       {/* Nav */}
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
+      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
           <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
             ← Back to Dashboard
           </Link>
         </div>
       </nav>
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-3xl font-bold">Students</h2>
-            <p className="text-white/50 mt-1">{filteredStudents.length} total</p>
+            <h2 className="text-2xl font-bold sm:text-3xl">Students</h2>
+            <p className="text-sm text-white/50 mt-1 sm:text-base">{filteredStudents.length} total</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <button
               onClick={handleExportCsv}
               disabled={filteredStudents.length === 0}
@@ -162,7 +162,7 @@ export default function StudentsPage() {
           </div>
         ) : (
           <>
-            <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="mb-6 flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <select
                 value={filters.department}
                 onChange={(e) => setFilters((f) => ({ ...f, department: e.target.value }))}
@@ -198,7 +198,7 @@ export default function StudentsPage() {
                 value={filters.search}
                 onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
                 placeholder="Search by name..."
-                className={`${filterInputClass} min-w-[180px]`}
+                className={`${filterInputClass} w-full min-w-0 sm:min-w-[180px]`}
               />
               <button
                 onClick={handleClearFilters}
@@ -211,32 +211,32 @@ export default function StudentsPage() {
             <p className="py-8 text-center text-white/50">No students match the current filters.</p>
           ) : (
           <div className="overflow-x-auto rounded-xl border border-white/10">
-            <table className="w-full border-collapse">
+            <table className="w-full min-w-[500px] border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">School</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Department</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Enrollment Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Tuition Fee</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">School</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Department</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Enrollment Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Tuition Fee</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStudents.map((student) => (
                   <tr key={student.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
-                    <td className="px-6 py-4 font-semibold">
+                    <td className="px-4 py-3 text-sm font-semibold sm:text-base">
   <Link href={`/students/${student.id}`} className="hover:text-blue-400 hover:underline">
     {student.full_name}
   </Link>
 </td>
-                    <td className="px-6 py-4 text-white/70">{student.schools?.name ?? "—"}</td>
-                    <td className="px-6 py-4 text-white/70">{DEPT_LABELS[student.department] ?? student.department}</td>
-                    <td className="px-6 py-4 text-white/70">{student.enrollment_date ?? "—"}</td>
-                    <td className="px-6 py-4 text-white/70">
+                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{student.schools?.name ?? "—"}</td>
+                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{DEPT_LABELS[student.department] ?? student.department}</td>
+                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{student.enrollment_date ?? "—"}</td>
+                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">
                       {student.tuition_fee ? `$${student.tuition_fee.toLocaleString()}` : "—"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
                         student.status === "active"
                           ? "bg-green-500/20 text-green-400"

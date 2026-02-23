@@ -375,19 +375,19 @@ export default function StudentDetailPage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
+      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
           <Link href="/students" className="text-sm text-white/60 hover:text-white">
             ← Back to Students
           </Link>
         </div>
       </nav>
 
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <div className="flex items-center justify-between mb-8">
+      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <div className="flex flex-col gap-3 mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-3xl font-bold">{student.full_name}</h2>
+            <h2 className="text-xl font-bold sm:text-3xl">{student.full_name}</h2>
             <p className="text-white/50 mt-1">{DEPT_LABELS[student.department]}</p>
           </div>
           <span className={`rounded-full px-4 py-1.5 text-sm font-bold uppercase ${
@@ -400,8 +400,8 @@ export default function StudentDetailPage() {
         </div>
 
         {/* Commission Section */}
-        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
-          <h3 className="text-xl font-bold mb-4">Commission Tracking</h3>
+        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <h3 className="text-lg font-bold mb-4 sm:text-xl">Commission Tracking</h3>
 
           {commissions.length === 0 ? (
             <p className="text-white/50 mb-4">No commissions added yet.</p>
@@ -456,10 +456,10 @@ export default function StudentDetailPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <p className="font-semibold">Year {c.year} Commission</p>
-                        <p className="text-white/60 text-sm">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm sm:text-base">Year {c.year} Commission</p>
+                        <p className="text-white/60 text-xs sm:text-sm break-words">
                           Tuition: ${(c.tuition_fee ?? 0).toLocaleString()} | Rate: {((c.commission_rate ?? 0) * 100).toFixed(0)}% | Amount: ${c.amount.toLocaleString()} NZD{c.enrollment_date ? ` | Enrollment: ${c.enrollment_date}` : ""}
                         </p>
                       </div>
@@ -547,7 +547,7 @@ export default function StudentDetailPage() {
                     className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
                   />
                 </div>
-                <div className="flex items-end gap-2">
+                      <div className="flex flex-wrap items-end gap-2">
                   <button onClick={handleAddCommission} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">Add</button>
                   <button onClick={() => setAddForm({ show: false, year: 0, enrollment_date: "", tuition_fee: "", commission_rate: "", amount: "", defaultRate: 0.1 })} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10">Cancel</button>
                 </div>
@@ -572,8 +572,8 @@ export default function StudentDetailPage() {
         </div>
 
         {/* Student Info Form */}
-        <h3 className="text-xl font-bold mb-5">Student Information</h3>
-        <form onSubmit={handleSave} className="flex flex-col gap-5">
+        <h3 className="text-lg font-bold mb-5 sm:text-xl">Student Information</h3>
+        <form onSubmit={handleSave} className="flex flex-col gap-5 w-full">
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-white/70">Full Name *</label>
@@ -656,7 +656,7 @@ export default function StudentDetailPage() {
             </p>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 pt-2">
             <button type="submit" disabled={isSaving}
               className="rounded-lg bg-blue-600 px-8 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50">
               {isSaving ? "Saving..." : "Save Changes"}

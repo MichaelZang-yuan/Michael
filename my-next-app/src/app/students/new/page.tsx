@@ -69,19 +69,19 @@ export default function NewStudentPage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
+      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
           <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
             ← Back to Dashboard
           </Link>
         </div>
       </nav>
 
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <h2 className="text-3xl font-bold mb-8">Add New Student</h2>
+      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <h2 className="text-2xl font-bold mb-8 sm:text-3xl">Add New Student</h2>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
 
           {/* Name */}
           <div className="flex flex-col gap-1.5">
@@ -115,7 +115,7 @@ export default function NewStudentPage() {
               name="school_id"
               value={form.school_id}
               onChange={handleChange}
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full"
             >
               <option value="" className="bg-blue-900 text-white">Select a school...</option>
               {schools.map((s) => (
@@ -132,7 +132,7 @@ export default function NewStudentPage() {
               value={form.department}
               onChange={handleChange}
               required
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full"
             >
               <option value="" className="bg-blue-900 text-white">Select a department...</option>
               <option value="china" className="bg-blue-900 text-white">China</option>
@@ -169,7 +169,7 @@ export default function NewStudentPage() {
 
           {error && <p className="text-red-400">{error}</p>}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 pt-2">
             <button
               type="submit"
               disabled={isSubmitting}
