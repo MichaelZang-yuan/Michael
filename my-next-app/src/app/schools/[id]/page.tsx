@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
+
+type AttachmentFile = { name: string; url: string; createdAt: string | null };
 
 type School = {
   id: string;
@@ -46,7 +49,9 @@ export default function SchoolDetailPage() {
   const [school, setSchool] = useState<School | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -93,11 +98,48 @@ export default function SchoolDetailPage() {
         if (commissionsData) setCommissions(commissionsData as unknown as Commission[]);
       }
 
+      const attRes = await fetch(`/api/attachments?type=schools&id=${id}`);
+      const attJson = await attRes.json().catch(() => ({ files: [] }));
+      if (attJson.files) setAttachments(attJson.files);
+
       setIsLoading(false);
     }
 
     init();
   }, [id, router]);
+
+  const fetchAttachments = useCallback(async () => {
+    const res = await fetch(`/api/attachments?type=schools&id=${id}`);
+    const json = await res.json().catch(() => ({ files: [] }));
+    if (json.files) setAttachments(json.files);
+  }, [id]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "schools");
+      formData.append("id", id);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error("[SchoolDetail] upload error:", data);
+        return;
+      }
+      await fetchAttachments();
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const displayFileName = (name: string) => {
+    const match = name.match(/^\d+-(.+)$/);
+    return match ? match[1] : name;
+  };
 
   const formatRate = (rate: number | null) => {
     if (rate == null) return "—";
@@ -130,14 +172,7 @@ export default function SchoolDetailPage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
-          <Link href="/schools" className="text-sm text-white/60 hover:text-white">
-            ← Back to Schools
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <div className="flex flex-wrap items-center gap-4 mb-8">
@@ -174,6 +209,46 @@ export default function SchoolDetailPage() {
                 <p className="text-white/70 whitespace-pre-wrap">{school.notes}</p>
               </div>
             )}
+            <div className="md:col-span-2">
+              <p className="text-sm text-white/50 mb-2">Attachments</p>
+              <div className="flex flex-col gap-2">
+                {attachments.length === 0 ? (
+                  <p className="text-white/50 text-sm">No attachments yet.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {attachments.map((f) => (
+                      <li key={f.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                        <span className="text-sm text-white/80 truncate flex-1 min-w-0">{displayFileName(f.name)}</span>
+                        {f.createdAt && (
+                          <span className="text-xs text-white/50">
+                            {new Date(f.createdAt).toLocaleDateString()}
+                          </span>
+                        )}
+                        <a
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10"
+                        >
+                          View / Download
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <label className="inline-flex cursor-pointer">
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleUpload}
+                    disabled={isUploading}
+                  />
+                  <span className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50">
+                    {isUploading ? "Uploading..." : "+ Upload"}
+                  </span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 

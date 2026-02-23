@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
 
 type Profile = {
   full_name: string | null;
@@ -114,13 +115,27 @@ export default function ProfilePage() {
       if (!userId || profile?.role !== "sales") return;
 
       setIsLoadingStudents(true);
-      const { data: studentsData } = await supabase
+      let studentsData: unknown[] | null = null;
+      const { data: orData, error: orError } = await supabase
         .from("students")
         .select("id, full_name, enrollment_date, status, department, schools(name)")
-        .eq("created_by", userId)
+        .or(`created_by.eq.${userId},assigned_sales_id.eq.${userId}`)
         .gte("enrollment_date", dateFrom)
         .lte("enrollment_date", dateTo)
         .order("enrollment_date", { ascending: true });
+
+      if (orError) {
+        const { data: fallbackData } = await supabase
+          .from("students")
+          .select("id, full_name, enrollment_date, status, department, schools(name)")
+          .eq("created_by", userId)
+          .gte("enrollment_date", dateFrom)
+          .lte("enrollment_date", dateTo)
+          .order("enrollment_date", { ascending: true });
+        studentsData = fallbackData;
+      } else {
+        studentsData = orData;
+      }
 
       const students = (studentsData ?? []) as unknown as MyStudent[];
 
@@ -221,14 +236,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
-          <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <h2 className="text-3xl font-bold mb-8">My Profile</h2>

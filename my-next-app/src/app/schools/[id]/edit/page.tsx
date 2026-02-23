@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
 
 type School = {
   id: string;
@@ -37,6 +38,7 @@ export default function EditSchoolPage() {
     contact_email: "",
     notes: "",
   });
+  const [initialForm, setInitialForm] = useState<string>("");
 
   useEffect(() => {
     async function init() {
@@ -61,7 +63,7 @@ export default function EditSchoolPage() {
       if (schoolData) {
         const s = schoolData as unknown as School;
         setSchool(s);
-        setForm({
+        const loadedForm = {
           name: s.name ?? "",
           course_type_a_name: s.course_type_a_name ?? "",
           course_type_a_rate: s.course_type_a_rate != null ? String((s.course_type_a_rate * 100).toFixed(1)) : "",
@@ -69,7 +71,9 @@ export default function EditSchoolPage() {
           course_type_b_rate: s.course_type_b_rate != null ? String((s.course_type_b_rate * 100).toFixed(1)) : "",
           contact_email: s.contact_email ?? "",
           notes: s.notes ?? "",
-        });
+        };
+        setForm(loadedForm);
+        setInitialForm(JSON.stringify(loadedForm));
       }
       setIsLoading(false);
     }
@@ -107,6 +111,7 @@ export default function EditSchoolPage() {
       setMessage({ type: "error", text: "Failed to save. Please try again." });
     } else {
       setMessage({ type: "success", text: "✅ School updated successfully!" });
+      setInitialForm(JSON.stringify(form));
     }
     setIsSaving(false);
   };
@@ -122,22 +127,18 @@ export default function EditSchoolPage() {
   if (!school) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-blue-950">
+        <Navbar />
         <p className="text-white/60 mb-4">School not found.</p>
         <Link href="/schools" className="text-blue-400 hover:underline">← Back to Schools</Link>
       </div>
     );
   }
 
+  const isDirty = initialForm !== "" && JSON.stringify(form) !== initialForm;
+
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
-          <Link href={`/schools/${id}`} className="text-sm text-white/60 hover:text-white">
-            ← Back to School
-          </Link>
-        </div>
-      </nav>
+      <Navbar hasUnsavedChanges={isDirty} />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <h2 className="text-3xl font-bold mb-8">Edit School</h2>

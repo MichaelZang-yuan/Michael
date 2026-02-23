@@ -4,6 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
+
+type CommissionRow = {
+  year: number;
+  status: string;
+  enrollment_date: string | null;
+};
 
 type Student = {
   id: string;
@@ -16,7 +23,19 @@ type Student = {
   status: string;
   created_at: string;
   schools: { name: string | null } | null;
+  commissions?: CommissionRow[] | null;
 };
+
+function getDisplayEnrollmentDate(commissions: CommissionRow[] | null | undefined): string {
+  if (!commissions || commissions.length === 0) return "—";
+  const pending = commissions.filter((c) => c.status === "pending");
+  if (pending.length > 0) {
+    const sorted = [...pending].sort((a, b) => a.year - b.year);
+    return sorted[0].enrollment_date ?? "—";
+  }
+  const sorted = [...commissions].sort((a, b) => b.year - a.year);
+  return sorted[0].enrollment_date ?? "—";
+}
 
 const DEPT_LABELS: Record<string, string> = {
   china: "China",
@@ -53,7 +72,7 @@ export default function StudentsPage() {
     async function fetchData() {
       const { data: studentsData } = await supabase
         .from("students")
-        .select("id, full_name, student_number, school_id, department, enrollment_date, tuition_fee, status, created_at, schools(name)")
+        .select("id, full_name, student_number, school_id, department, tuition_fee, status, created_at, schools(name), commissions(year, status, enrollment_date)")
         .order("created_at", { ascending: false });
 
       const { data: schoolsData } = await supabase
@@ -94,7 +113,7 @@ export default function StudentsPage() {
       escapeCsvValue(s.student_number ?? ""),
       escapeCsvValue(s.schools?.name ?? ""),
       escapeCsvValue(DEPT_LABELS[s.department] ?? s.department),
-      escapeCsvValue(s.enrollment_date ?? ""),
+      escapeCsvValue(getDisplayEnrollmentDate(s.commissions)),
       escapeCsvValue(s.tuition_fee?.toString() ?? ""),
       escapeCsvValue(s.status),
     ]);
@@ -110,16 +129,7 @@ export default function StudentsPage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-
-      {/* Nav */}
-      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
-          <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 
@@ -232,7 +242,7 @@ export default function StudentsPage() {
 </td>
                     <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{student.schools?.name ?? "—"}</td>
                     <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{DEPT_LABELS[student.department] ?? student.department}</td>
-                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{student.enrollment_date ?? "—"}</td>
+                                        <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{getDisplayEnrollmentDate(student.commissions)}</td>
                     <td className="px-4 py-3 text-white/70 text-xs sm:text-base">
                       {student.tuition_fee ? `$${student.tuition_fee.toLocaleString()}` : "—"}
                     </td>

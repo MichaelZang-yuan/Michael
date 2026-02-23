@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
 
 type Profile = {
   id: string;
@@ -157,14 +158,7 @@ export default function UsersPage() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-blue-950 text-white">
-        <nav className="border-b border-white/10 px-6 py-4">
-          <div className="mx-auto flex max-w-6xl items-center justify-between">
-            <h1 className="text-xl font-bold">PJ Commission Management System</h1>
-            <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
-              ← Back to Dashboard
-            </Link>
-          </div>
-        </nav>
+        <Navbar />
         <main className="mx-auto max-w-6xl px-6 py-20 text-center">
           <p className="text-2xl font-bold text-red-400">Access Denied</p>
           <p className="text-white/50 mt-2">You do not have permission to view this page.</p>
@@ -175,14 +169,7 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-bold">PJ Commission Management System</h1>
-          <Link href="/dashboard" className="text-sm text-white/60 hover:text-white">
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex items-center justify-between">

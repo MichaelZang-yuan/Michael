@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
 
 type Profile = {
   full_name: string;
@@ -178,11 +179,6 @@ export default function DashboardPage() {
 
   const pendingClaimsColor = overdue.length > 0 ? "text-red-400" : dueSoon.length > 0 ? "text-yellow-400" : "";
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/admin");
-  };
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-blue-950">
@@ -193,34 +189,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-
-      {/* Top nav */}
-      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between">
-          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            {profile && (
-              <span className="text-white/60 text-sm">
-                👋 {profile.full_name} ·{" "}
-                <span className="text-blue-400">{ROLE_LABELS[profile.role]}</span>
-                {" · "}{DEPT_LABELS[profile.department]}
-              </span>
-            )}
-            <Link
-              href="/profile"
-              className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10"
-            >
-              My Profile
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main content */}
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">

@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
+
+type AttachmentFile = { name: string; url: string; createdAt: string | null };
 
 type School = {
   id: string;
@@ -26,6 +29,7 @@ type Student = {
   status: string;
   notes: string | null;
   created_by: string | null;
+  assigned_sales_id?: string | null;
 };
 
 type Commission = {
@@ -63,6 +67,7 @@ export default function StudentDetailPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isClaiming, setIsClaiming] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [addForm, setAddForm] = useState<{
@@ -76,6 +81,8 @@ export default function StudentDetailPage() {
   }>({ show: false, year: 0, enrollment_date: "", tuition_fee: "", commission_rate: "", amount: "", defaultRate: 0.1 });
   const [editingCommissionId, setEditingCommissionId] = useState<string | null>(null);
   const [editCommissionForm, setEditCommissionForm] = useState({ enrollment_date: "", tuition_fee: "", commission_rate: "", amount: "" });
+  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
     student_number: "",
@@ -85,7 +92,9 @@ export default function StudentDetailPage() {
     status: "active",
     notes: "",
     created_by: "",
+    assigned_sales_id: "",
   });
+  const [initialForm, setInitialForm] = useState<string>("");
 
   useEffect(() => {
     async function init() {
@@ -117,7 +126,7 @@ export default function StudentDetailPage() {
         .from("students").select("*").eq("id", id).single();
       if (studentData) {
         setStudent(studentData);
-        setForm({
+        const loadedForm = {
           full_name: studentData.full_name ?? "",
           student_number: studentData.student_number ?? "",
           school_id: studentData.school_id ?? "",
@@ -126,7 +135,10 @@ export default function StudentDetailPage() {
           status: studentData.status ?? "active",
           notes: studentData.notes ?? "",
           created_by: studentData.created_by ?? "",
-        });
+          assigned_sales_id: (studentData.assigned_sales_id ?? studentData.created_by) ?? "",
+        };
+        setForm(loadedForm);
+        setInitialForm(JSON.stringify(loadedForm));
       }
 
       // 获取 commission 记录
@@ -134,11 +146,52 @@ export default function StudentDetailPage() {
         .from("commissions").select("*").eq("student_id", id).order("year");
       if (commissionData) setCommissions(commissionData);
 
+      const attRes = await fetch(`/api/attachments?type=students&id=${id}`);
+      const attJson = await attRes.json().catch(() => ({ files: [] }));
+      if (attJson.files) setAttachments(attJson.files);
+
       setIsLoading(false);
     }
 
     init();
   }, [id, router]);
+
+  const fetchAttachments = useCallback(async () => {
+    const res = await fetch(`/api/attachments?type=students&id=${id}`);
+    const json = await res.json().catch(() => ({ files: [] }));
+    if (json.files) setAttachments(json.files);
+  }, [id]);
+
+  const handleUploadAttachment = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    setMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "students");
+      formData.append("id", id);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Upload failed." });
+        return;
+      }
+      await fetchAttachments();
+      setMessage({ type: "success", text: "✅ File uploaded." });
+    } catch (err) {
+      setMessage({ type: "error", text: "Upload failed." });
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const displayFileName = (name: string) => {
+    const match = name.match(/^\d+-(.+)$/);
+    return match ? match[1] : name;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -159,19 +212,30 @@ export default function StudentDetailPage() {
       notes: form.notes || null,
     };
     if (isAdmin) {
-      updatePayload.created_by = form.created_by || null;
+      updatePayload.assigned_sales_id = form.assigned_sales_id || null;
     }
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from("students")
       .update(updatePayload)
       .eq("id", id);
+
+    if (error && updatePayload.assigned_sales_id !== undefined) {
+      const colMissing = error.message?.includes("assigned_sales_id") || error.code === "42703";
+      if (colMissing) {
+        delete updatePayload.assigned_sales_id;
+        updatePayload.created_by = form.assigned_sales_id || null;
+        const retry = await supabase.from("students").update(updatePayload).eq("id", id);
+        error = retry.error;
+      }
+    }
 
     if (error) {
       setMessage({ type: "error", text: "Failed to save. Please try again." });
     } else {
       setMessage({ type: "success", text: "✅ Student updated successfully!" });
-      setStudent({ ...student!, ...form, created_by: form.created_by || null });
+      setStudent({ ...student!, ...form, assigned_sales_id: form.assigned_sales_id || null });
+      setInitialForm(JSON.stringify(form));
     }
     setIsSaving(false);
   };
@@ -305,6 +369,37 @@ export default function StudentDetailPage() {
     }
   };
 
+  const handleDeleteStudent = async () => {
+    if (!confirm("Are you sure you want to delete this student? This will also delete all commission records.")) return;
+
+    setIsDeleting(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch(`/api/students/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error("[handleDeleteStudent] API error:", res.status, data);
+        setMessage({
+          type: "error",
+          text: data.error || `删除失败 (${res.status})`,
+        });
+        setIsDeleting(false);
+        return;
+      }
+
+      router.push("/students");
+    } catch (err) {
+      console.error("[handleDeleteStudent] unexpected error:", err);
+      setMessage({
+        type: "error",
+        text: `删除失败: ${err instanceof Error ? err.message : String(err)}`,
+      });
+      setIsDeleting(false);
+    }
+  };
+
   const handleClaim = async (commissionId: string) => {
     setIsClaiming(commissionId);
     const { data: { session } } = await supabase.auth.getSession();
@@ -372,17 +467,11 @@ export default function StudentDetailPage() {
   const existingYears = commissions.map(c => c.year);
   const availableYears = [1, 2, 3, 4].filter(y => !existingYears.includes(y));
   const isAdmin = profile?.role === "admin";
+  const isDirty = initialForm !== "" && JSON.stringify(form) !== initialForm;
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
-      <nav className="border-b border-white/10 px-4 py-4 sm:px-6">
-        <div className="mx-auto flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-base font-bold sm:text-xl">PJ Commission Management System</h1>
-          <Link href="/students" className="text-sm text-white/60 hover:text-white">
-            ← Back to Students
-          </Link>
-        </div>
-      </nav>
+      <Navbar hasUnsavedChanges={isDirty} />
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-3 mb-8 sm:flex-row sm:items-center sm:justify-between">
@@ -629,8 +718,8 @@ export default function StudentDetailPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-white/70">Assigned Sales</label>
               <select
-                name="created_by"
-                value={form.created_by}
+                name="assigned_sales_id"
+                value={form.assigned_sales_id}
                 onChange={handleChange}
                 className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full"
               >
@@ -667,6 +756,61 @@ export default function StudentDetailPage() {
             </Link>
           </div>
         </form>
+
+        {/* Attachments */}
+        <div className="mt-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <h3 className="text-lg font-bold mb-4 sm:text-xl">Attachments</h3>
+          <div className="flex flex-col gap-3">
+            {attachments.length === 0 ? (
+              <p className="text-white/50 text-sm">No attachments yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {attachments.map((f) => (
+                  <li key={f.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                    <span className="text-sm text-white/80 truncate flex-1 min-w-0">{displayFileName(f.name)}</span>
+                    {f.createdAt && (
+                      <span className="text-xs text-white/50">
+                        {new Date(f.createdAt).toLocaleDateString()}
+                      </span>
+                    )}
+                    <a
+                      href={f.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10"
+                    >
+                      View / Download
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <label className="inline-flex cursor-pointer">
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleUploadAttachment}
+                disabled={isUploading}
+              />
+              <span className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50">
+                {isUploading ? "Uploading..." : "+ Upload"}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {isAdmin && (
+          <div className="mt-10 pt-8 border-t border-white/10">
+            <button
+              type="button"
+              onClick={handleDeleteStudent}
+              disabled={isDeleting}
+              className="rounded-lg bg-red-600 px-8 py-3 font-bold text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {isDeleting ? "Deleting..." : "Delete Student"}
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
