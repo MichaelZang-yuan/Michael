@@ -553,10 +553,12 @@ export default function StudentDetailPage() {
           if (zohoData.success) {
             setMessage({ type: "success", text: "✅ Commission claimed! Zoho Deal updated." });
           } else {
-            setMessage({ type: "success", text: "✅ Commission claimed. ⚠️ Zoho Deal update failed." });
+            const err = zohoData.error ?? "Unknown error";
+            setMessage({ type: "success", text: `✅ Commission claimed. ⚠️ Zoho Deal update failed: ${err}` });
           }
-        } catch {
-          setMessage({ type: "success", text: "✅ Commission claimed. ⚠️ Zoho Deal update failed." });
+        } catch (e) {
+          const err = e instanceof Error ? e.message : "Unknown error";
+          setMessage({ type: "success", text: `✅ Commission claimed. ⚠️ Zoho Deal update failed: ${err}` });
         }
       } else {
         setMessage({ type: "success", text: "✅ Commission claimed." });

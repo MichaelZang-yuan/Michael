@@ -18,10 +18,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const ok = await updateDealStatus(studentName, schoolName, courseName);
-    return NextResponse.json({ success: ok });
+    const result = await updateDealStatus(studentName, schoolName, courseName);
+    return NextResponse.json(
+      result.success ? { success: true } : { success: false, error: result.error }
+    );
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     console.error("[Zoho update-deal]", err);
-    return NextResponse.json({ success: false }, { status: 500 });
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }

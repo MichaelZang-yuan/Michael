@@ -71,9 +71,15 @@ export async function updateDealStatus(
   studentName: string,
   schoolName: string,
   courseName: string
-): Promise<boolean> {
+): Promise<{ success: boolean; error?: string }> {
+  console.log("[Zoho] Searching for contact:", studentName);
+
   const accessToken = await getZohoAccessToken();
-  if (!accessToken) return false;
+  if (!accessToken) {
+    const err = "No Zoho access token (not connected or refresh failed)";
+    console.error("[Zoho]", err);
+    return { success: false, error: err };
+  }
 
   const criteria = `(Contact_Name:equals:${studentName})`;
   const searchUrl = `${ZOHO_CRM_BASE}/Deals/search?criteria=${encodeURIComponent(criteria)}`;
@@ -85,19 +91,23 @@ export async function updateDealStatus(
   });
 
   const searchData = await searchRes.json().catch(() => ({}));
+  console.log("[Zoho] Zoho search response:", JSON.stringify(searchData));
+
   if (!searchRes.ok) {
-    console.error("[Zoho] Search failed:", searchData);
-    return false;
+    const errMsg = searchData?.message ?? searchData?.code ?? JSON.stringify(searchData);
+    console.error("[Zoho] Search failed:", errMsg);
+    return { success: false, error: `Search failed: ${errMsg}` };
   }
 
   const deals = searchData?.data ?? [];
+  console.log("[Zoho] Found deals:", JSON.stringify(deals));
+
   const schoolLower = schoolName.toLowerCase();
   const courseLower = courseName.toLowerCase();
 
   const deal = deals.find((d: Record<string, unknown>) => {
     const dealName = String(d.Deal_Name ?? "").toLowerCase();
     const accountName = String(d.Account_Name ?? "").toLowerCase();
-    const stage = String(d.Stage ?? "").toLowerCase();
     return (
       (dealName.includes(schoolLower) || accountName.includes(schoolLower)) &&
       (courseLower ? dealName.includes(courseLower) || accountName.includes(courseLower) : true)
@@ -105,8 +115,9 @@ export async function updateDealStatus(
   });
 
   if (!deal?.id) {
-    console.warn("[Zoho] No matching deal found for", studentName, schoolName, courseName);
-    return false;
+    const err = `No matching deal for student="${studentName}", school="${schoolName}", course="${courseName}"`;
+    console.warn("[Zoho]", err);
+    return { success: false, error: err };
   }
 
   const updateRes = await fetch(`${ZOHO_CRM_BASE}/Deals/${deal.id}`, {
@@ -120,11 +131,14 @@ export async function updateDealStatus(
     }),
   });
 
+  const updateData = await updateRes.json().catch(() => ({}));
+  console.log("[Zoho] Update result:", JSON.stringify(updateData));
+
   if (!updateRes.ok) {
-    const errData = await updateRes.json().catch(() => ({}));
-    console.error("[Zoho] Update deal failed:", errData);
-    return false;
+    const errMsg = updateData?.message ?? updateData?.code ?? JSON.stringify(updateData);
+    console.error("[Zoho] Update deal failed:", errMsg);
+    return { success: false, error: `Update failed: ${errMsg}` };
   }
 
-  return true;
+  return { success: true };
 }
