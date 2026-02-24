@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
+import { logActivity } from "@/lib/activityLog";
 
 type School = {
   id: string;
@@ -295,6 +296,10 @@ export default function NewStudentPage() {
         commission_rate: rate,
         enrollment_date: enrollmentDate,
       });
+    }
+
+    if (newStudent) {
+      await logActivity(supabase, session.user.id, "created_student", "student", newStudent.id, { name: form.full_name });
     }
 
     if (newStudent && uploadedFile) {

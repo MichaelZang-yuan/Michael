@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 type Profile = {
   full_name: string;
@@ -57,6 +58,8 @@ export default function DashboardPage() {
     cancelledStudents: 0,
     pendingClaims: 0,
   });
+  const [monthlyCommissions, setMonthlyCommissions] = useState<{ month: string; amount: number }[]>([]);
+  const [studentsByDept, setStudentsByDept] = useState<{ name: string; value: number }[]>([]);
 
   useEffect(() => {
     async function init() {
@@ -126,6 +129,73 @@ export default function DashboardPage() {
       if (claims !== null) {
         setPendingClaims(claims);
         setStats(prev => ({ ...prev, pendingClaims: claims.length }));
+      }
+
+      // 4. 获取 claimed commissions（用于月度图表）
+      let claimedData: { amount: number; claimed_at: string }[] | null = null;
+      if (isSales && profileData?.department) {
+        const deptStudentIds = (await supabase.from("students").select("id").eq("department", profileData.department)).data?.map((s) => s.id) ?? [];
+        if (deptStudentIds.length > 0) {
+          const { data } = await supabase
+            .from("commissions")
+            .select("amount, claimed_at")
+            .eq("status", "claimed")
+            .not("claimed_at", "is", null)
+            .in("student_id", deptStudentIds);
+          claimedData = data as { amount: number; claimed_at: string }[] | null;
+        }
+      } else {
+        const { data } = await supabase
+          .from("commissions")
+          .select("amount, claimed_at")
+          .eq("status", "claimed")
+          .not("claimed_at", "is", null);
+        claimedData = data as { amount: number; claimed_at: string }[] | null;
+      }
+
+      const now = new Date();
+      const months: { month: string; amount: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          month: d.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+          amount: 0,
+        });
+      }
+      if (claimedData) {
+        for (const c of claimedData) {
+          const dt = new Date(c.claimed_at);
+          const key = `${dt.getFullYear()}-${dt.getMonth()}`;
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const mKey = `${d.getFullYear()}-${d.getMonth()}`;
+            if (key === mKey) {
+              months[5 - i].amount += c.amount;
+              break;
+            }
+          }
+        }
+      }
+      setMonthlyCommissions(months);
+
+      // 5. 获取按部门分组的学生数（用于饼图）
+      let studentsDeptQuery = supabase.from("students").select("department");
+      if (isSales && profileData?.department) {
+        studentsDeptQuery = studentsDeptQuery.eq("department", profileData.department);
+      }
+      const { data: studentsDeptData } = await studentsDeptQuery;
+
+      if (studentsDeptData) {
+        const counts: Record<string, number> = { china: 0, thailand: 0, myanmar: 0, korea_japan: 0 };
+        for (const s of studentsDeptData as { department: string }[]) {
+          if (s.department && counts[s.department] !== undefined) counts[s.department]++;
+        }
+        setStudentsByDept([
+          { name: "China", value: counts.china },
+          { name: "Thailand", value: counts.thailand },
+          { name: "Myanmar", value: counts.myanmar },
+          { name: "Korea & Japan", value: counts.korea_japan },
+        ].filter((d) => d.value > 0));
       }
 
       setIsLoading(false);
@@ -315,6 +385,60 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Charts */}
+        <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <h3 className="mb-4 text-lg font-bold sm:text-xl">Monthly Commissions</h3>
+            <div className="h-[280px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyCommissions}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="month" stroke="rgba(255,255,255,0.7)" tick={{ fill: "rgba(255,255,255,0.9)" }} />
+                  <YAxis stroke="rgba(255,255,255,0.7)" tick={{ fill: "rgba(255,255,255,0.9)" }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "rgb(30 58 138)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px" }}
+                    labelStyle={{ color: "white" }}
+                    formatter={(value: number | undefined) => [`$${(value ?? 0).toLocaleString()} NZD`, "Claimed"]}
+                  />
+                  <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Claimed" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <h3 className="mb-4 text-lg font-bold sm:text-xl">Students by Department</h3>
+            <div className="h-[280px] w-full">
+              {studentsByDept.length === 0 ? (
+                <p className="flex h-full items-center justify-center text-white/50">No students data</p>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={studentsByDept}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                    >
+                      {studentsByDept.map((_, i) => (
+                        <Cell key={i} fill={["#3b82f6", "#22c55e", "#f59e0b", "#a855f7"][i % 4]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "rgb(30 58 138)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px" }}
+                      formatter={(value: number | undefined) => [value ?? 0, "Students"]}
+                    />
+                    <Legend wrapperStyle={{ color: "white" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Pending Claims table */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">

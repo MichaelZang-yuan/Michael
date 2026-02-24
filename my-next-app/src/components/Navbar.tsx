@@ -26,6 +26,8 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/students", label: "Students" },
   { href: "/schools", label: "Schools" },
+  { href: "/reports", label: "Reports", adminOnly: true },
+  { href: "/logs", label: "Logs", adminOnly: true },
   { href: "/users", label: "Users", adminOnly: true },
 ];
 

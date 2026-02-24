@@ -5,8 +5,25 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
+import { logActivity } from "@/lib/activityLog";
 
 type AttachmentFile = { name: string; url: string; createdAt: string | null };
+
+type ActivityLog = {
+  id: string;
+  action: string;
+  details: Record<string, unknown> | null;
+  created_at: string;
+  user_id: string;
+};
+
+const ACTION_LABELS: Record<string, (d: Record<string, unknown> | null) => string> = {
+  created_student: () => "Added this student",
+  updated_student: () => "Updated student information",
+  claimed_commission: (d) => `Claimed Year ${d?.year ?? "?"} commission ($${d?.amount ?? "?"} NZD)`,
+  unclaimed_commission: (d) => `Undid Year ${d?.year ?? "?"} commission claim`,
+  deleted_student: () => "Deleted student",
+};
 
 type School = {
   id: string;
@@ -83,6 +100,8 @@ export default function StudentDetailPage() {
   const [editCommissionForm, setEditCommissionForm] = useState({ enrollment_date: "", tuition_fee: "", commission_rate: "", amount: "" });
   const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [userNamesByUserId, setUserNamesByUserId] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     full_name: "",
     student_number: "",
@@ -150,11 +169,61 @@ export default function StudentDetailPage() {
       const attJson = await attRes.json().catch(() => ({ files: [] }));
       if (attJson.files) setAttachments(attJson.files);
 
+      const { data: logsData, error: logsError } = await supabase
+        .from("activity_logs")
+        .select("id, action, details, created_at, user_id")
+        .eq("entity_id", id)
+        .order("created_at", { ascending: false });
+
+      if (logsError) console.error("Logs error:", logsError);
+      if (logsData) {
+        setActivityLogs(logsData as unknown as ActivityLog[]);
+        const userIds = [...new Set((logsData as { user_id: string }[]).map((l) => l.user_id))];
+        if (userIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from("profiles")
+            .select("id, full_name")
+            .in("id", userIds);
+          const map: Record<string, string> = {};
+          for (const p of profilesData ?? []) {
+            const row = p as { id: string; full_name: string | null };
+            map[row.id] = row.full_name ?? "Unknown";
+          }
+          setUserNamesByUserId(map);
+        }
+      }
+
       setIsLoading(false);
     }
 
     init();
   }, [id, router]);
+
+  const fetchActivityLogs = useCallback(async () => {
+    const { data: logsData, error: logsError } = await supabase
+      .from("activity_logs")
+      .select("id, action, details, created_at, user_id")
+      .eq("entity_id", id)
+      .order("created_at", { ascending: false });
+
+    if (logsError) console.error("Logs error:", logsError);
+    if (logsData) {
+      setActivityLogs(logsData as unknown as ActivityLog[]);
+      const userIds = [...new Set((logsData as { user_id: string }[]).map((l) => l.user_id))];
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", userIds);
+        const map: Record<string, string> = {};
+        for (const p of profilesData ?? []) {
+          const row = p as { id: string; full_name: string | null };
+          map[row.id] = row.full_name ?? "Unknown";
+        }
+        setUserNamesByUserId(map);
+      }
+    }
+  }, [id]);
 
   const fetchAttachments = useCallback(async () => {
     const res = await fetch(`/api/attachments?type=students&id=${id}`);
@@ -236,6 +305,11 @@ export default function StudentDetailPage() {
       setMessage({ type: "success", text: "✅ Student updated successfully!" });
       setStudent({ ...student!, ...form, assigned_sales_id: form.assigned_sales_id || null });
       setInitialForm(JSON.stringify(form));
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await logActivity(supabase, session.user.id, "updated_student", "student", id, { name: form.full_name });
+        await fetchActivityLogs();
+      }
     }
     setIsSaving(false);
   };
@@ -389,6 +463,11 @@ export default function StudentDetailPage() {
         return;
       }
 
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && student) {
+        await logActivity(supabase, session.user.id, "deleted_student", "student", id, { name: student.full_name });
+      }
+
       router.push("/students");
     } catch (err) {
       console.error("[handleDeleteStudent] unexpected error:", err);
@@ -403,6 +482,7 @@ export default function StudentDetailPage() {
   const handleClaim = async (commissionId: string) => {
     setIsClaiming(commissionId);
     const { data: { session } } = await supabase.auth.getSession();
+    const commission = commissions.find((c) => c.id === commissionId);
 
     const { error } = await supabase
       .from("commissions")
@@ -420,6 +500,18 @@ export default function StudentDetailPage() {
           ? { ...c, status: "claimed", claimed_at: new Date().toISOString() }
           : c
       ));
+      if (session && commission) {
+        const userId = session.user.id;
+        console.log("userId:", userId);
+        console.log("Logging activity...");
+        await logActivity(supabase, userId, "claimed_commission", "commission", id, {
+          commission_id: commissionId,
+          year: commission.year,
+          amount: commission.amount,
+        });
+        console.log("Activity logged");
+        await fetchActivityLogs();
+      }
     }
     setIsClaiming(null);
   };
@@ -427,6 +519,8 @@ export default function StudentDetailPage() {
   // 仅 Admin 可以撤销 claim
   const handleUnclaim = async (commissionId: string) => {
     setIsClaiming(commissionId);
+    const { data: { session } } = await supabase.auth.getSession();
+    const commission = commissions.find((c) => c.id === commissionId);
 
     const { error } = await supabase
       .from("commissions")
@@ -444,6 +538,13 @@ export default function StudentDetailPage() {
           ? { ...c, status: "pending", claimed_at: null }
           : c
       ));
+      if (session && commission) {
+        await logActivity(supabase, session.user.id, "unclaimed_commission", "commission", id, {
+          commission_id: commissionId,
+          year: commission.year,
+        });
+        await fetchActivityLogs();
+      }
     }
     setIsClaiming(null);
   };
@@ -797,6 +898,32 @@ export default function StudentDetailPage() {
               </span>
             </label>
           </div>
+        </div>
+
+        {/* Activity Timeline */}
+        <div className="mt-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <h3 className="text-lg font-bold mb-4 sm:text-xl">Activity Timeline</h3>
+          {activityLogs.length === 0 ? (
+            <p className="text-white/50 text-sm">No activity yet.</p>
+          ) : (
+            <div className="relative pl-4 border-l-2 border-white/20">
+              {activityLogs.map((log) => (
+                <div key={log.id} className="relative pb-6 last:pb-0">
+                  <div className="absolute -left-[21px] top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-blue-950" />
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-sm text-white/90">
+                      <span className="font-semibold text-white">{userNamesByUserId[log.user_id] ?? "Unknown"}</span>
+                      {" "}
+                      {ACTION_LABELS[log.action]?.(log.details) ?? log.action}
+                    </p>
+                    <p className="text-xs text-white/50">
+                      {new Date(log.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {isAdmin && (
