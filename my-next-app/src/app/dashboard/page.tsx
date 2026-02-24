@@ -82,18 +82,38 @@ export default function DashboardPage() {
       const isAdmin = profileData?.role === "admin";
       const isSales = profileData?.role === "sales";
 
-      // 2. 获取学生统计（admin: 全部；sales: 仅本部门）
-      let studentsQuery = supabase.from("students").select("status");
+      // 2. 获取学生统计（admin: 全部；sales: 仅本部门），并自动将 active→enrolled
+      let studentsQuery = supabase.from("students").select("id, status, commissions(enrollment_date)");
       if (isSales && profileData?.department) {
         studentsQuery = studentsQuery.eq("department", profileData.department);
       }
-      const { data: students } = await studentsQuery;
+      const { data: studentsRaw } = await studentsQuery;
+      const students = studentsRaw as { id: string; status: string; commissions: { enrollment_date: string | null }[] | null }[] | null;
 
       if (students) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const toEnroll: string[] = [];
+        for (const s of students) {
+          if (s.status !== "active") continue;
+          const commissions = s.commissions ?? [];
+          const dates = commissions.map((c) => c.enrollment_date).filter((d): d is string => !!d);
+          if (dates.length === 0) continue;
+          const earliest = dates.sort()[0];
+          const ed = new Date(earliest);
+          const cutoff = new Date(ed);
+          cutoff.setDate(cutoff.getDate() + 14);
+          cutoff.setHours(0, 0, 0, 0);
+          if (cutoff <= today) toEnroll.push(s.id);
+        }
+        if (toEnroll.length > 0) {
+          await supabase.from("students").update({ status: "enrolled" }).in("id", toEnroll);
+        }
+
         setStats(prev => ({
           ...prev,
           totalStudents: students.length,
-          activeStudents: students.filter(s => s.status === "active").length,
+          activeStudents: students.filter(s => s.status === "active" && !toEnroll.includes(s.id)).length,
           cancelledStudents: students.filter(s => s.status === "cancelled").length,
         }));
       }

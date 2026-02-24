@@ -302,7 +302,11 @@ export default function SchoolDetailPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-                          s.status === "active" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                          s.status === "active" ? "bg-blue-500/20 text-blue-400"
+                          : s.status === "enrolled" ? "bg-yellow-500/20 text-yellow-400"
+                          : s.status === "pending" ? "bg-orange-500/20 text-orange-400"
+                          : s.status === "claimed" ? "bg-green-500/20 text-green-400"
+                          : "bg-red-500/20 text-red-400"
                         }`}>
                           {s.status}
                         </span>

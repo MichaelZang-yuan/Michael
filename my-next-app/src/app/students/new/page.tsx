@@ -262,6 +262,18 @@ export default function NewStudentPage() {
       return;
     }
 
+    const enrollmentDate = commissionForm.enrollment_date?.trim() || null;
+    let status: "active" | "enrolled" = "active";
+    if (enrollmentDate) {
+      const ed = new Date(enrollmentDate);
+      const cutoff = new Date(ed);
+      cutoff.setDate(cutoff.getDate() + 14);
+      cutoff.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (cutoff <= today) status = "enrolled";
+    }
+
     const { data: newStudent, error: insertError } = await supabase
       .from("students")
       .insert({
@@ -269,6 +281,7 @@ export default function NewStudentPage() {
         student_number: form.student_number || null,
         school_id: form.school_id || null,
         department: form.department,
+        status,
         notes: form.notes || null,
         created_by: session.user.id,
       })
@@ -283,7 +296,6 @@ export default function NewStudentPage() {
 
     const amount = parseFloat(commissionForm.amount);
     if (newStudent && amount > 0) {
-      const enrollmentDate = commissionForm.enrollment_date?.trim() || null;
       const tuition = parseFloat(commissionForm.tuition_fee) || null;
       const rate = parseFloat(commissionForm.commission_rate) ? parseFloat(commissionForm.commission_rate) / 100 : null;
 

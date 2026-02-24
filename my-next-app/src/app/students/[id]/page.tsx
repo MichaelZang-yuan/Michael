@@ -72,6 +72,26 @@ const DEPT_LABELS: Record<string, string> = {
   korea_japan: "Korea & Japan",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  active: "Active",
+  enrolled: "Enrolled",
+  pending: "Pending",
+  claimed: "Claimed",
+  cancelled: "Cancelled",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  active: "bg-blue-500/20 text-blue-400",
+  enrolled: "bg-yellow-500/20 text-yellow-400",
+  pending: "bg-orange-500/20 text-orange-400",
+  claimed: "bg-green-500/20 text-green-400",
+  cancelled: "bg-red-500/20 text-red-400",
+};
+
+function getStatusBadgeClass(status: string): string {
+  return STATUS_COLORS[status] ?? "bg-gray-500/20 text-gray-400";
+}
+
 export default function StudentDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -277,10 +297,10 @@ export default function StudentDetailPage() {
       school_id: form.school_id || null,
       department: form.department,
       enrollment_date: form.enrollment_date || null,
-      status: form.status,
       notes: form.notes || null,
     };
     if (isAdmin) {
+      updatePayload.status = form.status;
       updatePayload.assigned_sales_id = form.assigned_sales_id || null;
     }
 
@@ -580,12 +600,8 @@ export default function StudentDetailPage() {
             <h2 className="text-xl font-bold sm:text-3xl">{student.full_name}</h2>
             <p className="text-white/50 mt-1">{DEPT_LABELS[student.department]}</p>
           </div>
-          <span className={`rounded-full px-4 py-1.5 text-sm font-bold uppercase ${
-            student.status === "active"
-              ? "bg-green-500/20 text-green-400"
-              : "bg-red-500/20 text-red-400"
-          }`}>
-            {student.status}
+          <span className={`rounded-full px-4 py-1.5 text-sm font-bold uppercase ${getStatusBadgeClass(student.status)}`}>
+            {STATUS_LABELS[student.status] ?? student.status}
           </span>
         </div>
 
@@ -808,11 +824,20 @@ export default function StudentDetailPage() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-white/70">Status</label>
-            <select name="status" value={form.status} onChange={handleChange}
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full">
-              <option value="active" className="bg-blue-900 text-white">Active</option>
-              <option value="cancelled" className="bg-blue-900 text-white">Cancelled</option>
-            </select>
+            {isAdmin ? (
+              <select name="status" value={form.status} onChange={handleChange}
+                className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full">
+                <option value="active" className="bg-blue-900 text-white">Active</option>
+                <option value="enrolled" className="bg-blue-900 text-white">Enrolled</option>
+                <option value="pending" className="bg-blue-900 text-white">Pending</option>
+                <option value="claimed" className="bg-blue-900 text-white">Claimed</option>
+                <option value="cancelled" className="bg-blue-900 text-white">Cancelled</option>
+              </select>
+            ) : (
+              <span className={`inline-block rounded-full px-4 py-2 text-sm font-bold uppercase ${getStatusBadgeClass(form.status)}`}>
+                {STATUS_LABELS[form.status] ?? form.status}
+              </span>
+            )}
           </div>
 
           {isAdmin && (

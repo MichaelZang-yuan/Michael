@@ -45,13 +45,15 @@ export async function POST(request: Request) {
   const mediaType = customMediaType ?? (fileType === "pdf" ? "application/pdf" : "image/jpeg");
   const contentType = fileType === "pdf" ? "document" : "image";
 
-  const extractPrompt = `Extract the following information from this offer letter and return ONLY a valid JSON object (no markdown, no code blocks) with these exact keys: student_name, student_number, school_name, enrollment_date, tuition_fee.
-- student_name: full name of the student (string or null)
-- student_number: student ID or number if found (string or null)
-- school_name: name of the school/institution (string or null)
-- enrollment_date: date in YYYY-MM-DD format only (string or null)
-- tuition_fee: numeric value only, no currency symbols (number or null)
-If a field is not found, use null. Return only the JSON object.`;
+  const extractPrompt = `Extract the following information from this offer letter or invoice. 
+Return ONLY a JSON object with these exact fields:
+- student_name: full name of the student
+- student_number: student ID number
+- school_name: name of the institution
+- enrollment_date: course start date in YYYY-MM-DD format
+- tuition_fee: ONLY the tuition fee amount as a number (NOT the total amount, NOT administration fees, NOT registration fees. Look for 'Tuition Fee' or 'Course Fee' specifically)
+
+If a field cannot be found, use null. Return only the JSON, no other text.`;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {

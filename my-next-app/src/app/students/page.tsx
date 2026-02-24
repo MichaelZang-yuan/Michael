@@ -43,6 +43,26 @@ const DEPT_LABELS: Record<string, string> = {
   korea_japan: "Korea & Japan",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  active: "Active",
+  enrolled: "Enrolled",
+  pending: "Pending",
+  claimed: "Claimed",
+  cancelled: "Cancelled",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  active: "bg-blue-500/20 text-blue-400",
+  enrolled: "bg-yellow-500/20 text-yellow-400",
+  pending: "bg-orange-500/20 text-orange-400",
+  claimed: "bg-green-500/20 text-green-400",
+  cancelled: "bg-red-500/20 text-red-400",
+};
+
+function getStatusBadgeClass(status: string): string {
+  return STATUS_COLORS[status] ?? "bg-gray-500/20 text-gray-400";
+}
+
 function escapeCsvValue(val: string): string {
   const str = String(val ?? "");
   if (str.includes(",") || str.includes('"') || str.includes("\n")) {
@@ -74,12 +94,35 @@ export default function StudentsPage() {
         .select("id, full_name, student_number, school_id, department, status, created_at, schools(name), commissions(year, status, enrollment_date), profiles!students_assigned_sales_id_fkey(full_name)")
         .order("created_at", { ascending: false });
 
+      let studentsList = (studentsData ?? []) as unknown as Student[];
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const toEnroll: string[] = [];
+      for (const s of studentsList) {
+        if (s.status !== "active") continue;
+        const commissions = s.commissions ?? [];
+        const dates = commissions.map((c) => c.enrollment_date).filter((d): d is string => !!d);
+        if (dates.length === 0) continue;
+        const earliest = dates.sort()[0];
+        const ed = new Date(earliest);
+        const cutoff = new Date(ed);
+        cutoff.setDate(cutoff.getDate() + 14);
+        cutoff.setHours(0, 0, 0, 0);
+        if (cutoff <= today) toEnroll.push(s.id);
+      }
+      if (toEnroll.length > 0) {
+        await supabase.from("students").update({ status: "enrolled" }).in("id", toEnroll);
+        studentsList = studentsList.map((s) =>
+          toEnroll.includes(s.id) ? { ...s, status: "enrolled" } : s
+        );
+      }
+
+      setStudents(studentsList);
       const { data: schoolsData } = await supabase
         .from("schools")
         .select("id, name")
         .order("name");
-
-      if (studentsData) setStudents(studentsData as unknown as Student[]);
       if (schoolsData) setSchools(schoolsData);
       setIsLoading(false);
     }
@@ -190,6 +233,9 @@ export default function StudentsPage() {
               >
                 <option value="all" className="bg-blue-900 text-white">All Status</option>
                 <option value="active" className="bg-blue-900 text-white">Active</option>
+                <option value="enrolled" className="bg-blue-900 text-white">Enrolled</option>
+                <option value="pending" className="bg-blue-900 text-white">Pending</option>
+                <option value="claimed" className="bg-blue-900 text-white">Claimed</option>
                 <option value="cancelled" className="bg-blue-900 text-white">Cancelled</option>
               </select>
               <select
@@ -244,12 +290,8 @@ export default function StudentsPage() {
                     <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{student.profiles?.full_name ?? "—"}</td>
                     <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{getDisplayEnrollmentDate(student.commissions)}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-                        student.status === "active"
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-red-500/20 text-red-400"
-                      }`}>
-                        {student.status}
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getStatusBadgeClass(student.status)}`}>
+                        {STATUS_LABELS[student.status] ?? student.status}
                       </span>
                     </td>
                   </tr>
