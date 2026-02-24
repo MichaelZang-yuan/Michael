@@ -30,9 +30,14 @@ const emptyForm = {
 export default function SchoolsPage() {
   const router = useRouter();
   const [schools, setSchools] = useState<School[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(emptyForm);
+
+  const filteredSchools = schools.filter((s) =>
+    !searchQuery.trim() || (s.name?.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+  );
 
   const fetchSchools = useCallback(async () => {
     const { data, error } = await supabase
@@ -66,13 +71,26 @@ export default function SchoolsPage() {
 
   const handleAddSchool = async (e: React.FormEvent) => {
     e.preventDefault();
+    const schoolName = form.name.trim();
+    if (!schoolName) return;
+
+    const { data: existing } = await supabase
+      .from("schools")
+      .select("id")
+      .ilike("name", schoolName)
+      .single();
+
+    if (existing && !window.confirm(`A school named '${schoolName}' already exists. Do you still want to add it?`)) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     const rateA = parseFloat(form.course_type_a_rate);
     const rateB = parseFloat(form.course_type_b_rate);
 
     const payload = {
-      name: form.name.trim(),
+      name: schoolName,
       course_type_a_name: form.course_type_a_name.trim() || null,
       course_type_a_rate: isNaN(rateA) ? null : rateA / 100,
       course_type_b_name: form.course_type_b_name.trim() || null,
@@ -232,7 +250,20 @@ export default function SchoolsPage() {
             <p className="text-white/50">Add your first school above.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <>
+            <div className="mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search schools..."
+                className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full max-w-xs"
+              />
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-white/10">
+            {filteredSchools.length === 0 ? (
+              <p className="py-8 text-center text-white/50">No schools match your search.</p>
+            ) : (
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-white/5">
@@ -247,7 +278,7 @@ export default function SchoolsPage() {
                 </tr>
               </thead>
               <tbody>
-                {schools.map((school) => (
+                {filteredSchools.map((school) => (
                   <tr key={school.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
                     <td className="px-3 py-2 font-semibold text-xs sm:px-4 sm:py-3 sm:text-base">
                       <Link href={`/schools/${school.id}`} className="text-blue-400 hover:underline">
@@ -275,7 +306,9 @@ export default function SchoolsPage() {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
+          </>
         )}
       </main>
     </div>

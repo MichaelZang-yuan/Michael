@@ -89,10 +89,28 @@ export default function StudentsPage() {
     });
 
     async function fetchData() {
-      const { data: studentsData } = await supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push("/admin");
+        return;
+      }
+
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("role, department")
+        .eq("id", session.user.id)
+        .single();
+
+      let studentsQuery = supabase
         .from("students")
         .select("id, full_name, student_number, school_id, department, status, created_at, schools(name), commissions(year, status, enrollment_date), profiles!students_assigned_sales_id_fkey(full_name)")
         .order("created_at", { ascending: false });
+
+      if (profileData?.role === "sales" && profileData?.department) {
+        studentsQuery = studentsQuery.eq("department", profileData.department);
+      }
+
+      const { data: studentsData } = await studentsQuery;
 
       let studentsList = (studentsData ?? []) as unknown as Student[];
 

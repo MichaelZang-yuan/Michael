@@ -48,6 +48,9 @@ export default function UsersPage() {
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ full_name: string; role: string; department: string } | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
   const [form, setForm] = useState({
@@ -101,6 +104,60 @@ export default function UsersPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  const handleEditClick = (user: Profile) => {
+    setEditingUserId(user.id);
+    setEditForm({
+      full_name: user.full_name ?? "",
+      role: user.role,
+      department: user.department,
+    });
+    setMessage(null);
+  };
+
+  const handleEditCancel = () => {
+    setEditingUserId(null);
+    setEditForm(null);
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (!editForm) return;
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleEditSave = async () => {
+    if (!editingUserId || !editForm) return;
+    setIsSavingEdit(true);
+    setMessage(null);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: editForm.full_name.trim() || null,
+        role: editForm.role,
+        department: editForm.department,
+      })
+      .eq("id", editingUserId);
+
+    if (error) {
+      setMessage({ type: "error", text: "Failed to update user." });
+    } else {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === editingUserId
+            ? { ...u, full_name: editForm.full_name.trim() || null, role: editForm.role, department: editForm.department }
+            : u
+        )
+      );
+      setMessage({ type: "success", text: "User updated." });
+      setEditingUserId(null);
+      setEditForm(null);
+    }
+    setIsSavingEdit(false);
+  };
+
+  const canEditUser = (user: Profile) =>
+    user.role === "sales" && user.id !== currentUser?.id;
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,28 +332,108 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
-                  <td className="px-6 py-4 font-semibold">{user.full_name ?? "—"}</td>
-                  <td className="px-6 py-4 text-white/70">{user.email ?? "—"}</td>
-                  <td className="px-6 py-4 text-white/70">{ROLE_LABELS[user.role] ?? user.role}</td>
-                  <td className="px-6 py-4 text-white/70">{DEPT_LABELS[user.department] ?? user.department}</td>
-                  <td className="px-6 py-4 text-white/70">
-                    {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
-                  </td>
-                  <td className="px-6 py-4">
-                    {user.role !== "admin" && (
-                      <button
-                        onClick={() => handleDelete(user.id, user.role)}
-                        disabled={isDeleting === user.id}
-                        className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
-                      >
-                        {isDeleting === user.id ? "Deleting..." : "Delete"}
-                      </button>
+              {users.map((user) => {
+                const isEditing = editingUserId === user.id;
+                const showEditButton = isAdmin && canEditUser(user);
+
+                return (
+                  <tr key={user.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
+                    {isEditing && editForm ? (
+                      <>
+                        <td className="px-6 py-4">
+                          <input
+                            name="full_name"
+                            value={editForm.full_name}
+                            onChange={handleEditChange}
+                            className={`${inputClass} py-2 text-sm`}
+                            placeholder="Full Name"
+                          />
+                        </td>
+                        <td className="px-6 py-4 text-white/70">{user.email ?? "—"}</td>
+                        <td className="px-6 py-4">
+                          <select
+                            name="role"
+                            value={editForm.role}
+                            onChange={handleEditChange}
+                            className={`${selectClass} py-2 text-sm`}
+                          >
+                            <option value="admin" className="bg-blue-900 text-white">Admin</option>
+                            <option value="sales" className="bg-blue-900 text-white">Sales</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4">
+                          <select
+                            name="department"
+                            value={editForm.department}
+                            onChange={handleEditChange}
+                            className={`${selectClass} py-2 text-sm`}
+                          >
+                            <option value="china" className="bg-blue-900 text-white">China</option>
+                            <option value="thailand" className="bg-blue-900 text-white">Thailand</option>
+                            <option value="myanmar" className="bg-blue-900 text-white">Myanmar</option>
+                            <option value="korea_japan" className="bg-blue-900 text-white">Korea & Japan</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 text-white/70">
+                          {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={handleEditSave}
+                              disabled={isSavingEdit}
+                              className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {isSavingEdit ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleEditCancel}
+                              disabled={isSavingEdit}
+                              className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10 disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-6 py-4 font-semibold">{user.full_name ?? "—"}</td>
+                        <td className="px-6 py-4 text-white/70">{user.email ?? "—"}</td>
+                        <td className="px-6 py-4 text-white/70">{ROLE_LABELS[user.role] ?? user.role}</td>
+                        <td className="px-6 py-4 text-white/70">{DEPT_LABELS[user.department] ?? user.department}</td>
+                        <td className="px-6 py-4 text-white/70">
+                          {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            {showEditButton && (
+                              <button
+                                type="button"
+                                onClick={() => handleEditClick(user)}
+                                className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10"
+                              >
+                                Edit
+                              </button>
+                            )}
+                            {user.role !== "admin" && (
+                              <button
+                                onClick={() => handleDelete(user.id, user.role)}
+                                disabled={isDeleting === user.id}
+                                className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
+                              >
+                                {isDeleting === user.id ? "Deleting..." : "Delete"}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </>
                     )}
-                  </td>
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

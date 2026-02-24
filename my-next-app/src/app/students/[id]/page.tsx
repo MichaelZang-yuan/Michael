@@ -127,7 +127,6 @@ export default function StudentDetailPage() {
     student_number: "",
     school_id: "",
     department: "",
-    enrollment_date: "",
     status: "active",
     notes: "",
     created_by: "",
@@ -170,7 +169,6 @@ export default function StudentDetailPage() {
           student_number: studentData.student_number ?? "",
           school_id: studentData.school_id ?? "",
           department: studentData.department ?? "",
-          enrollment_date: studentData.enrollment_date ?? "",
           status: studentData.status ?? "active",
           notes: studentData.notes ?? "",
           created_by: studentData.created_by ?? "",
@@ -296,7 +294,6 @@ export default function StudentDetailPage() {
       student_number: form.student_number || null,
       school_id: form.school_id || null,
       department: form.department,
-      enrollment_date: form.enrollment_date || null,
       notes: form.notes || null,
     };
     if (isAdmin) {
@@ -351,7 +348,9 @@ export default function StudentDetailPage() {
     }
     const defaultTuition = "";
     const defaultAmount = defaultTuition && defaultRate ? String((parseFloat(defaultTuition) * defaultRate).toFixed(2)) : "";
-    const defaultEnrollment = student?.enrollment_date ?? form.enrollment_date ?? "";
+    const defaultEnrollment = commissions.length > 0
+      ? (commissions.find((c) => c.enrollment_date)?.enrollment_date ?? "")
+      : "";
     setAddForm({
       show: true,
       year,
@@ -814,12 +813,6 @@ export default function StudentDetailPage() {
               <option value="myanmar" className="bg-blue-900 text-white">Myanmar</option>
               <option value="korea_japan" className="bg-blue-900 text-white">Korea & Japan</option>
             </select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Enrollment Date</label>
-            <input type="date" name="enrollment_date" value={form.enrollment_date} onChange={handleChange}
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full" />
           </div>
 
           <div className="flex flex-col gap-1.5">
