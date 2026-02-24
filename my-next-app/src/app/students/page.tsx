@@ -18,12 +18,11 @@ type Student = {
   student_number: string | null;
   school_id: string | null;
   department: string;
-  enrollment_date: string | null;
-  tuition_fee: number;
   status: string;
   created_at: string;
   schools: { name: string | null } | null;
   commissions?: CommissionRow[] | null;
+  profiles?: { full_name: string | null } | null;
 };
 
 function getDisplayEnrollmentDate(commissions: CommissionRow[] | null | undefined): string {
@@ -72,7 +71,7 @@ export default function StudentsPage() {
     async function fetchData() {
       const { data: studentsData } = await supabase
         .from("students")
-        .select("id, full_name, student_number, school_id, department, tuition_fee, status, created_at, schools(name), commissions(year, status, enrollment_date)")
+        .select("id, full_name, student_number, school_id, department, status, created_at, schools(name), commissions(year, status, enrollment_date), profiles!students_assigned_sales_id_fkey(full_name)")
         .order("created_at", { ascending: false });
 
       const { data: schoolsData } = await supabase
@@ -107,14 +106,14 @@ export default function StudentsPage() {
   const filterInputClass = "rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
 
   const handleExportCsv = () => {
-    const headers = ["Full Name", "Student Number", "School", "Department", "Enrollment Date", "Tuition Fee", "Status"];
+    const headers = ["Full Name", "Student Number", "School", "Department", "Sales", "Enrollment Date", "Status"];
     const rows = filteredStudents.map((s) => [
       escapeCsvValue(s.full_name),
       escapeCsvValue(s.student_number ?? ""),
       escapeCsvValue(s.schools?.name ?? ""),
       escapeCsvValue(DEPT_LABELS[s.department] ?? s.department),
+      escapeCsvValue(s.profiles?.full_name ?? ""),
       escapeCsvValue(getDisplayEnrollmentDate(s.commissions)),
-      escapeCsvValue(s.tuition_fee?.toString() ?? ""),
       escapeCsvValue(s.status),
     ]);
     const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -227,8 +226,8 @@ export default function StudentsPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Name</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">School</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Department</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Sales</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Enrollment Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Tuition Fee</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Status</th>
                 </tr>
               </thead>
@@ -242,10 +241,8 @@ export default function StudentsPage() {
 </td>
                     <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{student.schools?.name ?? "—"}</td>
                     <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{DEPT_LABELS[student.department] ?? student.department}</td>
-                                        <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{getDisplayEnrollmentDate(student.commissions)}</td>
-                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">
-                      {student.tuition_fee ? `$${student.tuition_fee.toLocaleString()}` : "—"}
-                    </td>
+                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{student.profiles?.full_name ?? "—"}</td>
+                    <td className="px-4 py-3 text-white/70 text-xs sm:text-base">{getDisplayEnrollmentDate(student.commissions)}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
                         student.status === "active"

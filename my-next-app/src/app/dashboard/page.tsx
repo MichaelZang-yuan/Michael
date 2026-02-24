@@ -273,23 +273,23 @@ export default function DashboardPage() {
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link
               href="/students"
-              className="rounded-lg border border-white/20 px-6 py-3 font-bold text-white hover:bg-white/10"
+              className="rounded-lg border border-white/20 bg-white/10 px-6 py-3 font-bold text-white hover:bg-white/20"
             >
-              View Students
+              📋 View Students
             </Link>
             {profile?.role === "admin" && (
               <>
                 <Link
                   href="/schools"
-                  className="rounded-lg border border-white/20 px-6 py-3 font-bold text-white hover:bg-white/10"
+                  className="rounded-lg border border-white/20 bg-white/10 px-6 py-3 font-bold text-white hover:bg-white/20"
                 >
-                  Manage Schools
+                  🏫 Manage Schools
                 </Link>
                 <Link
                   href="/users"
-                  className="rounded-lg border border-white/20 px-6 py-3 font-bold text-white hover:bg-white/10"
+                  className="rounded-lg border border-white/20 bg-white/10 px-6 py-3 font-bold text-white hover:bg-white/20"
                 >
-                  Manage Users
+                  👥 Manage Users
                 </Link>
               </>
             )}
@@ -297,7 +297,7 @@ export default function DashboardPage() {
               href="/students/new"
               className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
             >
-              + Add Student
+              <span className="text-xl font-bold">+</span> Add Student
             </Link>
           </div>
         </div>

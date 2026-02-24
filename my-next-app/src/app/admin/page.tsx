@@ -33,6 +33,12 @@ export default function AdminPage() {
     if (loginError) {
       setError("Invalid email or password");
     } else if (data.user) {
+      await supabase.from("activity_logs").insert({
+        user_id: data.user.id,
+        action: "login",
+        entity_type: "auth",
+        details: { email: data.user.email },
+      });
       router.push("/dashboard");
     }
 

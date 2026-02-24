@@ -15,6 +15,13 @@ type Profile = {
   created_at: string | null;
 };
 
+type LoginLog = {
+  id: string;
+  created_at: string;
+  details: { email?: string } | null;
+  profiles: { full_name: string | null; email: string | null } | null;
+};
+
 const DEPT_LABELS: Record<string, string> = {
   china: "China",
   thailand: "Thailand",
@@ -42,6 +49,7 @@ export default function UsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
   const [form, setForm] = useState({
     email: "",
     full_name: "",
@@ -74,6 +82,15 @@ export default function UsersPage() {
         console.error("[Users] fetch error:", error);
       }
       if (usersData) setUsers(usersData as unknown as Profile[]);
+
+      const { data: logsData } = await supabase
+        .from("activity_logs")
+        .select("id, created_at, details, profiles(full_name, email)")
+        .eq("action", "login")
+        .eq("entity_type", "auth")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (logsData) setLoginLogs(logsData as unknown as LoginLog[]);
 
       setIsLoading(false);
     }
@@ -282,6 +299,41 @@ export default function UsersPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Login History */}
+        <div className="mt-12">
+          <h3 className="mb-4 text-xl font-bold">Login History</h3>
+          <div className="overflow-x-auto rounded-xl border border-white/10">
+            <table className="w-full min-w-[400px] border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/5">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Time</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">User</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loginLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-6 py-8 text-center text-white/50">No login records yet.</td>
+                  </tr>
+                ) : (
+                  loginLogs.map((log) => (
+                    <tr key={log.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
+                      <td className="px-6 py-4 text-white/70">
+                        {new Date(log.created_at).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 font-semibold">{log.profiles?.full_name ?? "—"}</td>
+                      <td className="px-6 py-4 text-white/70">
+                        {log.profiles?.email ?? (log.details as { email?: string })?.email ?? "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
