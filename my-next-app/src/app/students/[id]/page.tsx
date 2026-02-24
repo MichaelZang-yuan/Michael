@@ -534,11 +534,7 @@ export default function StudentDetailPage() {
       if (student && commission) {
         const school = schools.find((s) => s.id === student.school_id);
         const schoolName = school?.name ?? "";
-        const courseName = commission.year === 1
-          ? (school?.course_type_a_name ?? "")
-          : commission.year === 2
-            ? (school?.course_type_b_name ?? "")
-            : "";
+        const enrollmentDate = commission.enrollment_date ?? null;
         try {
           const zohoRes = await fetch("/api/zoho/update-deal", {
             method: "POST",
@@ -546,11 +542,17 @@ export default function StudentDetailPage() {
             body: JSON.stringify({
               studentName: student.full_name,
               schoolName,
-              courseName,
+              enrollmentDate,
             }),
           });
           const zohoData = await zohoRes.json().catch(() => ({}));
-          if (zohoData.success) {
+          if (zohoData.success && zohoData.dealName) {
+            const prev = zohoData.previousStage ?? "unknown";
+            setMessage({
+              type: "success",
+              text: `✅ Commission claimed! Zoho Deal '${zohoData.dealName}' updated from '${prev}' to 'Completed with Commission'`,
+            });
+          } else if (zohoData.success) {
             setMessage({ type: "success", text: "✅ Commission claimed! Zoho Deal updated." });
           } else {
             const err = zohoData.error ?? "Unknown error";

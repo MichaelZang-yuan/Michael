@@ -10,6 +10,42 @@ function getSupabaseAdmin() {
   return createClient(url, key);
 }
 
+function fuzzyMatch(str1: string, str2: string): boolean {
+  const s1 = str1.toLowerCase().trim();
+  const s2 = str2.toLowerCase().trim();
+  return s1.includes(s2) || s2.includes(s1);
+}
+
+function parseDateFromDeal(deal: Record<string, unknown>): Date | null {
+  const dateFields = [
+    "Course_Start_Date",
+    "Start_Date",
+    "Enrollment_Date",
+    "Closing_Date",
+    "Created_Time",
+  ];
+  for (const key of dateFields) {
+    const val = deal[key];
+    if (typeof val === "string") {
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  for (const [key, val] of Object.entries(deal)) {
+    if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  return null;
+}
+
+function dateDiffDays(d1: Date, d2: Date): number {
+  const t1 = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate()).getTime();
+  const t2 = new Date(d2.getFullYear(), d2.getMonth(), d2.getDate()).getTime();
+  return Math.abs(Math.round((t1 - t2) / (1000 * 60 * 60 * 24)));
+}
+
 export async function getZohoAccessToken(): Promise<string | null> {
   const supabase = getSupabaseAdmin();
   const { data: row } = await supabase
@@ -67,11 +103,19 @@ export async function getZohoAccessToken(): Promise<string | null> {
   return tokenData.access_token;
 }
 
+export type UpdateDealResult = {
+  success: boolean;
+  error?: string;
+  dealName?: string;
+  dealId?: string;
+  previousStage?: string;
+};
+
 export async function updateDealStatus(
   studentName: string,
   schoolName: string,
-  courseName: string
-): Promise<{ success: boolean; error?: string }> {
+  enrollmentDate: string | null
+): Promise<UpdateDealResult> {
   console.log("[Zoho] Searching for contact:", studentName);
 
   const accessToken = await getZohoAccessToken();
@@ -81,46 +125,87 @@ export async function updateDealStatus(
     return { success: false, error: err };
   }
 
-  const criteria = `(Contact_Name:equals:${studentName})`;
-  const searchUrl = `${ZOHO_CRM_BASE}/Deals/search?criteria=${encodeURIComponent(criteria)}`;
+  const contactsCriteria = `(Full_Name:equals:${studentName})`;
+  const contactsSearchUrl = `${ZOHO_CRM_BASE}/Contacts/search?criteria=${encodeURIComponent(contactsCriteria)}`;
 
-  const searchRes = await fetch(searchUrl, {
-    headers: {
-      Authorization: `Zoho-oauthtoken ${accessToken}`,
-    },
+  const contactsRes = await fetch(contactsSearchUrl, {
+    headers: { Authorization: `Zoho-oauthtoken ${accessToken}` },
   });
 
-  const searchData = await searchRes.json().catch(() => ({}));
-  console.log("[Zoho] Zoho search response:", JSON.stringify(searchData));
+  const contactsData = await contactsRes.json().catch(() => ({}));
+  console.log("[Zoho] Contacts search response:", JSON.stringify(contactsData));
 
-  if (!searchRes.ok) {
-    const errMsg = searchData?.message ?? searchData?.code ?? JSON.stringify(searchData);
-    console.error("[Zoho] Search failed:", errMsg);
-    return { success: false, error: `Search failed: ${errMsg}` };
+  if (!contactsRes.ok) {
+    const errMsg = contactsData?.message ?? contactsData?.code ?? JSON.stringify(contactsData);
+    console.error("[Zoho] Contacts search failed:", errMsg);
+    return { success: false, error: `Contacts search failed: ${errMsg}` };
   }
 
-  const deals = searchData?.data ?? [];
-  console.log("[Zoho] Found deals:", JSON.stringify(deals));
-
-  const schoolLower = schoolName.toLowerCase();
-  const courseLower = courseName.toLowerCase();
-
-  const deal = deals.find((d: Record<string, unknown>) => {
-    const dealName = String(d.Deal_Name ?? "").toLowerCase();
-    const accountName = String(d.Account_Name ?? "").toLowerCase();
-    return (
-      (dealName.includes(schoolLower) || accountName.includes(schoolLower)) &&
-      (courseLower ? dealName.includes(courseLower) || accountName.includes(courseLower) : true)
-    );
-  });
-
-  if (!deal?.id) {
-    const err = `No matching deal for student="${studentName}", school="${schoolName}", course="${courseName}"`;
+  const contacts = contactsData?.data ?? [];
+  if (contacts.length === 0) {
+    const err = `No contact found for student="${studentName}"`;
     console.warn("[Zoho]", err);
     return { success: false, error: err };
   }
 
-  const updateRes = await fetch(`${ZOHO_CRM_BASE}/Deals/${deal.id}`, {
+  const targetEnrollmentDate = enrollmentDate ? new Date(enrollmentDate) : null;
+  const matchingDeals: Record<string, unknown>[] = [];
+
+  for (const contact of contacts as { id: string }[]) {
+    const dealsUrl = `${ZOHO_CRM_BASE}/Contacts/${contact.id}/Deals?fields=Deal_Name,Stage,Account_Name,Closing_Date,Course_Start_Date,Start_Date,Created_Time`;
+    const dealsRes = await fetch(dealsUrl, {
+      headers: { Authorization: `Zoho-oauthtoken ${accessToken}` },
+    });
+
+    const dealsData = await dealsRes.json().catch(() => ({}));
+    console.log("[Zoho] Deals for contact", contact.id, ":", JSON.stringify(dealsData));
+
+    if (!dealsRes.ok) continue;
+
+    const deals = dealsData?.data ?? [];
+    for (const d of deals as Record<string, unknown>[]) {
+      const dealName = String(d.Deal_Name ?? "");
+      const accountName = String(d.Account_Name ?? "");
+
+      if (fuzzyMatch(schoolName, dealName) || fuzzyMatch(schoolName, accountName)) {
+        matchingDeals.push(d);
+      }
+    }
+  }
+
+  console.log("[Zoho] Matching deals:", JSON.stringify(matchingDeals));
+
+  let bestDeal: Record<string, unknown> | null = null;
+  if (matchingDeals.length === 0) {
+  } else if (targetEnrollmentDate && matchingDeals.length > 0) {
+    let bestDiff = Infinity;
+    for (const d of matchingDeals) {
+      const dealDate = parseDateFromDeal(d);
+      if (dealDate) {
+        const diff = dateDiffDays(dealDate, targetEnrollmentDate);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          bestDeal = d;
+        }
+      } else if (bestDeal === null) {
+        bestDeal = d;
+      }
+    }
+    if (bestDeal === null) bestDeal = matchingDeals[0];
+  } else {
+    bestDeal = matchingDeals[0];
+  }
+
+  if (!bestDeal?.id) {
+    const err = `No matching deal for student="${studentName}", school="${schoolName}"${enrollmentDate ? `, enrollment="${enrollmentDate}"` : ""}`;
+    console.warn("[Zoho]", err);
+    return { success: false, error: err };
+  }
+
+  const previousStage = String(bestDeal.Stage ?? "");
+  const dealName = String(bestDeal.Deal_Name ?? bestDeal.id);
+
+  const updateRes = await fetch(`${ZOHO_CRM_BASE}/Deals/${bestDeal.id}`, {
     method: "PUT",
     headers: {
       Authorization: `Zoho-oauthtoken ${accessToken}`,
@@ -140,5 +225,10 @@ export async function updateDealStatus(
     return { success: false, error: `Update failed: ${errMsg}` };
   }
 
-  return { success: true };
+  return {
+    success: true,
+    dealName,
+    dealId: String(bestDeal.id),
+    previousStage,
+  };
 }
