@@ -28,6 +28,8 @@ const ACTION_LABELS: Record<string, (d: Record<string, unknown> | null) => strin
 type School = {
   id: string;
   name: string;
+  course_type_a_name?: string | null;
+  course_type_b_name?: string | null;
 };
 
 type SalesUser = {
@@ -148,7 +150,7 @@ export default function StudentDetailPage() {
       if (profileData) setProfile(profileData);
 
       // 获取学校列表
-      const { data: schoolData } = await supabase.from("schools").select("id, name").order("name");
+      const { data: schoolData } = await supabase.from("schools").select("id, name, course_type_a_name, course_type_b_name").order("name");
       if (schoolData) setSchools(schoolData);
 
       // 获取 Sales 用户列表（供 admin 分配）
@@ -500,6 +502,7 @@ export default function StudentDetailPage() {
 
   const handleClaim = async (commissionId: string) => {
     setIsClaiming(commissionId);
+    setMessage(null);
     const { data: { session } } = await supabase.auth.getSession();
     const commission = commissions.find((c) => c.id === commissionId);
 
@@ -520,16 +523,43 @@ export default function StudentDetailPage() {
           : c
       ));
       if (session && commission) {
-        const userId = session.user.id;
-        console.log("userId:", userId);
-        console.log("Logging activity...");
-        await logActivity(supabase, userId, "claimed_commission", "commission", id, {
+        await logActivity(supabase, session.user.id, "claimed_commission", "commission", id, {
           commission_id: commissionId,
           year: commission.year,
           amount: commission.amount,
         });
-        console.log("Activity logged");
         await fetchActivityLogs();
+      }
+
+      if (student && commission) {
+        const school = schools.find((s) => s.id === student.school_id);
+        const schoolName = school?.name ?? "";
+        const courseName = commission.year === 1
+          ? (school?.course_type_a_name ?? "")
+          : commission.year === 2
+            ? (school?.course_type_b_name ?? "")
+            : "";
+        try {
+          const zohoRes = await fetch("/api/zoho/update-deal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              studentName: student.full_name,
+              schoolName,
+              courseName,
+            }),
+          });
+          const zohoData = await zohoRes.json().catch(() => ({}));
+          if (zohoData.success) {
+            setMessage({ type: "success", text: "✅ Commission claimed! Zoho Deal updated." });
+          } else {
+            setMessage({ type: "success", text: "✅ Commission claimed. ⚠️ Zoho Deal update failed." });
+          }
+        } catch {
+          setMessage({ type: "success", text: "✅ Commission claimed. ⚠️ Zoho Deal update failed." });
+        }
+      } else {
+        setMessage({ type: "success", text: "✅ Commission claimed." });
       }
     }
     setIsClaiming(null);

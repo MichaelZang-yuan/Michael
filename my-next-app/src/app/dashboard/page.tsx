@@ -60,6 +60,7 @@ export default function DashboardPage() {
   });
   const [monthlyCommissions, setMonthlyCommissions] = useState<{ month: string; amount: number }[]>([]);
   const [studentsByDept, setStudentsByDept] = useState<{ name: string; value: number }[]>([]);
+  const [zohoConnected, setZohoConnected] = useState<boolean | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -80,6 +81,11 @@ export default function DashboardPage() {
       if (profileData) setProfile(profileData);
 
       const isAdmin = profileData?.role === "admin";
+      if (isAdmin) {
+        const statusRes = await fetch("/api/zoho/status");
+        const statusData = await statusRes.json().catch(() => ({}));
+        setZohoConnected(statusData.connected ?? false);
+      }
       const isSales = profileData?.role === "sales";
 
       // 2. 获取学生统计（admin: 全部；sales: 仅本部门），并自动将 active→enrolled
@@ -321,6 +327,23 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {profile?.role === "admin" && zohoConnected !== null && (
+          <div className="mb-6">
+            {zohoConnected ? (
+              <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">
+                ✅ Zoho CRM connected
+              </p>
+            ) : (
+              <a
+                href="/api/zoho/connect"
+                className="block rounded-lg border border-orange-500/50 bg-orange-500/20 px-4 py-3 text-orange-400 hover:bg-orange-500/30"
+              >
+                ⚠️ Zoho CRM not connected. Click here to connect.
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Stats cards - 2x2 on mobile, 4 cols on lg */}
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4 mb-10">
