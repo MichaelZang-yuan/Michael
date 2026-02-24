@@ -50,8 +50,19 @@ Return ONLY a JSON object with these exact fields:
 - student_name: full name of the student
 - student_number: student ID number
 - school_name: name of the institution
-- enrollment_date: course start date in YYYY-MM-DD format
-- tuition_fee: ONLY the tuition fee amount as a number (NOT the total amount, NOT administration fees, NOT registration fees. Look for 'Tuition Fee' or 'Course Fee' specifically)
+- enrollment_date: course start date in YYYY-MM-DD format. Look for these field names (in order of priority):
+  * Programme Commences / Program Commences (formal course start - PREFER this if present alongside Orientation)
+  * Date course starts / Course start date / Start date
+  * Commencement Date
+  * International Orientation Commences
+  * Any date field whose name contains "start" or "commence"
+  * If both "Orientation date" and "Programme Commences" exist, use Programme Commences (formal start date)
+- tuition_fee: ONLY the tuition fee amount as a number. Look for these field names:
+  * Tuition Fees / Tuition Fee
+  * International Student Course Fee / Course Fee
+  * Programme Fee / Program Fee
+  * Fees Payable (BUT: if Fees Payable is a total/sum of multiple fees, prefer the separate Tuition Fee row instead of the total)
+  * EXCLUDE: administration fees, registration fees, total amounts that combine multiple fee types
 
 If a field cannot be found, use null. Return only the JSON, no other text.`;
 

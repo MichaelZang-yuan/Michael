@@ -621,6 +621,7 @@ export default function StudentDetailPage() {
   const existingYears = commissions.map(c => c.year);
   const availableYears = [1, 2, 3, 4].filter(y => !existingYears.includes(y));
   const isAdmin = profile?.role === "admin";
+  const canEditDeleteCommission = profile?.role === "admin" || profile?.role === "sales";
   const isDirty = initialForm !== "" && JSON.stringify(form) !== initialForm;
 
   return (
@@ -716,18 +717,20 @@ export default function StudentDetailPage() {
                         ) : (
                           <>
                             {isAdmin && (
+                              <button onClick={() => handleClaim(c.id)} disabled={isClaiming === c.id}
+                                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                                {isClaiming === c.id ? "Claiming..." : "Claim"}
+                              </button>
+                            )}
+                            {canEditDeleteCommission && (
                               <>
-                                <button onClick={() => handleClaim(c.id)} disabled={isClaiming === c.id}
-                                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
-                                  {isClaiming === c.id ? "Claiming..." : "Claim"}
-                                </button>
                                 <button onClick={() => startEditCommission(c)}
                                   className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
                                 <button onClick={() => handleDeleteCommission(c.id)}
                                   className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
                               </>
                             )}
-                            {!isAdmin && (
+                            {!isAdmin && !canEditDeleteCommission && (
                               <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
                             )}
                           </>
