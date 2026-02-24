@@ -14,7 +14,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PJ Commission Management System",
-  description: "PJ Commission Management System",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
