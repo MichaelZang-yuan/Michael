@@ -282,10 +282,8 @@ export default function NewStudentPage() {
       status,
       notes: form.notes || null,
       created_by: session.user.id,
+      assigned_sales_id: session.user.id,
     };
-    if (profile?.role === "sales") {
-      insertPayload.assigned_sales_id = session.user.id;
-    }
 
     const { data: newStudent, error: insertError } = await supabase
       .from("students")

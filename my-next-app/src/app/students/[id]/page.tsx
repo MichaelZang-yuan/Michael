@@ -1024,9 +1024,9 @@ export default function StudentDetailPage() {
             )}
           </div>
 
-          {isAdmin && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Assigned Sales</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-white/70">Assigned Sales</label>
+            {isAdmin ? (
               <select
                 name="assigned_sales_id"
                 value={form.assigned_sales_id}
@@ -1040,8 +1040,12 @@ export default function StudentDetailPage() {
                   </option>
                 ))}
               </select>
-            </div>
-          )}
+            ) : (
+              <div className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white/70">
+                {salesUsers.find((u) => u.id === form.assigned_sales_id)?.full_name ?? "— Not assigned —"}
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-white/70">Notes</label>
