@@ -124,10 +124,8 @@ export default function StudentsPage() {
         if (dates.length === 0) continue;
         const earliest = dates.sort()[0];
         const ed = new Date(earliest);
-        const cutoff = new Date(ed);
-        cutoff.setDate(cutoff.getDate() + 14);
-        cutoff.setHours(0, 0, 0, 0);
-        if (cutoff <= today) toEnroll.push(s.id);
+        ed.setHours(0, 0, 0, 0);
+        if (ed <= today) toEnroll.push(s.id);
       }
       if (toEnroll.length > 0) {
         await supabase.from("students").update({ status: "enrolled" }).in("id", toEnroll);

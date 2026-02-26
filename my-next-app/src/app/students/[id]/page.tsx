@@ -108,6 +108,7 @@ export default function StudentDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isClaiming, setIsClaiming] = useState<string | null>(null);
+  const [isStudentAction, setIsStudentAction] = useState<"invoice" | "undo-enrolled" | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [addForm, setAddForm] = useState<{
     show: boolean;
@@ -295,10 +296,10 @@ export default function StudentDetailPage() {
       full_name: form.full_name,
       student_number: form.student_number || null,
       school_id: form.school_id || null,
-      department: form.department,
       notes: form.notes || null,
     };
     if (isAdmin) {
+      updatePayload.department = form.department;
       updatePayload.status = form.status;
       updatePayload.assigned_sales_id = form.assigned_sales_id || null;
     }
@@ -522,6 +523,12 @@ export default function StudentDetailPage() {
           ? { ...c, status: "claimed", claimed_at: new Date().toISOString() }
           : c
       ));
+      // Claim 成功后自动把学生 status 更新为 claimed
+      await supabase.from("students").update({ status: "claimed" }).eq("id", id);
+      if (student) {
+        setStudent({ ...student, status: "claimed" });
+        setForm((prev) => ({ ...prev, status: "claimed" }));
+      }
       if (session && commission) {
         await logActivity(supabase, session.user.id, "claimed_commission", "commission", id, {
           commission_id: commissionId,
@@ -562,11 +569,73 @@ export default function StudentDetailPage() {
           const err = e instanceof Error ? e.message : "Unknown error";
           setMessage({ type: "success", text: `✅ Commission claimed. ⚠️ Zoho Deal update failed: ${err}` });
         }
+
+        // 发送邮件通知 Sales（不阻塞 claim 流程，失败仅记录到 console）
+        const salesUserId = student.assigned_sales_id || student.created_by;
+        if (salesUserId) {
+          try {
+            const { data: profileData } = await supabase
+              .from("profiles")
+              .select("email, full_name")
+              .eq("id", salesUserId)
+              .single();
+            if (profileData?.email) {
+              const claimedDate = new Date().toISOString().split("T")[0];
+              const res = await fetch("/api/send-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  toEmail: profileData.email,
+                  salesName: profileData.full_name || "there",
+                  studentName: student.full_name,
+                  studentId: id,
+                  commissionYear: commission.year,
+                  amount: commission.amount,
+                  claimedDate,
+                }),
+              });
+              if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                console.error("[Claim] Email notification failed:", errData.error ?? res.statusText);
+              }
+            }
+          } catch (e) {
+            console.error("[Claim] Email notification error:", e);
+          }
+        }
       } else {
         setMessage({ type: "success", text: "✅ Commission claimed." });
       }
     }
     setIsClaiming(null);
+  };
+
+  const handleInvoiceSent = async () => {
+    setIsStudentAction("invoice");
+    setMessage(null);
+    const { error } = await supabase.from("students").update({ status: "pending" }).eq("id", id);
+    if (!error && student) {
+      setStudent({ ...student, status: "pending" });
+      setForm((prev) => ({ ...prev, status: "pending" }));
+      setMessage({ type: "success", text: "✅ Invoice sent. Student status updated to Pending." });
+    } else if (error) {
+      setMessage({ type: "error", text: "Failed to update status." });
+    }
+    setIsStudentAction(null);
+  };
+
+  const handleUndoToEnrolled = async () => {
+    setIsStudentAction("undo-enrolled");
+    setMessage(null);
+    const { error } = await supabase.from("students").update({ status: "enrolled" }).eq("id", id);
+    if (!error && student) {
+      setStudent({ ...student, status: "enrolled" });
+      setForm((prev) => ({ ...prev, status: "enrolled" }));
+      setMessage({ type: "success", text: "✅ Undone. Student status reverted to Enrolled." });
+    } else if (error) {
+      setMessage({ type: "error", text: "Failed to update status." });
+    }
+    setIsStudentAction(null);
   };
 
   // 仅 Admin 可以撤销 claim
@@ -591,6 +660,12 @@ export default function StudentDetailPage() {
           ? { ...c, status: "pending", claimed_at: null }
           : c
       ));
+      // Undo 后把学生 status 改回 pending（invoice 已发，只是撤回了 claim）
+      await supabase.from("students").update({ status: "pending" }).eq("id", id);
+      if (student) {
+        setStudent({ ...student, status: "pending" });
+        setForm((prev) => ({ ...prev, status: "pending" }));
+      }
       if (session && commission) {
         await logActivity(supabase, session.user.id, "unclaimed_commission", "commission", id, {
           commission_id: commissionId,
@@ -704,22 +779,43 @@ export default function StudentDetailPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {c.status === "claimed" ? (
+                        {((student?.status ?? form.status) === "active") ? (
                           <>
-                            <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm font-bold text-green-400">✅ Claimed</span>
-                            {isAdmin && (
-                              <button onClick={() => handleUnclaim(c.id)} disabled={isClaiming === c.id}
-                                className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold text-white/60 hover:bg-white/10 disabled:opacity-50">
-                                Undo
-                              </button>
+                            {canEditDeleteCommission && (
+                              <>
+                                <button onClick={() => startEditCommission(c)}
+                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                <button onClick={() => handleDeleteCommission(c.id)}
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                              </>
+                            )}
+                            {!canEditDeleteCommission && (
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
                             )}
                           </>
-                        ) : (
+                        ) : ((student?.status ?? form.status) === "cancelled") ? (
+                          <>
+                            {c.status === "claimed" && (
+                              <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm font-bold text-green-400">✅ Claimed</span>
+                            )}
+                            {c.status === "pending" && (
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                            )}
+                            {canEditDeleteCommission && (
+                              <>
+                                <button onClick={() => startEditCommission(c)}
+                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                <button onClick={() => handleDeleteCommission(c.id)}
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                              </>
+                            )}
+                          </>
+                        ) : ((student?.status ?? form.status) === "enrolled" && c.status === "pending") ? (
                           <>
                             {isAdmin && (
-                              <button onClick={() => handleClaim(c.id)} disabled={isClaiming === c.id}
+                              <button onClick={handleInvoiceSent} disabled={!!isStudentAction}
                                 className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
-                                {isClaiming === c.id ? "Claiming..." : "Claim"}
+                                {isStudentAction === "invoice" ? "..." : "Invoice Sent"}
                               </button>
                             )}
                             {canEditDeleteCommission && (
@@ -731,6 +827,64 @@ export default function StudentDetailPage() {
                               </>
                             )}
                             {!isAdmin && !canEditDeleteCommission && (
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                            )}
+                          </>
+                        ) : ((student?.status ?? form.status) === "pending" && c.status === "pending") ? (
+                          <>
+                            {isAdmin && (
+                              <>
+                                <button onClick={() => handleClaim(c.id)} disabled={isClaiming === c.id}
+                                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                                  {isClaiming === c.id ? "Claiming..." : "Claim"}
+                                </button>
+                                <button onClick={handleUndoToEnrolled} disabled={!!isStudentAction}
+                                  className="rounded-lg bg-green-600 px-3 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                                  {isStudentAction === "undo-enrolled" ? "..." : "Undo"}
+                                </button>
+                              </>
+                            )}
+                            {canEditDeleteCommission && (
+                              <>
+                                <button onClick={() => startEditCommission(c)}
+                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                <button onClick={() => handleDeleteCommission(c.id)}
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                              </>
+                            )}
+                            {!isAdmin && !canEditDeleteCommission && (
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                            )}
+                          </>
+                        ) : c.status === "claimed" ? (
+                          <>
+                            <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm font-bold text-green-400">✅ Claimed</span>
+                            {isAdmin && (
+                              <button onClick={() => handleUnclaim(c.id)} disabled={isClaiming === c.id}
+                                className="rounded-lg bg-green-600 px-3 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                                Undo
+                              </button>
+                            )}
+                            {canEditDeleteCommission && (
+                              <>
+                                <button onClick={() => startEditCommission(c)}
+                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                <button onClick={() => handleDeleteCommission(c.id)}
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {canEditDeleteCommission && (
+                              <>
+                                <button onClick={() => startEditCommission(c)}
+                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                <button onClick={() => handleDeleteCommission(c.id)}
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                              </>
+                            )}
+                            {!canEditDeleteCommission && (
                               <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
                             )}
                           </>
@@ -842,8 +996,8 @@ export default function StudentDetailPage() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-white/70">Department *</label>
-            <select name="department" value={form.department} onChange={handleChange} required
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full">
+            <select name="department" value={form.department} onChange={handleChange} required disabled={!isAdmin}
+              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full disabled:opacity-70 disabled:cursor-not-allowed">
               <option value="" className="bg-blue-900 text-white">Select a department...</option>
               <option value="china" className="bg-blue-900 text-white">China</option>
               <option value="thailand" className="bg-blue-900 text-white">Thailand</option>

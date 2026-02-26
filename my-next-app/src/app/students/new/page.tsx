@@ -156,47 +156,7 @@ export default function NewStudentPage() {
     });
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setExtractMessage(null);
-    setError(null);
-    try {
-      const data = await processFile(file);
-      setUploadedFile(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to read file.");
-    }
-    e.target.value = "";
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    setExtractMessage(null);
-    setError(null);
-    try {
-      const data = await processFile(file);
-      setUploadedFile(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to read file.");
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleExtract = async () => {
-    if (!uploadedFile) return;
+  const doExtract = async (fileData: { name: string; base64: string; fileType: "pdf" | "image"; mediaType: string }) => {
     setIsExtracting(true);
     setError(null);
     setExtractMessage(null);
@@ -206,9 +166,9 @@ export default function NewStudentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          base64Data: uploadedFile.base64,
-          fileType: uploadedFile.fileType,
-          mediaType: uploadedFile.mediaType,
+          base64Data: fileData.base64,
+          fileType: fileData.fileType,
+          mediaType: fileData.mediaType,
         }),
       });
 
@@ -250,6 +210,48 @@ export default function NewStudentPage() {
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setExtractMessage(null);
+    setError(null);
+    try {
+      const data = await processFile(file);
+      setUploadedFile(data);
+      await doExtract(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to read file.");
+    }
+    e.target.value = "";
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (isExtracting) return;
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setExtractMessage(null);
+    setError(null);
+    try {
+      const data = await processFile(file);
+      setUploadedFile(data);
+      await doExtract(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to read file.");
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -266,25 +268,28 @@ export default function NewStudentPage() {
     let status: "active" | "enrolled" = "active";
     if (enrollmentDate) {
       const ed = new Date(enrollmentDate);
-      const cutoff = new Date(ed);
-      cutoff.setDate(cutoff.getDate() + 14);
-      cutoff.setHours(0, 0, 0, 0);
+      ed.setHours(0, 0, 0, 0);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      if (cutoff <= today) status = "enrolled";
+      if (ed <= today) status = "enrolled";
+    }
+
+    const insertPayload: Record<string, unknown> = {
+      full_name: form.full_name,
+      student_number: form.student_number || null,
+      school_id: form.school_id || null,
+      department: form.department,
+      status,
+      notes: form.notes || null,
+      created_by: session.user.id,
+    };
+    if (profile?.role === "sales") {
+      insertPayload.assigned_sales_id = session.user.id;
     }
 
     const { data: newStudent, error: insertError } = await supabase
       .from("students")
-      .insert({
-        full_name: form.full_name,
-        student_number: form.student_number || null,
-        school_id: form.school_id || null,
-        department: form.department,
-        status,
-        notes: form.notes || null,
-        created_by: session.user.id,
-      })
+      .insert(insertPayload)
       .select("id")
       .single();
 
@@ -349,14 +354,16 @@ export default function NewStudentPage() {
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
             <h3 className="text-sm font-semibold text-white/70 mb-3">Upload Offer Letter (Optional)</h3>
             <div
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => !isExtracting && fileInputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
-              className={`cursor-pointer rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors ${
-                isDragging
-                  ? "border-blue-400 bg-blue-900/50"
-                  : "border-white/20 hover:border-white/40"
+              className={`rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors ${
+                isExtracting
+                  ? "cursor-wait border-amber-500/50 bg-amber-900/20"
+                  : isDragging
+                    ? "cursor-pointer border-blue-400 bg-blue-900/50"
+                    : "cursor-pointer border-white/20 hover:border-white/40"
               }`}
             >
               <input
@@ -371,18 +378,14 @@ export default function NewStudentPage() {
               </p>
               <p className="mt-1 text-xs text-white/50">PDF, JPG, PNG</p>
               {uploadedFile && (
-                <p className="mt-3 text-sm text-green-400">Selected: {uploadedFile.name}</p>
+                <p className="mt-3 text-sm">
+                  {isExtracting ? (
+                    <span className="text-amber-400">Extracting information...</span>
+                  ) : (
+                    <span className="text-green-400">Selected: {uploadedFile.name}</span>
+                  )}
+                </p>
               )}
-            </div>
-            <div className="mt-3 flex justify-end">
-              <button
-                type="button"
-                onClick={handleExtract}
-                disabled={!uploadedFile || isExtracting}
-                className="rounded-lg border border-white/20 px-4 py-2.5 text-sm font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isExtracting ? "Extracting..." : "Extract Information"}
-              </button>
             </div>
             {extractMessage && (
               <p className="mt-2 text-sm text-green-400">{extractMessage}</p>
