@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type"); // "schools" | "students"
+  const type = searchParams.get("type");
   const id = searchParams.get("id");
 
   if (!type || !id) {
@@ -23,9 +23,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (type !== "schools" && type !== "students") {
+  const ALLOWED_TYPES = ["schools", "students", "contacts", "companies", "agents", "deals"];
+  if (!ALLOWED_TYPES.includes(type)) {
     return NextResponse.json(
-      { error: "type must be 'schools' or 'students'" },
+      { error: `type must be one of: ${ALLOWED_TYPES.join(", ")}` },
       { status: 400 }
     );
   }

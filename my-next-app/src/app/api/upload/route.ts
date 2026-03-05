@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   }
 
   const file = formData.get("file") as File | null;
-  const type = formData.get("type") as string | null; // "schools" | "students"
+  const type = formData.get("type") as string | null;
   const id = formData.get("id") as string | null;
 
   if (!file || !type || !id) {
@@ -35,9 +35,10 @@ export async function POST(request: Request) {
     );
   }
 
-  if (type !== "schools" && type !== "students") {
+  const ALLOWED_TYPES = ["schools", "students", "contacts", "companies", "agents", "deals", "intake_forms"];
+  if (!ALLOWED_TYPES.includes(type)) {
     return NextResponse.json(
-      { error: "type must be 'schools' or 'students'" },
+      { error: `type must be one of: ${ALLOWED_TYPES.join(", ")}` },
       { status: 400 }
     );
   }

@@ -320,6 +320,12 @@ export default function DashboardPage() {
               </>
             )}
             <Link
+              href="/crm"
+              className="rounded-lg border border-white/20 bg-white/5 px-6 py-3 font-bold text-white/70 hover:bg-white/10"
+            >
+              ← CRM Dashboard
+            </Link>
+            <Link
               href="/students/new"
               className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
             >

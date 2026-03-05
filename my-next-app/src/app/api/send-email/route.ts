@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 <p><strong>Amount:</strong> $${amount ?? "0"} NZD<br>
 <strong>Claimed Date:</strong> ${claimedDate ?? new Date().toISOString().split("T")[0]}</p>
 
-<p>You can view the details in the PJ Commission Management System:<br>
+<p>You can view the details in the PJ Operation & Management System:<br>
 <a href="https://pjcommission.com/students/${studentId}">https://pjcommission.com/students/${studentId}</a></p>
 
 <p>Regards,<br>

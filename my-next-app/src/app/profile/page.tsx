@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -28,6 +28,20 @@ type CommissionRow = {
   amount: number;
 };
 
+type MyStaffCommission = {
+  id: string;
+  deal_id: string;
+  role_in_deal: string | null;
+  commission_rate: number;
+  base_amount: number;
+  commission_amount: number;
+  quarter: string | null;
+  status: string;
+  settled_date: string | null;
+  notes: string | null;
+  deals: { deal_number: string | null } | null;
+};
+
 const DEPT_LABELS: Record<string, string> = {
   china: "China",
   thailand: "Thailand",
@@ -39,6 +53,8 @@ const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
   accountant: "Accountant",
   sales: "Sales",
+  lia: "LIA",
+  copywriter: "Copywriter",
 };
 
 const inputClass =
@@ -50,6 +66,12 @@ function getYearRange() {
     from: `${y}-01-01`,
     to: `${y}-12-31`,
   };
+}
+
+function getCurrentQuarter(): string {
+  const d = new Date();
+  const q = Math.ceil((d.getMonth() + 1) / 3);
+  return `${d.getFullYear()}-Q${q}`;
 }
 
 export default function ProfilePage() {
@@ -78,6 +100,10 @@ export default function ProfilePage() {
   });
   const [commissionsByStudent, setCommissionsByStudent] = useState<Record<string, { pendingCount: number; claimedCount: number }>>({});
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+
+  const [myStaffCommissions, setMyStaffCommissions] = useState<MyStaffCommission[]>([]);
+  const [commissionQuarter, setCommissionQuarter] = useState(getCurrentQuarter());
+  const [isLoadingStaffCommissions, setIsLoadingStaffCommissions] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -192,6 +218,35 @@ export default function ProfilePage() {
 
     fetchMyStudents();
   }, [userId, profile?.role, dateFrom, dateTo]);
+
+  useEffect(() => {
+    async function fetchStaffCommissions() {
+      if (!userId) return;
+      setIsLoadingStaffCommissions(true);
+      let query = supabase
+        .from("deal_staff_commissions")
+        .select("id, deal_id, role_in_deal, commission_rate, base_amount, commission_amount, quarter, status, settled_date, notes, deals(deal_number)")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (commissionQuarter !== "all") query = query.eq("quarter", commissionQuarter);
+      const { data } = await query;
+      setMyStaffCommissions((data ?? []) as unknown as MyStaffCommission[]);
+      setIsLoadingStaffCommissions(false);
+    }
+    fetchStaffCommissions();
+  }, [userId, commissionQuarter]);
+
+  const quarterOptions = useMemo(() => {
+    const opts: string[] = [];
+    const d = new Date();
+    for (let i = 0; i < 8; i++) {
+      const q = Math.ceil((d.getMonth() + 1) / 3);
+      const label = `${d.getFullYear()}-Q${q}`;
+      if (!opts.includes(label)) opts.push(label);
+      d.setMonth(d.getMonth() - 3);
+    }
+    return opts;
+  }, []);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
@@ -394,6 +449,85 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+
+        {/* My Commission */}
+        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold">My Commission</h3>
+            <select
+              value={commissionQuarter}
+              onChange={e => setCommissionQuarter(e.target.value)}
+              className="rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+            >
+              <option value="all" className="bg-blue-900">All Quarters</option>
+              {quarterOptions.map(q => <option key={q} value={q} className="bg-blue-900">{q}</option>)}
+            </select>
+          </div>
+
+          {isLoadingStaffCommissions ? (
+            <p className="py-8 text-center text-white/60">Loading...</p>
+          ) : myStaffCommissions.length === 0 ? (
+            <p className="py-8 text-center text-white/60">No commission records for this period.</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Records</p>
+                  <p className="text-xl font-bold">{myStaffCommissions.length}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Total</p>
+                  <p className="text-xl font-bold">${myStaffCommissions.reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Pending</p>
+                  <p className="text-xl font-bold text-yellow-400">${myStaffCommissions.filter(c => c.status === "pending").reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Settled</p>
+                  <p className="text-xl font-bold text-green-400">${myStaffCommissions.filter(c => c.status === "settled").reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-white/10">
+                <table className="w-full min-w-[560px] text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/5">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Deal</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Quarter</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Role</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-white/60">Base</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-white/60">Rate</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-white/60">Commission</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myStaffCommissions.map(c => (
+                      <tr key={c.id} className="border-b border-white/10 hover:bg-white/5 last:border-0">
+                        <td className="px-4 py-3">
+                          <Link href={`/deals/${c.deal_id}`} className="text-blue-400 hover:underline">
+                            {c.deals?.deal_number ?? "—"}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-white/60">{c.quarter ?? "—"}</td>
+                        <td className="px-4 py-3 text-white/60 capitalize">{c.role_in_deal ?? "—"}</td>
+                        <td className="px-4 py-3 text-right text-white/80">${c.base_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3 text-right text-white/80">{c.commission_rate}%</td>
+                        <td className="px-4 py-3 text-right font-bold">${c.commission_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${c.status === "settled" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                            {c.status === "settled" ? "Settled" : "Pending"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* 修改密码表单 */}
         <form onSubmit={handleChangePassword} className="rounded-xl border border-white/10 bg-white/5 p-6">

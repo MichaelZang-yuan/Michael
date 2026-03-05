@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PJ Commission Management System",
+  title: "PJ Operation & Management System",
   icons: {
     icon: "/favicon.png",
   },

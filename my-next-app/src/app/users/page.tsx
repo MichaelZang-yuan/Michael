@@ -32,6 +32,9 @@ const DEPT_LABELS: Record<string, string> = {
 const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
   sales: "Sales",
+  lia: "LIA",
+  accountant: "Accountant",
+  copywriter: "Copywriter",
 };
 
 const inputClass =
@@ -157,7 +160,7 @@ export default function UsersPage() {
   };
 
   const canEditUser = (user: Profile) =>
-    user.role === "sales" && user.id !== currentUser?.id;
+    user.role !== "admin" && user.id !== currentUser?.id;
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,6 +294,9 @@ export default function UsersPage() {
                 <select name="role" value={form.role} onChange={handleChange} className={selectClass}>
                   <option value="admin" className="bg-blue-900 text-white">Admin</option>
                   <option value="sales" className="bg-blue-900 text-white">Sales</option>
+                  <option value="lia" className="bg-blue-900 text-white">LIA</option>
+                  <option value="accountant" className="bg-blue-900 text-white">Accountant</option>
+                  <option value="copywriter" className="bg-blue-900 text-white">Copywriter</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
@@ -359,6 +365,9 @@ export default function UsersPage() {
                           >
                             <option value="admin" className="bg-blue-900 text-white">Admin</option>
                             <option value="sales" className="bg-blue-900 text-white">Sales</option>
+                            <option value="lia" className="bg-blue-900 text-white">LIA</option>
+                            <option value="accountant" className="bg-blue-900 text-white">Accountant</option>
+                            <option value="copywriter" className="bg-blue-900 text-white">Copywriter</option>
                           </select>
                         </td>
                         <td className="px-6 py-4">

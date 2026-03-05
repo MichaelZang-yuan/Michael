@@ -15,7 +15,7 @@ export default function AdminPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        router.push("/dashboard");
+        router.push("/crm");
       }
     });
   }, [router]);
@@ -39,7 +39,7 @@ export default function AdminPage() {
         entity_type: "auth",
         details: { email: data.user.email },
       });
-      router.push("/dashboard");
+      router.push("/crm");
     }
 
     setIsLoggingIn(false);
