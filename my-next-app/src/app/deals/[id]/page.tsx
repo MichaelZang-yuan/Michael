@@ -62,6 +62,7 @@ type IntakeTemplate = {
   name: string;
   form_type: string | null;
   language: string | null;
+  category: string | null;
   is_active: boolean;
 };
 
@@ -72,9 +73,17 @@ type IntakeForm = {
   status: string;
   sent_date: string | null;
   completed_date: string | null;
+  submitted_at: string | null;
+  last_saved_at: string | null;
   form_data: Record<string, unknown>;
+  draft_data: Record<string, unknown> | null;
   contact_id: string | null;
   company_id: string | null;
+  template_id: string | null;
+  client_name: string | null;
+  client_email: string | null;
+  progress: number | null;
+  language: string | null;
 };
 
 type ChecklistItem = {
@@ -139,7 +148,15 @@ const CONTRACT_STATUS_LABELS: Record<string, string> = {
 };
 
 const INTAKE_STATUS_LABELS: Record<string, string> = {
-  draft: "Draft", sent: "Sent to Client", in_progress: "In Progress", completed: "Completed",
+  draft: "Draft", sent: "Sent to Client", in_progress: "In Progress", completed: "Completed", submitted: "Submitted",
+};
+
+const INTAKE_STATUS_COLORS: Record<string, string> = {
+  draft: "bg-gray-500/20 text-gray-400",
+  sent: "bg-blue-500/20 text-blue-400",
+  in_progress: "bg-yellow-500/20 text-yellow-400",
+  submitted: "bg-green-500/20 text-green-400",
+  completed: "bg-green-500/20 text-green-400",
 };
 
 const EMAIL_TYPE_LABELS: Record<string, string> = {
@@ -180,7 +197,7 @@ function computeWorkflowStep(dealStatus: string, contract: DealContract | null, 
   if (["approved", "declined", "completed", "cancelled"].includes(dealStatus)) return 7;
   if (dealStatus === "submitted") return 6;
   if (dealStatus === "in_progress") return 5;
-  if (intake && ["sent", "in_progress", "completed"].includes(intake.status)) return 4;
+  if (intake && ["sent", "in_progress", "completed", "submitted"].includes(intake.status)) return 4;
   if (contract && contract.status === "completed") return 3;
   if (contract && ["sent_to_lia", "lia_signed", "sent_to_client"].includes(contract.status)) return 2;
   if (dealStatus === "contracted") return 2;
@@ -230,6 +247,8 @@ export default function DealDetailPage() {
   const [payments, setPayments] = useState<DealPayment[]>([]);
   const [contract, setContract] = useState<DealContract | null>(null);
   const [intakeForm, setIntakeForm] = useState<IntakeForm | null>(null);
+  const [intakeForms, setIntakeForms] = useState<IntakeForm[]>([]);
+  const [viewingIntakeFormId, setViewingIntakeFormId] = useState<string | null>(null);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
 
@@ -317,8 +336,14 @@ export default function DealDetailPage() {
   }, [id]);
 
   const fetchIntakeForm = useCallback(async () => {
-    const { data } = await supabase.from("intake_forms").select("*").eq("deal_id", id).order("created_at").limit(1).maybeSingle();
-    setIntakeForm(data as IntakeForm | null);
+    const { data } = await supabase.from("intake_forms").select("*").eq("deal_id", id).order("created_at", { ascending: false });
+    if (data && data.length > 0) {
+      setIntakeForm(data[0] as IntakeForm);
+      setIntakeForms(data as IntakeForm[]);
+    } else {
+      setIntakeForm(null);
+      setIntakeForms([]);
+    }
   }, [id]);
 
   const fetchChecklist = useCallback(async () => {
@@ -379,7 +404,7 @@ export default function DealDetailPage() {
       const { data: ctData } = await supabase.from("contract_templates").select("id, name, language, target_type, content, is_active").eq("is_active", true).order("name");
       if (ctData) setContractTemplates(ctData as ContractTemplate[]);
 
-      const { data: itData } = await supabase.from("intake_form_templates").select("id, name, form_type, language, is_active").eq("is_active", true).order("name");
+      const { data: itData } = await supabase.from("intake_form_templates").select("id, name, form_type, language, category, is_active").eq("is_active", true).order("name");
       if (itData) setIntakeTemplates(itData as IntakeTemplate[]);
 
       // Try full query first (with extended contact fields for placeholder filling)
@@ -1466,7 +1491,7 @@ export default function DealDetailPage() {
                   <option value="" className="bg-blue-900">No template (blank form)</option>
                   {intakeTemplates.map(t => (
                     <option key={t.id} value={t.id} className="bg-blue-900">
-                      {t.name}{t.language ? ` (${t.language})` : ""}
+                      {t.name}{t.category ? ` [${t.category.replace(/_/g, " ")}]` : ""}
                     </option>
                   ))}
                 </select>
@@ -1482,52 +1507,149 @@ export default function DealDetailPage() {
           </div>
         )}
 
-        {/* ── Section: Intake Form ───────────────────────────────────────── */}
+        {/* ── Section: Intake Forms ──────────────────────────────────────── */}
         <div className={sectionClass}>
-          <h3 className="text-lg font-bold mb-4">Intake Form</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold">Intake Forms ({intakeForms.length})</h3>
+            <button onClick={handleCreateIntakeForm} className={btnSecondary}>+ Create</button>
+          </div>
 
-          {!intakeForm ? (
+          {intakeForms.length === 0 ? (
             <div className="flex flex-col items-start gap-3">
               <p className="text-white/50 text-sm">No intake form created yet.</p>
               <button onClick={handleCreateIntakeForm} className={btnPrimary}>Create Intake Form</button>
             </div>
           ) : (
-            <div>
-              <div className="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-3">
-                <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">Status</p>
-                  <p className={`font-medium text-sm ${intakeForm.status === "completed" ? "text-green-400" : "text-white"}`}>
-                    {INTAKE_STATUS_LABELS[intakeForm.status] ?? intakeForm.status}
-                  </p>
-                </div>
-                {intakeForm.sent_date && <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">Sent Date</p><p className="font-medium text-sm">{intakeForm.sent_date}</p></div>}
-                {intakeForm.completed_date && <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">Completed</p><p className="font-medium text-sm">{intakeForm.completed_date}</p></div>}
-              </div>
+            <div className="space-y-3">
+              {intakeForms.map(iForm => {
+                const isViewing = viewingIntakeFormId === iForm.id;
+                const formLink = iForm.unique_token
+                  ? `${typeof window !== "undefined" ? window.location.origin : "https://pjcommission.com"}/intake/${iForm.unique_token}`
+                  : null;
+                const isDone = iForm.status === "submitted" || iForm.status === "completed";
+                const formData = isDone ? (iForm.form_data ?? iForm.draft_data ?? {}) : null;
 
-              {intakeForm.unique_token && (
-                <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 mb-3">
-                  <p className="text-xs text-white/50 mb-1">Form Link (share with client)</p>
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs text-blue-300 truncate flex-1">{typeof window !== "undefined" ? window.location.origin : ""}/intake/{intakeForm.unique_token}</code>
-                    <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/intake/${intakeForm.unique_token}`); setMessage({ type: "success", text: "Link copied!" }); }}
-                      className="text-xs text-white/50 hover:text-white border border-white/20 rounded px-2 py-0.5 shrink-0">Copy</button>
+                return (
+                  <div key={iForm.id} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                    {/* Form header row */}
+                    <div className="px-4 py-3">
+                      <div className="flex flex-wrap items-start gap-2 mb-2">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${INTAKE_STATUS_COLORS[iForm.status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                          {INTAKE_STATUS_LABELS[iForm.status] ?? iForm.status}
+                        </span>
+                        {iForm.progress !== null && iForm.progress !== undefined && iForm.progress > 0 && !isDone && (
+                          <span className="text-xs text-white/40">{iForm.progress}% complete</span>
+                        )}
+                        {isDone && iForm.client_name && (
+                          <span className="text-xs text-green-400">by {iForm.client_name}</span>
+                        )}
+                      </div>
+
+                      {/* Dates row */}
+                      <div className="flex flex-wrap gap-3 text-xs text-white/40 mb-3">
+                        {iForm.sent_date && <span>Sent: {iForm.sent_date}</span>}
+                        {iForm.last_saved_at && !isDone && (
+                          <span>Last saved: {new Date(iForm.last_saved_at).toLocaleDateString()}</span>
+                        )}
+                        {(iForm.submitted_at ?? iForm.completed_date) && (
+                          <span>Submitted: {iForm.submitted_at
+                            ? new Date(iForm.submitted_at).toLocaleDateString()
+                            : iForm.completed_date}</span>
+                        )}
+                      </div>
+
+                      {/* Progress bar */}
+                      {!isDone && iForm.progress !== null && (iForm.progress ?? 0) > 0 && (
+                        <div className="h-1 bg-white/10 rounded-full overflow-hidden mb-3">
+                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${iForm.progress}%` }} />
+                        </div>
+                      )}
+
+                      {/* Link */}
+                      {formLink && (
+                        <div className="rounded-lg bg-black/20 px-3 py-2 mb-2">
+                          <p className="text-xs text-white/40 mb-1">Client link</p>
+                          <div className="flex items-center gap-2">
+                            <code className="text-xs text-blue-300 truncate flex-1">{formLink}</code>
+                            <button
+                              onClick={() => { navigator.clipboard.writeText(formLink); setMessage({ type: "success", text: "Link copied!" }); }}
+                              className="text-xs text-white/50 hover:text-white border border-white/20 rounded px-2 py-0.5 shrink-0"
+                            >Copy</button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {(iForm.status === "draft" || iForm.status === "sent") && clientEmail && (
+                          <button
+                            onClick={() => {
+                              if (!formLink) return;
+                              requestEmailConfirm({
+                                recipientName: clientName, recipientEmail: clientEmail,
+                                emailType: "intake_form_sent",
+                                extraData: { intake_link: formLink },
+                                onConfirm: async () => {
+                                  const today = new Date().toISOString().split("T")[0];
+                                  await supabase.from("intake_forms").update({ status: "sent", sent_date: today }).eq("id", iForm.id);
+                                  await sendNotification("intake_form_sent", clientEmail, clientName, { intake_link: formLink });
+                                  await logActivity(supabase, (await supabase.auth.getSession()).data.session!.user.id, "sent_intake_form", "deals", id, { intake_link: formLink });
+                                  await fetchIntakeForm();
+                                  await fetchLogs();
+                                  setMessage({ type: "success", text: "Intake form sent to client." });
+                                },
+                              });
+                            }}
+                            className={btnPrimary}
+                          >Send to Client</button>
+                        )}
+                        {isDone && (
+                          <button
+                            onClick={() => setViewingIntakeFormId(isViewing ? null : iForm.id)}
+                            className={btnSecondary}
+                          >{isViewing ? "Hide data ▴" : "View data ▾"}</button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Submitted data viewer */}
+                    {isViewing && isDone && formData && Object.keys(formData).length > 0 && (
+                      <div className="border-t border-white/10 px-4 py-3">
+                        <p className="text-xs text-white/50 mb-3 font-medium">Submitted Information</p>
+                        <div className="grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
+                          {Object.entries(formData).filter(([, v]) => v !== null && v !== undefined && v !== "").map(([k, v]) => {
+                            let displayVal = "";
+                            if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+                              displayVal = Object.values(v as Record<string, string>).filter(Boolean).join(" ");
+                            } else if (Array.isArray(v)) {
+                              displayVal = v.join(", ");
+                            } else if (typeof v === "string" && v.startsWith("data:image")) {
+                              displayVal = "[Signature]";
+                            } else {
+                              displayVal = String(v);
+                            }
+                            if (!displayVal) return null;
+                            return (
+                              <div key={k} className="rounded bg-white/5 px-2 py-1.5">
+                                <span className="text-white/40 block capitalize">{k.replace(/_/g, " ")}</span>
+                                <span className="text-white/80 break-words">{displayVal}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })}
+            </div>
+          )}
 
-              <div className="flex flex-wrap gap-2 mb-3">
-                {(intakeForm.status === "draft" || intakeForm.status === "sent") && (
-                  <button onClick={handleSendIntakeForm} className={btnPrimary}>Send to Client</button>
-                )}
-                {intakeForm.status === "completed" && (
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-green-500/10 border border-green-500/30 px-3 py-1.5 text-sm text-green-400 font-medium">
-                    ✓ Client completed the form
-                  </span>
-                )}
-              </div>
-
-              {/* In-progress status action — now allow "Start Processing" */}
-              {intakeForm.status === "completed" && currentStatus === "contracted" && (
-                <div className="mt-3">
+          {/* Workflow actions (based on primary intake form) */}
+          {intakeForm && (
+            <div className="mt-4 space-y-3">
+              {(intakeForm.status === "submitted" || intakeForm.status === "completed") && currentStatus === "contracted" && (
+                <div>
                   <button
                     onClick={() => {
                       if (pendingServiceFee) { setMessage({ type: "error", text: "Cannot start processing: service fee payment is still pending." }); return; }
@@ -1542,10 +1664,8 @@ export default function DealDetailPage() {
                   {pendingServiceFee && <p className="text-xs text-yellow-400 mt-1.5">Service fee payment must be marked as paid before starting.</p>}
                 </div>
               )}
-
-              {/* Mark as Submitted */}
               {currentStatus === "in_progress" && (
-                <div className="mt-3">
+                <div>
                   <button
                     onClick={() => {
                       if (pendingGovFee) { setMessage({ type: "error", text: "Cannot submit: government fee payment is still pending." }); return; }
@@ -1560,21 +1680,6 @@ export default function DealDetailPage() {
                   </button>
                   {pendingGovFee && <p className="text-xs text-orange-400 mt-1.5">Government fee payment must be marked as paid before submitting.</p>}
                 </div>
-              )}
-
-              {/* Completed form data summary */}
-              {intakeForm.status === "completed" && Object.keys(intakeForm.form_data).length > 0 && (
-                <details className="mt-3">
-                  <summary className="cursor-pointer text-sm text-white/60 hover:text-white">View submitted information ▾</summary>
-                  <div className="mt-2 rounded-lg bg-white/5 p-3 grid grid-cols-2 gap-2 text-xs">
-                    {Object.entries(intakeForm.form_data).filter(([, v]) => v).map(([k, v]) => (
-                      <div key={k}>
-                        <span className="text-white/50 capitalize">{k.replace(/_/g, " ")}:</span>{" "}
-                        <span className="text-white/80">{String(v)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </details>
               )}
             </div>
           )}
