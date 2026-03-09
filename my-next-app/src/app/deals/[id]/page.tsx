@@ -279,6 +279,11 @@ export default function DealDetailPage() {
   const [showMarkPaidModal, setShowMarkPaidModal] = useState<string | null>(null);
   const [markPaidForm, setMarkPaidForm] = useState({ paid_date: new Date().toISOString().split("T")[0], payment_method: "bank_transfer" });
 
+  // UI state — Edit Deal modal
+  const [showEditDealModal, setShowEditDealModal] = useState(false);
+  const [editDealForm, setEditDealForm] = useState({ deal_type: "", visa_type: "", description: "", department: "", assigned_sales_id: "", assigned_lia_id: "", preferred_language: "en", refund_percentage: "50", notes: "" });
+  const [isSavingEditDeal, setIsSavingEditDeal] = useState(false);
+
   // UI state — Contract
   const [isContractChanging, setIsContractChanging] = useState(false);
   const [showContractIntakePrompt, setShowContractIntakePrompt] = useState(false);
@@ -635,6 +640,49 @@ export default function DealDetailPage() {
       await fetchLogs();
     }
     setIsSaving(false);
+  };
+
+  const handleOpenEditDeal = () => {
+    setEditDealForm({
+      deal_type: form.deal_type,
+      visa_type: form.visa_type,
+      description: form.description,
+      department: form.department,
+      assigned_sales_id: form.assigned_sales_id,
+      assigned_lia_id: form.assigned_lia_id,
+      preferred_language: form.preferred_language,
+      refund_percentage: form.refund_percentage,
+      notes: form.notes,
+    });
+    setShowEditDealModal(true);
+  };
+
+  const handleSaveEditDeal = async () => {
+    setIsSavingEditDeal(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const clean = (v: string) => v.trim() || null;
+    const { error } = await supabase.from("deals").update({
+      deal_type: editDealForm.deal_type || null,
+      visa_type: editDealForm.deal_type === "individual_visa" ? (clean(editDealForm.visa_type)) : null,
+      description: clean(editDealForm.description),
+      department: editDealForm.department || null,
+      assigned_sales_id: editDealForm.assigned_sales_id || null,
+      assigned_lia_id: editDealForm.assigned_lia_id || null,
+      preferred_language: editDealForm.preferred_language || "en",
+      refund_percentage: editDealForm.refund_percentage ? parseInt(editDealForm.refund_percentage) : 50,
+      notes: clean(editDealForm.notes),
+    }).eq("id", id);
+    if (error) { setMessage({ type: "error", text: error.message }); }
+    else {
+      setForm(f => ({ ...f, ...editDealForm }));
+      setInitialForm(prev => JSON.stringify({ ...JSON.parse(prev), ...editDealForm }));
+      setShowEditDealModal(false);
+      setMessage({ type: "success", text: "Deal updated." });
+      await logActivity(supabase, session.user.id, "updated_deal", "deals", id, { deal_number: deal?.deal_number });
+      await fetchLogs();
+    }
+    setIsSavingEditDeal(false);
   };
 
   const handleStatusChange = async (newStatus: string) => {
@@ -1180,11 +1228,16 @@ export default function DealDetailPage() {
               {form.assigned_lia_id && <span>LIA: {salesUsers.find(s => s.id === form.assigned_lia_id)?.full_name ?? "—"}</span>}
             </div>
           </div>
-          {isAdmin && (
-            <button onClick={handleDelete} disabled={isDeleting} className={`${btnDanger} shrink-0`}>
-              {isDeleting ? "Deleting..." : "Delete Deal"}
-            </button>
-          )}
+          <div className="flex gap-2 shrink-0">
+            {(isAdmin || profile?.role === "accountant") && (
+              <button onClick={handleOpenEditDeal} className={btnSecondary}>Edit Deal</button>
+            )}
+            {isAdmin && (
+              <button onClick={handleDelete} disabled={isDeleting} className={btnDanger}>
+                {isDeleting ? "Deleting..." : "Delete Deal"}
+              </button>
+            )}
+          </div>
         </div>
 
         {message && (
@@ -1260,7 +1313,7 @@ export default function DealDetailPage() {
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Pricing & Payment Stages</h3>
-            {!editingStages && (
+            {!editingStages && (isAdmin || profile?.role === "accountant") && (
               <button onClick={handleOpenEditStages} className={btnSecondary}>Edit Stages</button>
             )}
           </div>
@@ -1329,7 +1382,9 @@ export default function DealDetailPage() {
           {!editingStages && payments.length === 0 && (
             <div className="text-center py-6 text-white/40 text-sm">
               No payment stages defined.
-              <button onClick={handleOpenEditStages} className="ml-2 text-blue-400 hover:text-blue-300 underline">Add stages</button>
+              {(isAdmin || profile?.role === "accountant") && (
+                <button onClick={handleOpenEditStages} className="ml-2 text-blue-400 hover:text-blue-300 underline">Add stages</button>
+              )}
             </div>
           )}
 
@@ -1452,6 +1507,88 @@ export default function DealDetailPage() {
               <div className="mt-4 flex gap-2">
                 <button onClick={handleMarkPaid} className={btnPrimary}>Confirm Paid</button>
                 <button onClick={() => setShowMarkPaidModal(null)} className={btnSecondary}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Edit Deal Modal ─────────────────────────────────────────────── */}
+        {showEditDealModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-2xl rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
+              <h4 className="text-lg font-bold mb-5">Edit Deal</h4>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Deal Type</label>
+                    <select value={editDealForm.deal_type} onChange={e => setEditDealForm(f => ({ ...f, deal_type: e.target.value }))} className={selectClass}>
+                      <option value="individual_visa" className="bg-blue-900">Individual Visa</option>
+                      <option value="accreditation" className="bg-blue-900">Accreditation</option>
+                      <option value="job_check" className="bg-blue-900">Job Check</option>
+                      <option value="school_application" className="bg-blue-900">School Application</option>
+                    </select>
+                  </div>
+                  {editDealForm.deal_type === "individual_visa" && (
+                    <div>
+                      <label className={labelClass}>Visa Type</label>
+                      <input value={editDealForm.visa_type} onChange={e => setEditDealForm(f => ({ ...f, visa_type: e.target.value }))} className={inputClass} placeholder="e.g. AEWV, Student, Partner..." />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className={labelClass}>Description</label>
+                  <input value={editDealForm.description} onChange={e => setEditDealForm(f => ({ ...f, description: e.target.value }))} className={inputClass} placeholder="Brief deal description" />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Department</label>
+                    <select value={editDealForm.department} onChange={e => setEditDealForm(f => ({ ...f, department: e.target.value }))} className={selectClass}>
+                      <option value="" className="bg-blue-900">— Select —</option>
+                      <option value="china" className="bg-blue-900">China</option>
+                      <option value="thailand" className="bg-blue-900">Thailand</option>
+                      <option value="myanmar" className="bg-blue-900">Myanmar</option>
+                      <option value="korea_japan" className="bg-blue-900">Korea / Japan</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Preferred Language</label>
+                    <select value={editDealForm.preferred_language} onChange={e => setEditDealForm(f => ({ ...f, preferred_language: e.target.value }))} className={selectClass}>
+                      <option value="en" className="bg-blue-900">English</option>
+                      <option value="zh" className="bg-blue-900">Chinese</option>
+                      <option value="th" className="bg-blue-900">Thai</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Assigned Sales</label>
+                    <select value={editDealForm.assigned_sales_id} onChange={e => setEditDealForm(f => ({ ...f, assigned_sales_id: e.target.value }))} className={selectClass}>
+                      <option value="" className="bg-blue-900">— None —</option>
+                      {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Assigned LIA</label>
+                    <select value={editDealForm.assigned_lia_id} onChange={e => setEditDealForm(f => ({ ...f, assigned_lia_id: e.target.value }))} className={selectClass}>
+                      <option value="" className="bg-blue-900">— None —</option>
+                      {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Refund Percentage (%)</label>
+                  <input value={editDealForm.refund_percentage} onChange={e => setEditDealForm(f => ({ ...f, refund_percentage: e.target.value }))} type="number" min="0" max="100" className={inputClass} placeholder="50" />
+                </div>
+                <div>
+                  <label className={labelClass}>Notes</label>
+                  <textarea value={editDealForm.notes} onChange={e => setEditDealForm(f => ({ ...f, notes: e.target.value }))} rows={3} className={inputClass} placeholder="Internal notes..." />
+                </div>
+              </div>
+              <div className="mt-5 flex gap-2">
+                <button onClick={handleSaveEditDeal} disabled={isSavingEditDeal} className={btnPrimary}>
+                  {isSavingEditDeal ? "Saving..." : "Save Changes"}
+                </button>
+                <button onClick={() => setShowEditDealModal(false)} className={btnSecondary}>Cancel</button>
               </div>
             </div>
           </div>

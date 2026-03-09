@@ -204,7 +204,7 @@ function NewDealPage() {
       const svc = parseFloat(stage.service_fee) || 0;
       const inz = parseFloat(stage.inz_fee) || 0;
       const other = parseFloat(stage.other_fee) || 0;
-      await supabase.from("deal_payments").insert({
+      const { error: stageErr } = await supabase.from("deal_payments").insert({
         deal_id: dealData.id,
         stage_name: stage.stage_name,
         stage_details: stage.stage_details.trim() || null,
@@ -215,8 +215,13 @@ function NewDealPage() {
         gst_type: stage.gst_type,
         status: "pending",
         is_paid: false,
-        created_by: userId,
+        created_by: session.user.id,
       });
+      if (stageErr) {
+        setMessage({ type: "error", text: `Failed to save payment stage "${stage.stage_name}": ${stageErr.message}. Ensure migration v7 has been run on Supabase.` });
+        setIsSaving(false);
+        return;
+      }
     }
 
     // Auto-add contact as main applicant for individual visa
