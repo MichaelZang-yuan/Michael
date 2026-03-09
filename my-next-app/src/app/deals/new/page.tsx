@@ -11,6 +11,11 @@ type ContactOption = { id: string; first_name: string; last_name: string; depart
 type CompanyOption = { id: string; company_name: string; department: string | null };
 type AgentOption = { id: string; agent_name: string };
 
+type StageRow = { tempId: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; };
+const STAGE_NAMES = ["Stage I", "Stage II", "Stage III", "Stage IV", "Stage V", "Stage VI"];
+const GST_TYPES = ["Exclusive", "Inclusive", "Zero Rated"];
+const newStageRow = (): StageRow => ({ tempId: Math.random().toString(36).slice(2), stage_name: "Stage I", stage_details: "", service_fee: "", inz_fee: "", other_fee: "", gst_type: "Exclusive" });
+
 const DEPT_LABELS: Record<string, string> = {
   china: "China", thailand: "Thailand", myanmar: "Myanmar", korea_japan: "Korea & Japan",
 };
@@ -70,19 +75,18 @@ function NewDealPage() {
     deal_type: "individual_visa",
     visa_type: "",
     description: "",
-    service_fee: "",
-    inz_application_fee: "",
-    other_fee: "",
     notes: "",
     department: "",
     preferred_language: "en",
     refund_percentage: "50",
   });
 
-  const totalAmount =
-    (parseFloat(form.service_fee) || 0) +
-    (parseFloat(form.inz_application_fee) || 0) +
-    (parseFloat(form.other_fee) || 0);
+  const [paymentStages, setPaymentStages] = useState<StageRow[]>([newStageRow()]);
+
+  const stageServiceTotal = paymentStages.reduce((s, r) => s + (parseFloat(r.service_fee) || 0), 0);
+  const stageInzTotal = paymentStages.reduce((s, r) => s + (parseFloat(r.inz_fee) || 0), 0);
+  const stageOtherTotal = paymentStages.reduce((s, r) => s + (parseFloat(r.other_fee) || 0), 0);
+  const stageTotalAmount = stageServiceTotal + stageInzTotal + stageOtherTotal;
 
   useEffect(() => {
     async function init() {
@@ -179,10 +183,10 @@ function NewDealPage() {
       visa_type: form.deal_type === "individual_visa" ? (form.visa_type || null) : null,
       description: form.description.trim() || null,
       status: "draft",
-      service_fee: form.service_fee ? parseFloat(form.service_fee) : null,
-      inz_application_fee: form.inz_application_fee ? parseFloat(form.inz_application_fee) : null,
-      other_fee: form.other_fee ? parseFloat(form.other_fee) : null,
-      total_amount: totalAmount > 0 ? totalAmount : null,
+      service_fee: stageServiceTotal > 0 ? stageServiceTotal : null,
+      inz_application_fee: stageInzTotal > 0 ? stageInzTotal : null,
+      other_fee: stageOtherTotal > 0 ? stageOtherTotal : null,
+      total_amount: stageTotalAmount > 0 ? stageTotalAmount : null,
       preferred_language: form.preferred_language || "en",
       refund_percentage: form.refund_percentage ? parseInt(form.refund_percentage) : 50,
       payment_status: "unpaid",
@@ -194,6 +198,26 @@ function NewDealPage() {
 
     const { data: dealData, error } = await supabase.from("deals").insert(payload).select().single();
     if (error) { setMessage({ type: "error", text: error.message }); setIsSaving(false); return; }
+
+    // Insert payment stages
+    for (const stage of paymentStages) {
+      const svc = parseFloat(stage.service_fee) || 0;
+      const inz = parseFloat(stage.inz_fee) || 0;
+      const other = parseFloat(stage.other_fee) || 0;
+      await supabase.from("deal_payments").insert({
+        deal_id: dealData.id,
+        stage_name: stage.stage_name,
+        stage_details: stage.stage_details.trim() || null,
+        service_fee_amount: svc,
+        inz_fee_amount: inz,
+        other_fee_amount: other,
+        amount: svc + inz + other,
+        gst_type: stage.gst_type,
+        status: "pending",
+        is_paid: false,
+        created_by: userId,
+      });
+    }
 
     // Auto-add contact as main applicant for individual visa
     if (clientType === "individual" && selectedContact && form.deal_type === "individual_visa") {
@@ -399,10 +423,10 @@ function NewDealPage() {
             </div>
           </div>
 
-          {/* Pricing */}
+          {/* Pricing & Payment Stages */}
           <div className={sectionClass}>
-            <h3 className="text-base font-bold mb-4">Pricing</h3>
-            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <h3 className="text-base font-bold mb-4">Pricing & Payment Stages</h3>
+            <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>Contract Language</label>
                 <select name="preferred_language" value={form.preferred_language} onChange={handleChange} className={selectClass}>
@@ -416,23 +440,74 @@ function NewDealPage() {
                 <input name="refund_percentage" value={form.refund_percentage} onChange={handleChange} type="number" min="0" max="100" placeholder="50" className={inputClass} />
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div>
-                <label className={labelClass}>Service Fee ($)</label>
-                <input name="service_fee" value={form.service_fee} onChange={handleChange} type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>INZ Application Fee ($)</label>
-                <input name="inz_application_fee" value={form.inz_application_fee} onChange={handleChange} type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>Other Fee ($)</label>
-                <input name="other_fee" value={form.other_fee} onChange={handleChange} type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
-              </div>
+
+            {/* Payment stages */}
+            <div className="space-y-3 mb-4">
+              {paymentStages.map((stage, idx) => (
+                <div key={stage.tempId} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Stage {idx + 1}</span>
+                    {paymentStages.length > 1 && (
+                      <button type="button" onClick={() => setPaymentStages(ps => ps.filter(s => s.tempId !== stage.tempId))}
+                        className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-3">
+                    <div>
+                      <label className={labelClass}>Stage Name</label>
+                      <select value={stage.stage_name} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, stage_name: e.target.value } : s))} className={selectClass}>
+                        {STAGE_NAMES.map(n => <option key={n} value={n} className="bg-blue-900">{n}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Stage Details</label>
+                      <input value={stage.stage_details} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, stage_details: e.target.value } : s))}
+                        placeholder="e.g. Signing agreement" className={inputClass} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div>
+                      <label className={labelClass}>Service Fee ($)</label>
+                      <input value={stage.service_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, service_fee: e.target.value } : s))}
+                        type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>INZ Fee ($)</label>
+                      <input value={stage.inz_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, inz_fee: e.target.value } : s))}
+                        type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Other Fee ($)</label>
+                      <input value={stage.other_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, other_fee: e.target.value } : s))}
+                        type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>GST</label>
+                      <select value={stage.gst_type} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, gst_type: e.target.value } : s))} className={selectClass}>
+                        {GST_TYPES.map(g => <option key={g} value={g} className="bg-blue-900">{g}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-sm text-white/60">Total Amount</p>
-              <p className="text-2xl font-bold">${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+
+            {paymentStages.length < 6 && (
+              <button type="button" onClick={() => setPaymentStages(ps => [...ps, newStageRow()])}
+                className="mb-4 text-sm text-blue-400 hover:text-blue-300 border border-blue-400/30 rounded-lg px-4 py-2 hover:bg-blue-400/10 transition-colors">
+                + Add Payment Stage
+              </button>
+            )}
+
+            {/* Totals summary */}
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Totals (auto-calculated)</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
+                <div><p className="text-white/50 text-xs">Service Fee</p><p className="font-bold">${stageServiceTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+                <div><p className="text-white/50 text-xs">INZ Fee</p><p className="font-bold">${stageInzTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+                <div><p className="text-white/50 text-xs">Other Fee</p><p className="font-bold">${stageOtherTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+                <div><p className="text-white/50 text-xs">Total</p><p className="text-xl font-bold">${stageTotalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+              </div>
             </div>
           </div>
 

@@ -18,16 +18,30 @@ type Agent = { id: string; agent_name: string };
 
 type DealPayment = {
   id: string;
-  payment_type: string | null;
-  description: string | null;
+  created_at: string;
+  stage_name: string | null;
+  stage_details: string | null;
+  service_fee_amount: number;
+  inz_fee_amount: number;
+  other_fee_amount: number;
+  gst_type: string | null;
   amount: number;
-  due_date: string | null;
+  is_paid: boolean;
+  paid_at: string | null;
+  paid_marked_by: string | null;
+  // backward compat fields
+  description: string | null;
+  payment_type: string | null;
   status: string;
   paid_date: string | null;
   payment_method: string | null;
   receipt_sent: boolean;
-  notes: string | null;
 };
+
+type EditStageRow = { id: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; is_paid: boolean; };
+const STAGE_NAMES_DETAIL = ["Stage I", "Stage II", "Stage III", "Stage IV", "Stage V", "Stage VI"];
+const GST_TYPES_DETAIL = ["Exclusive", "Inclusive", "Zero Rated"];
+const newEditRow = (): EditStageRow => ({ id: `new-${Math.random().toString(36).slice(2)}`, stage_name: "Stage I", stage_details: "", service_fee: "", inz_fee: "", other_fee: "", gst_type: "Exclusive", is_paid: false });
 
 type DealContract = {
   id: string;
@@ -113,13 +127,6 @@ type EmailLog = {
   status: string | null;
 };
 
-type PaymentForm = {
-  payment_type: string;
-  description: string;
-  amount: string;
-  due_date: string;
-  notes: string;
-};
 
 type EmailConfirm = {
   recipientName: string;
@@ -265,13 +272,12 @@ export default function DealDetailPage() {
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-  // UI state — Payment modal
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [editPayment, setEditPayment] = useState<DealPayment | null>(null);
-  const [paymentForm, setPaymentForm] = useState<PaymentForm>({ payment_type: "service_fee", description: "", amount: "", due_date: "", notes: "" });
+  // UI state — Payment stages edit
+  const [editingStages, setEditingStages] = useState(false);
+  const [editStageRows, setEditStageRows] = useState<EditStageRow[]>([]);
+  const [isSavingStages, setIsSavingStages] = useState(false);
   const [showMarkPaidModal, setShowMarkPaidModal] = useState<string | null>(null);
   const [markPaidForm, setMarkPaidForm] = useState({ paid_date: new Date().toISOString().split("T")[0], payment_method: "bank_transfer" });
-  const [isSavingPayment, setIsSavingPayment] = useState(false);
 
   // UI state — Contract
   const [isContractChanging, setIsContractChanging] = useState(false);
@@ -309,13 +315,12 @@ export default function DealDetailPage() {
 
   // ─── Computed values ─────────────────────────────────────────────────────────
 
-  const totalFees = (parseFloat(form.service_fee) || 0) + (parseFloat(form.inz_application_fee) || 0) + (parseFloat(form.other_fee) || 0);
-  const totalDuePayments = payments.reduce((s, p) => s + p.amount, 0);
-  const totalPaidPayments = payments.filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0);
-  const outstanding = totalDuePayments - totalPaidPayments;
-
-  const pendingServiceFee = payments.some(p => p.payment_type === "service_fee" && p.status === "pending");
-  const pendingGovFee = payments.some(p => p.payment_type === "inz_application_fee" && p.status === "pending");
+  const stageServiceTotal = payments.reduce((s, p) => s + (p.service_fee_amount || 0), 0);
+  const stageInzTotal = payments.reduce((s, p) => s + (p.inz_fee_amount || 0), 0);
+  const stageOtherTotal = payments.reduce((s, p) => s + (p.other_fee_amount || 0), 0);
+  const stageTotalAmount = stageServiceTotal + stageInzTotal + stageOtherTotal;
+  const totalPaidAmount = payments.filter(p => p.is_paid).reduce((s, p) => s + (p.service_fee_amount || 0) + (p.inz_fee_amount || 0) + (p.other_fee_amount || 0), 0);
+  const outstandingAmount = stageTotalAmount - totalPaidAmount;
 
   const currentStatus = deal?.status ?? "draft";
   const workflowStep = computeWorkflowStep(currentStatus, contract, intakeForm);
@@ -515,11 +520,42 @@ export default function DealDetailPage() {
     const company = deal?.companies;
     const salesPerson = salesUsers.find(s => s.id === form.assigned_sales_id);
     const liaPerson = salesUsers.find(s => s.id === form.assigned_lia_id);
-    const totalAmount = (parseFloat(form.service_fee) || 0) + (parseFloat(form.inz_application_fee) || 0) + (parseFloat(form.other_fee) || 0);
     const fmtAmt = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const paymentStagesHtml = payments.length > 0
-      ? `<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid #ccc;">Stage</th><th style="text-align:right;padding:4px 8px;border-bottom:1px solid #ccc;">Amount</th></tr></thead><tbody>${payments.map(p => `<tr><td style="padding:4px 8px;">${p.description ?? p.payment_type ?? "Payment"}</td><td style="text-align:right;padding:4px 8px;">${fmtAmt(p.amount)}</td></tr>`).join("")}</tbody></table>`
-      : "";
+      ? `<table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;">
+          <thead><tr>
+            <th style="text-align:left;padding:4px 8px;border-bottom:2px solid #ccc;">Stage</th>
+            <th style="text-align:left;padding:4px 8px;border-bottom:2px solid #ccc;">Details</th>
+            <th style="text-align:right;padding:4px 8px;border-bottom:2px solid #ccc;">Service Fee</th>
+            <th style="text-align:right;padding:4px 8px;border-bottom:2px solid #ccc;">INZ Fee</th>
+            <th style="text-align:right;padding:4px 8px;border-bottom:2px solid #ccc;">Other Fee</th>
+            <th style="text-align:left;padding:4px 8px;border-bottom:2px solid #ccc;">GST</th>
+            <th style="text-align:right;padding:4px 8px;border-bottom:2px solid #ccc;">Total</th>
+          </tr></thead>
+          <tbody>
+            ${payments.map(p => {
+              const t = (p.service_fee_amount || 0) + (p.inz_fee_amount || 0) + (p.other_fee_amount || 0);
+              return `<tr>
+                <td style="padding:4px 8px;border-bottom:1px solid #eee;">${p.stage_name ?? ""}</td>
+                <td style="padding:4px 8px;border-bottom:1px solid #eee;">${p.stage_details ?? p.description ?? ""}</td>
+                <td style="text-align:right;padding:4px 8px;border-bottom:1px solid #eee;">${p.service_fee_amount ? fmtAmt(p.service_fee_amount) : "-"}</td>
+                <td style="text-align:right;padding:4px 8px;border-bottom:1px solid #eee;">${p.inz_fee_amount ? fmtAmt(p.inz_fee_amount) : "-"}</td>
+                <td style="text-align:right;padding:4px 8px;border-bottom:1px solid #eee;">${p.other_fee_amount ? fmtAmt(p.other_fee_amount) : "-"}</td>
+                <td style="padding:4px 8px;border-bottom:1px solid #eee;">${p.gst_type ?? ""}</td>
+                <td style="text-align:right;padding:4px 8px;border-bottom:1px solid #eee;font-weight:600;">${fmtAmt(t)}</td>
+              </tr>`;
+            }).join("")}
+            <tr style="font-weight:bold;border-top:2px solid #ccc;">
+              <td style="padding:4px 8px;" colspan="2">Total</td>
+              <td style="text-align:right;padding:4px 8px;">${fmtAmt(stageServiceTotal)}</td>
+              <td style="text-align:right;padding:4px 8px;">${fmtAmt(stageInzTotal)}</td>
+              <td style="text-align:right;padding:4px 8px;">${fmtAmt(stageOtherTotal)}</td>
+              <td style="padding:4px 8px;"></td>
+              <td style="text-align:right;padding:4px 8px;">${fmtAmt(stageTotalAmount)}</td>
+            </tr>
+          </tbody>
+        </table>`
+      : "(No payment stages defined)";
     return {
       date: today,
       client_name: contact ? `${contact.first_name} ${contact.last_name}` : (company?.company_name ?? ""),
@@ -539,11 +575,11 @@ export default function DealDetailPage() {
       deal_type: form.deal_type?.replace(/_/g, " ") ?? "",
       service_type: form.visa_type ? `${form.visa_type} Visa` : (form.deal_type?.replace(/_/g, " ") ?? ""),
       visa_type: form.visa_type ?? "",
-      service_fee: form.service_fee ? fmtAmt(parseFloat(form.service_fee)) : "",
-      total_service_fee: form.service_fee ? fmtAmt(parseFloat(form.service_fee)) : "",
-      inz_application_fee: form.inz_application_fee ? fmtAmt(parseFloat(form.inz_application_fee)) : "TBA",
-      government_fee: form.inz_application_fee ? fmtAmt(parseFloat(form.inz_application_fee)) : "TBA",
-      total_amount: totalAmount > 0 ? fmtAmt(totalAmount) : "",
+      service_fee: stageServiceTotal > 0 ? fmtAmt(stageServiceTotal) : "",
+      total_service_fee: stageServiceTotal > 0 ? fmtAmt(stageServiceTotal) : "",
+      inz_application_fee: stageInzTotal > 0 ? fmtAmt(stageInzTotal) : "TBA",
+      government_fee: stageInzTotal > 0 ? fmtAmt(stageInzTotal) : "TBA",
+      total_amount: stageTotalAmount > 0 ? fmtAmt(stageTotalAmount) : "",
       currency: "NZ",
       refund_percentage: form.refund_percentage || "50",
       payment_stages_table: paymentStagesHtml,
@@ -579,7 +615,7 @@ export default function DealDetailPage() {
       other_fee: form.other_fee ? parseFloat(form.other_fee) : null,
       preferred_language: form.preferred_language || "en",
       refund_percentage: form.refund_percentage ? parseInt(form.refund_percentage) : 50,
-      total_amount: totalFees > 0 ? totalFees : null,
+      total_amount: stageTotalAmount > 0 ? stageTotalAmount : null,
       payment_status: form.payment_status,
       assigned_sales_id: form.assigned_sales_id || null,
       assigned_lia_id: form.assigned_lia_id || null,
@@ -636,51 +672,70 @@ export default function DealDetailPage() {
     router.push("/deals");
   };
 
-  // ─── Payment handlers ─────────────────────────────────────────────────────
+  // ─── Payment stage handlers ────────────────────────────────────────────────
 
-  const openAddPayment = () => {
-    setEditPayment(null);
-    setPaymentForm({ payment_type: "service_fee", description: "", amount: "", due_date: "", notes: "" });
-    setShowPaymentModal(true);
+  const handleOpenEditStages = () => {
+    setEditStageRows(payments.map(p => ({
+      id: p.id,
+      stage_name: p.stage_name ?? "Stage I",
+      stage_details: p.stage_details ?? p.description ?? "",
+      service_fee: String(p.service_fee_amount || 0),
+      inz_fee: String(p.inz_fee_amount || 0),
+      other_fee: String(p.other_fee_amount || 0),
+      gst_type: p.gst_type ?? "Exclusive",
+      is_paid: p.is_paid,
+    })));
+    setEditingStages(true);
   };
 
-  const openEditPayment = (p: DealPayment) => {
-    setEditPayment(p);
-    setPaymentForm({ payment_type: p.payment_type ?? "other", description: p.description ?? "", amount: String(p.amount), due_date: p.due_date ?? "", notes: p.notes ?? "" });
-    setShowPaymentModal(true);
-  };
-
-  const handleSavePayment = async () => {
-    if (!paymentForm.amount) return;
-    setIsSavingPayment(true);
+  const handleSaveStages = async () => {
+    setIsSavingStages(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    const payload = {
-      payment_type: paymentForm.payment_type || null,
-      description: paymentForm.description.trim() || null,
-      amount: parseFloat(paymentForm.amount),
-      due_date: paymentForm.due_date || null,
-      notes: paymentForm.notes.trim() || null,
-    };
-    if (editPayment) {
-      await supabase.from("deal_payments").update(payload).eq("id", editPayment.id);
-      await logActivity(supabase, session.user.id, "updated_payment", "deals", id, { payment_type: payload.payment_type, amount: payload.amount });
-    } else {
-      await supabase.from("deal_payments").insert({ ...payload, deal_id: id, status: "pending", created_by: session.user.id });
-      await logActivity(supabase, session.user.id, "added_payment", "deals", id, { payment_type: payload.payment_type, amount: payload.amount });
+
+    // Delete removed stages (only unpaid ones can be deleted; paid ones are locked in UI)
+    const existingIds = payments.map(p => p.id);
+    const keptIds = editStageRows.filter(r => !r.id.startsWith("new-")).map(r => r.id);
+    const deletedIds = existingIds.filter(id => !keptIds.includes(id));
+    if (deletedIds.length) {
+      await supabase.from("deal_payments").delete().in("id", deletedIds);
     }
-    setShowPaymentModal(false);
-    setIsSavingPayment(false);
-    await fetchPayments();
-    await fetchLogs();
-  };
 
-  const handleDeletePayment = async (pid: string) => {
-    if (!window.confirm("Delete this payment?")) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    await supabase.from("deal_payments").delete().eq("id", pid);
-    await logActivity(supabase, session.user.id, "deleted_payment", "deals", id, {});
+    // Update existing / insert new
+    for (const row of editStageRows) {
+      const svc = parseFloat(row.service_fee) || 0;
+      const inz = parseFloat(row.inz_fee) || 0;
+      const other = parseFloat(row.other_fee) || 0;
+      const vals = {
+        stage_name: row.stage_name,
+        stage_details: row.stage_details.trim() || null,
+        service_fee_amount: svc,
+        inz_fee_amount: inz,
+        other_fee_amount: other,
+        amount: svc + inz + other,
+        gst_type: row.gst_type,
+      };
+      if (row.id.startsWith("new-")) {
+        await supabase.from("deal_payments").insert({ ...vals, deal_id: id, is_paid: false, status: "pending", created_by: session.user.id });
+      } else {
+        await supabase.from("deal_payments").update(vals).eq("id", row.id);
+      }
+    }
+
+    // Sync deals table totals
+    const newSvcTotal = editStageRows.reduce((s, r) => s + (parseFloat(r.service_fee) || 0), 0);
+    const newInzTotal = editStageRows.reduce((s, r) => s + (parseFloat(r.inz_fee) || 0), 0);
+    const newOtherTotal = editStageRows.reduce((s, r) => s + (parseFloat(r.other_fee) || 0), 0);
+    await supabase.from("deals").update({
+      service_fee: newSvcTotal || null,
+      inz_application_fee: newInzTotal || null,
+      other_fee: newOtherTotal || null,
+      total_amount: (newSvcTotal + newInzTotal + newOtherTotal) || null,
+    }).eq("id", id);
+
+    await logActivity(supabase, session.user.id, "updated_payment_stages", "deals", id, { stage_count: editStageRows.length });
+    setEditingStages(false);
+    setIsSavingStages(false);
     await fetchPayments();
     await fetchLogs();
   };
@@ -689,42 +744,35 @@ export default function DealDetailPage() {
     if (!showMarkPaidModal) return;
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    await supabase.from("deal_payments").update({ status: "paid", paid_date: markPaidForm.paid_date, payment_method: markPaidForm.payment_method }).eq("id", showMarkPaidModal);
+    const p = payments.find(p => p.id === showMarkPaidModal);
+    await supabase.from("deal_payments").update({
+      is_paid: true,
+      paid_at: new Date().toISOString(),
+      paid_marked_by: session.user.id,
+      status: "paid",
+      paid_date: markPaidForm.paid_date,
+      payment_method: markPaidForm.payment_method,
+    }).eq("id", showMarkPaidModal);
     await logActivity(supabase, session.user.id, "marked_payment_paid", "deals", id, { paid_date: markPaidForm.paid_date });
     setShowMarkPaidModal(null);
     await fetchPayments();
     await fetchLogs();
 
     // Offer to send receipt email
-    const p = payments.find(p => p.id === showMarkPaidModal);
     if (p && clientEmail) {
+      const stageTotal = (p.service_fee_amount || 0) + (p.inz_fee_amount || 0) + (p.other_fee_amount || 0);
       requestEmailConfirm({
         recipientName: clientName, recipientEmail: clientEmail,
         emailType: "payment_received",
-        extraData: { amount: p.amount, description: p.description ?? "", paid_date: markPaidForm.paid_date },
+        extraData: { amount: stageTotal, description: p.stage_details ?? p.stage_name ?? "", paid_date: markPaidForm.paid_date },
         onConfirm: async () => {
-          await sendNotification("payment_received", clientEmail, clientName, { amount: p.amount, description: p.description ?? "", paid_date: markPaidForm.paid_date });
+          await sendNotification("payment_received", clientEmail, clientName, { amount: stageTotal, description: p.stage_details ?? p.stage_name ?? "", paid_date: markPaidForm.paid_date });
           await supabase.from("deal_payments").update({ receipt_sent: true }).eq("id", p.id);
           await fetchPayments();
           setMessage({ type: "success", text: "Receipt sent." });
         },
       });
     }
-  };
-
-  const handleSendReceipt = (p: DealPayment) => {
-    if (!clientEmail) { setMessage({ type: "error", text: "No client email on file." }); return; }
-    requestEmailConfirm({
-      recipientName: clientName, recipientEmail: clientEmail,
-      emailType: "payment_received",
-      extraData: { amount: p.amount, description: p.description ?? "", paid_date: p.paid_date ?? "" },
-      onConfirm: async () => {
-        await sendNotification("payment_received", clientEmail, clientName, { amount: p.amount, description: p.description ?? "", paid_date: p.paid_date ?? "" });
-        await supabase.from("deal_payments").update({ receipt_sent: true }).eq("id", p.id);
-        await fetchPayments();
-        setMessage({ type: "success", text: "Receipt sent." });
-      },
-    });
   };
 
   // ─── Contract handlers ────────────────────────────────────────────────────
@@ -1210,119 +1258,180 @@ export default function DealDetailPage() {
 
         {/* ── Section: Pricing & Payments ────────────────────────────────── */}
         <div className={sectionClass}>
-          <h3 className="text-lg font-bold mb-4">Pricing & Payments</h3>
-
-          {/* Fee inputs */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4">
-            <div><label className={labelClass}>Service Fee ($)</label><input name="service_fee" value={form.service_fee} onChange={handleChange} type="number" step="0.01" min="0" className={inputClass} /></div>
-            <div><label className={labelClass}>INZ Application Fee ($)</label><input name="inz_application_fee" value={form.inz_application_fee} onChange={handleChange} type="number" step="0.01" min="0" className={inputClass} /></div>
-            <div><label className={labelClass}>Other Fee ($)</label><input name="other_fee" value={form.other_fee} onChange={handleChange} type="number" step="0.01" min="0" className={inputClass} /></div>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 mb-4">
-            <span className="text-sm text-white/60">Total (Quoted)</span>
-            <span className="text-xl font-bold">${fmt(totalFees)}</span>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold">Pricing & Payment Stages</h3>
+            {!editingStages && (
+              <button onClick={handleOpenEditStages} className={btnSecondary}>Edit Stages</button>
+            )}
           </div>
 
-          {/* Payment gating warnings */}
-          {pendingServiceFee && (
-            <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 mb-3 text-sm text-yellow-300">
-              ⚠ Service fee payment pending — Cannot start processing
-            </div>
-          )}
-          {pendingGovFee && (
-            <div className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 mb-3 text-sm text-orange-300">
-              ⚠ INZ application fee payment pending — Cannot submit application
-            </div>
-          )}
+          {/* Totals summary */}
+          <div className="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-4">
+            <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Service Fee</p><p className="font-bold">${fmt(stageServiceTotal)}</p></div>
+            <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">INZ Fee</p><p className="font-bold">${fmt(stageInzTotal)}</p></div>
+            <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Other Fee</p><p className="font-bold">${fmt(stageOtherTotal)}</p></div>
+            <div className="rounded-lg bg-blue-600/20 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Total</p><p className="font-bold text-blue-300">${fmt(stageTotalAmount)}</p></div>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="rounded-lg bg-white/5 px-3 py-2 text-center"><p className="text-xs text-white/50 mb-0.5">Total Due</p><p className="font-semibold text-sm">${fmt(stageTotalAmount)}</p></div>
+            <div className="rounded-lg bg-green-500/10 px-3 py-2 text-center"><p className="text-xs text-white/50 mb-0.5">Paid</p><p className="font-semibold text-sm text-green-400">${fmt(totalPaidAmount)}</p></div>
+            <div className="rounded-lg bg-white/5 px-3 py-2 text-center"><p className="text-xs text-white/50 mb-0.5">Outstanding</p><p className={`font-semibold text-sm ${outstandingAmount > 0 ? "text-yellow-400" : "text-green-400"}`}>${fmt(outstandingAmount)}</p></div>
+          </div>
 
-          {/* Payment schedule */}
-          {payments.length > 0 && (
-            <>
-              <div className="grid grid-cols-3 gap-3 mb-3">
-                <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Total Due</p><p className="font-bold">${fmt(totalDuePayments)}</p></div>
-                <div className="rounded-lg bg-green-500/10 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Total Paid</p><p className="font-bold text-green-400">${fmt(totalPaidPayments)}</p></div>
-                <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Outstanding</p><p className={`font-bold ${outstanding > 0 ? "text-yellow-400" : "text-green-400"}`}>${fmt(outstanding)}</p></div>
-              </div>
-              <div className="overflow-x-auto mb-3">
-                <table className="w-full text-sm">
-                  <thead><tr className="border-b border-white/10">
-                    <th className="text-left py-2 text-white/50 font-medium">Description</th>
-                    <th className="text-left py-2 text-white/50 font-medium">Type</th>
-                    <th className="text-right py-2 text-white/50 font-medium">Amount</th>
-                    <th className="text-left py-2 text-white/50 font-medium">Due</th>
-                    <th className="text-left py-2 text-white/50 font-medium">Status</th>
-                    <th className="text-left py-2 text-white/50 font-medium">Paid</th>
-                    <th className="py-2"></th>
-                  </tr></thead>
-                  <tbody>
-                    {payments.map(p => (
-                      <tr key={p.id} className="border-b border-white/5">
-                        <td className="py-2 pr-2 text-white/80">{p.description ?? "—"}</td>
-                        <td className="py-2 pr-2 text-white/60 text-xs capitalize">{p.payment_type?.replace(/_/g, " ") ?? "—"}</td>
-                        <td className="py-2 pr-2 text-right font-medium">${fmt(p.amount)}</td>
-                        <td className="py-2 pr-2 text-white/60 text-xs">{p.due_date ?? "—"}</td>
-                        <td className="py-2 pr-2">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${p.status === "paid" ? "bg-green-500/20 text-green-400" : p.status === "overdue" ? "bg-red-500/20 text-red-400" : "bg-yellow-500/20 text-yellow-400"}`}>
-                            {p.status}
-                          </span>
+          {/* View mode: stages table */}
+          {!editingStages && payments.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-white/10">
+                  <th className="text-left py-2 px-2 text-white/50 font-medium">Stage</th>
+                  <th className="text-left py-2 px-2 text-white/50 font-medium">Details</th>
+                  <th className="text-right py-2 px-2 text-white/50 font-medium">Svc Fee</th>
+                  <th className="text-right py-2 px-2 text-white/50 font-medium">INZ Fee</th>
+                  <th className="text-right py-2 px-2 text-white/50 font-medium">Other</th>
+                  <th className="text-left py-2 px-2 text-white/50 font-medium">GST</th>
+                  <th className="text-right py-2 px-2 text-white/50 font-medium">Total</th>
+                  <th className="text-left py-2 px-2 text-white/50 font-medium">Status</th>
+                  {(isAdmin || profile?.role === "accountant") && <th className="py-2 px-2"></th>}
+                </tr></thead>
+                <tbody>
+                  {payments.map(p => {
+                    const stageTotal = (p.service_fee_amount || 0) + (p.inz_fee_amount || 0) + (p.other_fee_amount || 0);
+                    return (
+                      <tr key={p.id} className={`border-b border-white/5 ${p.is_paid ? "opacity-60" : ""}`}>
+                        <td className="py-2 px-2 font-medium text-white/80">{p.stage_name ?? "—"}</td>
+                        <td className="py-2 px-2 text-white/60 text-xs">{p.stage_details ?? p.description ?? "—"}</td>
+                        <td className="py-2 px-2 text-right text-white/80">{p.service_fee_amount ? `$${fmt(p.service_fee_amount)}` : "-"}</td>
+                        <td className="py-2 px-2 text-right text-white/80">{p.inz_fee_amount ? `$${fmt(p.inz_fee_amount)}` : "-"}</td>
+                        <td className="py-2 px-2 text-right text-white/80">{p.other_fee_amount ? `$${fmt(p.other_fee_amount)}` : "-"}</td>
+                        <td className="py-2 px-2 text-white/60 text-xs">{p.gst_type ?? "—"}</td>
+                        <td className="py-2 px-2 text-right font-semibold">${fmt(stageTotal)}</td>
+                        <td className="py-2 px-2">
+                          {p.is_paid
+                            ? <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400">Paid</span>
+                            : <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-yellow-500/20 text-yellow-400">Unpaid</span>
+                          }
                         </td>
-                        <td className="py-2 pr-2 text-white/60 text-xs">{p.paid_date ?? "—"}</td>
-                        <td className="py-2">
-                          <div className="flex items-center gap-1 justify-end">
-                            {p.status === "pending" && (
+                        {(isAdmin || profile?.role === "accountant") && (
+                          <td className="py-2 px-2">
+                            {!p.is_paid && (
                               <button onClick={() => { setShowMarkPaidModal(p.id); setMarkPaidForm({ paid_date: new Date().toISOString().split("T")[0], payment_method: "bank_transfer" }); }}
                                 className="text-xs text-green-400 hover:text-green-300 whitespace-nowrap">Mark Paid</button>
                             )}
-                            {p.status === "paid" && (
-                              <button onClick={() => handleSendReceipt(p)} className={`text-xs ${p.receipt_sent ? "text-white/30" : "text-blue-400 hover:text-blue-300"} whitespace-nowrap`}>
-                                {p.receipt_sent ? "Receipt ✓" : "Send Receipt"}
-                              </button>
-                            )}
-                            <button onClick={() => openEditPayment(p)} className="text-xs text-white/40 hover:text-white">Edit</button>
-                            <button onClick={() => handleDeletePayment(p.id)} className="text-xs text-red-400 hover:text-red-300">✕</button>
-                          </div>
-                        </td>
+                          </td>
+                        )}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!editingStages && payments.length === 0 && (
+            <div className="text-center py-6 text-white/40 text-sm">
+              No payment stages defined.
+              <button onClick={handleOpenEditStages} className="ml-2 text-blue-400 hover:text-blue-300 underline">Add stages</button>
+            </div>
           )}
 
-          <div className="flex flex-wrap gap-2">
-            <button onClick={openAddPayment} className={btnSecondary}>+ Add Payment</button>
-            <button onClick={handleSave} disabled={isSaving || !hasUnsavedChanges} className={`${btnPrimary} ml-auto`}>
-              {isSaving ? "Saving..." : "Save Fees"}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Payment Modal ───────────────────────────────────────────────── */}
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
-              <h4 className="text-lg font-bold mb-4">{editPayment ? "Edit Payment" : "Add Payment"}</h4>
-              <div className="space-y-3">
-                <div><label className={labelClass}>Type</label>
-                  <select value={paymentForm.payment_type} onChange={e => setPaymentForm(f => ({ ...f, payment_type: e.target.value }))} className={selectClass}>
-                    <option value="service_fee" className="bg-blue-900">Service Fee</option>
-                    <option value="inz_application_fee" className="bg-blue-900">INZ Application Fee</option>
-                    <option value="other" className="bg-blue-900">Other</option>
-                  </select>
-                </div>
-                <div><label className={labelClass}>Description</label><input value={paymentForm.description} onChange={e => setPaymentForm(f => ({ ...f, description: e.target.value }))} className={inputClass} placeholder="e.g. Initial service fee deposit" /></div>
-                <div><label className={labelClass}>Amount ($) <span className="text-red-400">*</span></label><input value={paymentForm.amount} onChange={e => setPaymentForm(f => ({ ...f, amount: e.target.value }))} type="number" step="0.01" min="0" className={inputClass} /></div>
-                <div><label className={labelClass}>Due Date</label><input value={paymentForm.due_date} onChange={e => setPaymentForm(f => ({ ...f, due_date: e.target.value }))} type="date" className={inputClass} /></div>
-                <div><label className={labelClass}>Notes</label><input value={paymentForm.notes} onChange={e => setPaymentForm(f => ({ ...f, notes: e.target.value }))} className={inputClass} /></div>
+          {/* Edit mode: inline stage editor */}
+          {editingStages && (
+            <div className="mt-2">
+              <div className="space-y-3 mb-4">
+                {editStageRows.map((row, idx) => (
+                  <div key={row.id} className={`rounded-lg border p-4 ${row.is_paid ? "border-green-500/30 bg-green-500/5 opacity-70" : "border-white/10 bg-white/5"}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Stage {idx + 1}</span>
+                        {row.is_paid && <span className="text-xs text-green-400 bg-green-500/20 rounded-full px-2 py-0.5">Paid — locked</span>}
+                      </div>
+                      {!row.is_paid && editStageRows.length > 1 && (
+                        <button type="button" onClick={() => setEditStageRows(rs => rs.filter(r => r.id !== row.id))}
+                          className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-3">
+                      <div>
+                        <label className={labelClass}>Stage Name</label>
+                        {row.is_paid
+                          ? <p className="text-sm text-white/70 px-1">{row.stage_name}</p>
+                          : <select value={row.stage_name} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, stage_name: e.target.value } : r))} className={selectClass}>
+                              {STAGE_NAMES_DETAIL.map(n => <option key={n} value={n} className="bg-blue-900">{n}</option>)}
+                            </select>
+                        }
+                      </div>
+                      <div>
+                        <label className={labelClass}>Stage Details</label>
+                        {row.is_paid
+                          ? <p className="text-sm text-white/70 px-1">{row.stage_details || "—"}</p>
+                          : <input value={row.stage_details} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, stage_details: e.target.value } : r))}
+                              placeholder="e.g. Signing agreement" className={inputClass} />
+                        }
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <div>
+                        <label className={labelClass}>Service Fee ($)</label>
+                        {row.is_paid
+                          ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(row.service_fee) || 0)}</p>
+                          : <input value={row.service_fee} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, service_fee: e.target.value } : r))}
+                              type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
+                        }
+                      </div>
+                      <div>
+                        <label className={labelClass}>INZ Fee ($)</label>
+                        {row.is_paid
+                          ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(row.inz_fee) || 0)}</p>
+                          : <input value={row.inz_fee} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, inz_fee: e.target.value } : r))}
+                              type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
+                        }
+                      </div>
+                      <div>
+                        <label className={labelClass}>Other Fee ($)</label>
+                        {row.is_paid
+                          ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(row.other_fee) || 0)}</p>
+                          : <input value={row.other_fee} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, other_fee: e.target.value } : r))}
+                              type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
+                        }
+                      </div>
+                      <div>
+                        <label className={labelClass}>GST</label>
+                        {row.is_paid
+                          ? <p className="text-sm text-white/70 px-1">{row.gst_type}</p>
+                          : <select value={row.gst_type} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, gst_type: e.target.value } : r))} className={selectClass}>
+                              {GST_TYPES_DETAIL.map(g => <option key={g} value={g} className="bg-blue-900">{g}</option>)}
+                            </select>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="mt-4 flex gap-2">
-                <button onClick={handleSavePayment} disabled={isSavingPayment || !paymentForm.amount} className={btnPrimary}>{isSavingPayment ? "Saving..." : "Save"}</button>
-                <button onClick={() => setShowPaymentModal(false)} className={btnSecondary}>Cancel</button>
+              {editStageRows.length < 6 && (
+                <button type="button" onClick={() => setEditStageRows(rs => [...rs, newEditRow()])}
+                  className="mb-4 text-sm text-blue-400 hover:text-blue-300 border border-blue-400/30 rounded-lg px-4 py-2 hover:bg-blue-400/10 transition-colors">
+                  + Add Payment Stage
+                </button>
+              )}
+
+              {/* Edit mode totals preview */}
+              <div className="rounded-lg border border-white/10 bg-white/5 p-3 mb-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
+                  <div><p className="text-white/50 text-xs">Service Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.service_fee) || 0), 0))}</p></div>
+                  <div><p className="text-white/50 text-xs">INZ Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.inz_fee) || 0), 0))}</p></div>
+                  <div><p className="text-white/50 text-xs">Other Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.other_fee) || 0), 0))}</p></div>
+                  <div><p className="text-white/50 text-xs">Total</p><p className="font-bold text-blue-300">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.service_fee) || 0) + (parseFloat(r.inz_fee) || 0) + (parseFloat(r.other_fee) || 0), 0))}</p></div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button onClick={handleSaveStages} disabled={isSavingStages} className={btnPrimary}>
+                  {isSavingStages ? "Saving..." : "Save Payment Stages"}
+                </button>
+                <button onClick={() => setEditingStages(false)} className={btnSecondary}>Cancel</button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* ── Mark Paid Modal ─────────────────────────────────────────────── */}
         {showMarkPaidModal && (
@@ -1762,37 +1871,25 @@ export default function DealDetailPage() {
           {intakeForm && (
             <div className="mt-4 space-y-3">
               {(intakeForm.status === "submitted" || intakeForm.status === "completed") && currentStatus === "contracted" && (
-                <div>
-                  <button
-                    onClick={() => {
-                      if (pendingServiceFee) { setMessage({ type: "error", text: "Cannot start processing: service fee payment is still pending." }); return; }
-                      handleStatusChange("in_progress");
-                    }}
-                    disabled={pendingServiceFee || isStatusChanging}
-                    title={pendingServiceFee ? "Service fee payment must be paid first" : ""}
-                    className={`rounded-lg px-5 py-2.5 font-bold text-sm text-white disabled:opacity-50 ${pendingServiceFee ? "bg-gray-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
-                  >
-                    {pendingServiceFee ? "⚠ Start Processing (blocked)" : "Start Processing"}
-                  </button>
-                  {pendingServiceFee && <p className="text-xs text-yellow-400 mt-1.5">Service fee payment must be marked as paid before starting.</p>}
-                </div>
+                <button
+                  onClick={() => handleStatusChange("in_progress")}
+                  disabled={isStatusChanging}
+                  className="rounded-lg px-5 py-2.5 font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                >
+                  Start Processing
+                </button>
               )}
               {currentStatus === "in_progress" && (
-                <div>
-                  <button
-                    onClick={() => {
-                      if (pendingGovFee) { setMessage({ type: "error", text: "Cannot submit: government fee payment is still pending." }); return; }
-                      if (clientEmail) { requestEmailConfirm({ recipientName: clientName, recipientEmail: clientEmail, emailType: "application_submitted", extraData: { submitted_date: new Date().toISOString().split("T")[0] }, onConfirm: () => sendNotification("application_submitted", clientEmail, clientName, { submitted_date: new Date().toISOString().split("T")[0] }) }); }
-                      handleStatusChange("submitted");
-                    }}
-                    disabled={pendingGovFee || isStatusChanging}
-                    title={pendingGovFee ? "INZ application fee must be paid first" : ""}
-                    className={`rounded-lg px-5 py-2.5 font-bold text-sm text-white disabled:opacity-50 ${pendingGovFee ? "bg-gray-600 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700"}`}
-                  >
-                    {pendingGovFee ? "⚠ Mark as Submitted (blocked)" : "Mark as Submitted"}
-                  </button>
-                  {pendingGovFee && <p className="text-xs text-orange-400 mt-1.5">INZ application fee payment must be marked as paid before submitting.</p>}
-                </div>
+                <button
+                  onClick={() => {
+                    if (clientEmail) { requestEmailConfirm({ recipientName: clientName, recipientEmail: clientEmail, emailType: "application_submitted", extraData: { submitted_date: new Date().toISOString().split("T")[0] }, onConfirm: () => sendNotification("application_submitted", clientEmail, clientName, { submitted_date: new Date().toISOString().split("T")[0] }) }); }
+                    handleStatusChange("submitted");
+                  }}
+                  disabled={isStatusChanging}
+                  className="rounded-lg px-5 py-2.5 font-bold text-sm text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                >
+                  Mark as Submitted
+                </button>
               )}
             </div>
           )}
