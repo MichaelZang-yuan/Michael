@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { generateAndUploadContractPdf } from "@/lib/contractPdf";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     if (contract.status === "completed") return NextResponse.json({ error: "Already signed" }, { status: 400 });
     if (contract.status !== "sent_to_client") return NextResponse.json({ error: "Contract is not ready for client signature" }, { status: 400 });
 
-    // Embed client signature into contract_html
+    // Embed client signature and date into contract_html
     const now = new Date();
     const signDate = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
     const currentHtml = contract.contract_html ?? contract.content ?? "";
@@ -70,10 +71,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       .from("deal_contracts")
       .update({
         client_signature: signature,
-        client_signed_at: new Date().toISOString(),
-        client_signed_date: new Date().toISOString().split("T")[0],
+        client_signed_at: now.toISOString(),
+        client_signed_date: now.toISOString().split("T")[0],
         status: "completed",
-        completed_date: new Date().toISOString().split("T")[0],
+        completed_date: now.toISOString().split("T")[0],
         contract_html: updatedHtml,
       })
       .eq("id", contract.id);
@@ -81,10 +82,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     // Auto-advance deal status to contracted if still in draft/quoted
-    const { data: deal } = await supabase.from("deals").select("status").eq("id", contract.deal_id).single();
+    const { data: deal } = await supabase
+      .from("deals")
+      .select("status, deal_number")
+      .eq("id", contract.deal_id)
+      .single();
     if (deal && ["draft", "quoted"].includes(deal.status)) {
       await supabase.from("deals").update({ status: "contracted" }).eq("id", contract.deal_id);
     }
+
+    // Generate fully-signed PDF in background (non-blocking)
+    const dealNumber = deal?.deal_number ?? "Contract";
+    generateAndUploadContractPdf(
+      updatedHtml,
+      contract.deal_id,
+      `${dealNumber}-Contract-Fully-Signed.pdf`
+    ).catch(e => console.error("[contractPdf] client-sign background:", e));
 
     return NextResponse.json({ ok: true });
   } catch (e) {

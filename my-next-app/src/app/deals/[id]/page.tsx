@@ -762,14 +762,24 @@ export default function DealDetailPage() {
     const num = String((count ?? 0) + 1).padStart(3, "0");
     const contractNumber = `CON-${year}-${num}`;
     const contractType = deal?.contact_id ? "individual" : "company";
-    const { error } = await supabase.from("deal_contracts").insert({
+    const { data: contractData, error } = await supabase.from("deal_contracts").insert({
       deal_id: id, contract_number: contractNumber, contract_type: contractType,
       status: "draft", created_by: session.user.id,
       template_id: selectedContractTemplateId || null,
       content: contractContent || null,
       contract_html: contractContent || null,
-    });
+    }).select().single();
     if (error) { setMessage({ type: "error", text: error.message }); setIsContractCreating(false); return; }
+
+    // Generate draft PDF in background (non-blocking)
+    if (contractData?.id && contractContent) {
+      fetch(`/api/contracts/${contractData.id}/generate-pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "draft" }),
+      }).catch(e => console.error("[contractPdf] draft:", e));
+    }
+
     await logActivity(supabase, session.user.id, "created_contract", "deals", id, { contract_number: contractNumber });
     await fetchContract();
     await fetchLogs();
