@@ -46,6 +46,14 @@ type DealContract = {
   rejected_reason: string | null;
   rejected_at: string | null;
   rejected_by: string | null;
+  adviser_signature: string | null;
+  adviser_signed_at: string | null;
+  adviser_signed_by: string | null;
+  client_signature: string | null;
+  client_signed_at: string | null;
+  client_sign_token: string | null;
+  language: string | null;
+  contract_html: string | null;
 };
 
 type ContractTemplate = {
@@ -176,7 +184,7 @@ const CHECKLIST_PRESETS: Record<string, string[]> = {
 };
 
 const STATUS_PREV: Record<string, string> = {
-  quoted: "draft", contracted: "quoted", in_progress: "contracted",
+  quoted: "draft", contracted: "draft", in_progress: "contracted",
   submitted: "in_progress", approved: "submitted", declined: "submitted",
 };
 
@@ -184,7 +192,6 @@ const STATUS_PREV: Record<string, string> = {
 
 const WORKFLOW_STEPS = [
   { key: "draft", label: "Draft" },
-  { key: "quoted", label: "Quoted" },
   { key: "contract_sent", label: "Contract Sent" },
   { key: "contract_signed", label: "Contract Signed" },
   { key: "intake_sent", label: "Intake Sent" },
@@ -194,14 +201,13 @@ const WORKFLOW_STEPS = [
 ];
 
 function computeWorkflowStep(dealStatus: string, contract: DealContract | null, intake: IntakeForm | null): number {
-  if (["approved", "declined", "completed", "cancelled"].includes(dealStatus)) return 7;
-  if (dealStatus === "submitted") return 6;
-  if (dealStatus === "in_progress") return 5;
-  if (intake && ["sent", "in_progress", "completed", "submitted"].includes(intake.status)) return 4;
-  if (contract && contract.status === "completed") return 3;
-  if (contract && ["sent_to_lia", "lia_signed", "sent_to_client"].includes(contract.status)) return 2;
-  if (dealStatus === "contracted") return 2;
-  if (dealStatus === "quoted") return 1;
+  if (["approved", "declined", "completed", "cancelled"].includes(dealStatus)) return 6;
+  if (dealStatus === "submitted") return 5;
+  if (dealStatus === "in_progress") return 4;
+  if (intake && ["sent", "in_progress", "completed", "submitted"].includes(intake.status)) return 3;
+  if (contract && contract.status === "completed") return 2;
+  if (contract && ["sent_to_lia", "lia_signed", "sent_to_client"].includes(contract.status)) return 1;
+  if (dealStatus === "contracted") return 1;
   return 0;
 }
 
@@ -237,9 +243,10 @@ export default function DealDetailPage() {
 
   const [form, setForm] = useState({
     deal_type: "individual_visa", visa_type: "", description: "", service_fee: "",
-    government_fee: "", other_fee: "", payment_status: "unpaid",
+    inz_application_fee: "", other_fee: "", payment_status: "unpaid",
     assigned_sales_id: "", assigned_lia_id: "", agent_id: "", department: "",
     submitted_date: "", approved_date: "", declined_date: "", notes: "",
+    preferred_language: "en", refund_percentage: "50",
   });
   const [initialForm, setInitialForm] = useState("");
 
@@ -302,13 +309,13 @@ export default function DealDetailPage() {
 
   // ─── Computed values ─────────────────────────────────────────────────────────
 
-  const totalFees = (parseFloat(form.service_fee) || 0) + (parseFloat(form.government_fee) || 0) + (parseFloat(form.other_fee) || 0);
+  const totalFees = (parseFloat(form.service_fee) || 0) + (parseFloat(form.inz_application_fee) || 0) + (parseFloat(form.other_fee) || 0);
   const totalDuePayments = payments.reduce((s, p) => s + p.amount, 0);
   const totalPaidPayments = payments.filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0);
   const outstanding = totalDuePayments - totalPaidPayments;
 
   const pendingServiceFee = payments.some(p => p.payment_type === "service_fee" && p.status === "pending");
-  const pendingGovFee = payments.some(p => p.payment_type === "government_fee" && p.status === "pending");
+  const pendingGovFee = payments.some(p => p.payment_type === "inz_application_fee" && p.status === "pending");
 
   const currentStatus = deal?.status ?? "draft";
   const workflowStep = computeWorkflowStep(currentStatus, contract, intakeForm);
@@ -450,7 +457,7 @@ export default function DealDetailPage() {
         visa_type: dealData.visa_type ?? "",
         description: dealData.description ?? "",
         service_fee: dealData.service_fee != null ? String(dealData.service_fee) : "",
-        government_fee: dealData.government_fee != null ? String(dealData.government_fee) : "",
+        inz_application_fee: dealData.inz_application_fee != null ? String(dealData.inz_application_fee) : "",
         other_fee: dealData.other_fee != null ? String(dealData.other_fee) : "",
         payment_status: dealData.payment_status ?? "unpaid",
         assigned_sales_id: dealData.assigned_sales_id ?? "",
@@ -461,6 +468,8 @@ export default function DealDetailPage() {
         approved_date: dealData.approved_date ?? "",
         declined_date: dealData.declined_date ?? "",
         notes: dealData.notes ?? "",
+        preferred_language: dealData.preferred_language ?? "en",
+        refund_percentage: dealData.refund_percentage != null ? String(dealData.refund_percentage) : "50",
       };
       setForm(lf);
       setInitialForm(JSON.stringify(lf));
@@ -506,13 +515,21 @@ export default function DealDetailPage() {
     const company = deal?.companies;
     const salesPerson = salesUsers.find(s => s.id === form.assigned_sales_id);
     const liaPerson = salesUsers.find(s => s.id === form.assigned_lia_id);
-    const totalAmount = (parseFloat(form.service_fee) || 0) + (parseFloat(form.government_fee) || 0) + (parseFloat(form.other_fee) || 0);
+    const totalAmount = (parseFloat(form.service_fee) || 0) + (parseFloat(form.inz_application_fee) || 0) + (parseFloat(form.other_fee) || 0);
     const fmtAmt = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const paymentStagesHtml = payments.length > 0
+      ? `<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid #ccc;">Stage</th><th style="text-align:right;padding:4px 8px;border-bottom:1px solid #ccc;">Amount</th></tr></thead><tbody>${payments.map(p => `<tr><td style="padding:4px 8px;">${p.description ?? p.payment_type ?? "Payment"}</td><td style="text-align:right;padding:4px 8px;">${fmtAmt(p.amount)}</td></tr>`).join("")}</tbody></table>`
+      : "";
     return {
+      date: today,
       client_name: contact ? `${contact.first_name} ${contact.last_name}` : (company?.company_name ?? ""),
       client_email: contact?.email ?? company?.email ?? "",
+      client_mobile: contact?.phone ?? "",
       client_phone: contact?.phone ?? "",
       client_address: contact?.address ?? company?.address ?? "",
+      client_family_name: contact?.last_name ?? "",
+      client_first_name: contact?.first_name ?? "",
+      client_family_members: "",
       client_passport: contact?.passport_number ?? "",
       client_nationality: contact?.nationality ?? "",
       client_dob: contact?.date_of_birth ?? "",
@@ -520,15 +537,23 @@ export default function DealDetailPage() {
       company_address: company?.address ?? "",
       deal_number: deal?.deal_number ?? "",
       deal_type: form.deal_type?.replace(/_/g, " ") ?? "",
+      service_type: form.visa_type ? `${form.visa_type} Visa` : (form.deal_type?.replace(/_/g, " ") ?? ""),
       visa_type: form.visa_type ?? "",
       service_fee: form.service_fee ? fmtAmt(parseFloat(form.service_fee)) : "",
-      government_fee: form.government_fee ? fmtAmt(parseFloat(form.government_fee)) : "",
+      total_service_fee: form.service_fee ? fmtAmt(parseFloat(form.service_fee)) : "",
+      inz_application_fee: form.inz_application_fee ? fmtAmt(parseFloat(form.inz_application_fee)) : "TBA",
+      government_fee: form.inz_application_fee ? fmtAmt(parseFloat(form.inz_application_fee)) : "TBA",
       total_amount: totalAmount > 0 ? fmtAmt(totalAmount) : "",
+      currency: "NZ",
+      refund_percentage: form.refund_percentage || "50",
+      payment_stages_table: paymentStagesHtml,
       lia_name: liaPerson?.full_name ?? "",
       sales_name: salesPerson?.full_name ?? "",
       date_today: today,
       signature_client: "________________________",
       signature_lia: "________________________",
+      adviser_sign_date: "___________________",
+      client_sign_date: "___________________",
     };
   };
 
@@ -548,8 +573,10 @@ export default function DealDetailPage() {
       visa_type: form.deal_type === "individual_visa" ? (clean(form.visa_type)) : null,
       description: clean(form.description),
       service_fee: form.service_fee ? parseFloat(form.service_fee) : null,
-      government_fee: form.government_fee ? parseFloat(form.government_fee) : null,
+      inz_application_fee: form.inz_application_fee ? parseFloat(form.inz_application_fee) : null,
       other_fee: form.other_fee ? parseFloat(form.other_fee) : null,
+      preferred_language: form.preferred_language || "en",
+      refund_percentage: form.refund_percentage ? parseInt(form.refund_percentage) : 50,
       total_amount: totalFees > 0 ? totalFees : null,
       payment_status: form.payment_status,
       assigned_sales_id: form.assigned_sales_id || null,
@@ -701,9 +728,20 @@ export default function DealDetailPage() {
   // ─── Contract handlers ────────────────────────────────────────────────────
 
   const handleCreateContract = () => {
-    setSelectedContractTemplateId("");
-    setContractContent("");
-    setContractPreviewMode(false);
+    // Auto-select template matching deal's preferred_language (Issue 1)
+    const lang = form.preferred_language || "en";
+    const targetType = deal?.contact_id ? "individual" : "company";
+    const matchingTemplate = contractTemplates.find(
+      t => t.language === lang && (!t.target_type || t.target_type === targetType)
+    );
+    if (matchingTemplate) {
+      setSelectedContractTemplateId(matchingTemplate.id);
+      setContractContent(fillPlaceholders(matchingTemplate.content ?? "", buildPlaceholderData()));
+    } else {
+      setSelectedContractTemplateId("");
+      setContractContent("");
+    }
+    setContractPreviewMode(true); // Default to preview mode (Issue 4)
     setShowContractCreateModal(true);
   };
 
@@ -729,6 +767,7 @@ export default function DealDetailPage() {
       status: "draft", created_by: session.user.id,
       template_id: selectedContractTemplateId || null,
       content: contractContent || null,
+      contract_html: contractContent || null,
     });
     if (error) { setMessage({ type: "error", text: error.message }); setIsContractCreating(false); return; }
     await logActivity(supabase, session.user.id, "created_contract", "deals", id, { contract_number: contractNumber });
@@ -804,6 +843,51 @@ export default function DealDetailPage() {
     setShowRejectModal(false);
     setRejectReason("");
     setIsContractChanging(false);
+  };
+
+  const handleContractSendToClient = async () => {
+    if (!contract) return;
+    setIsContractChanging(true);
+    try {
+      const res = await fetch(`/api/contracts/${contract.id}/send`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) { setMessage({ type: "error", text: json.error ?? "Failed to send contract." }); return; }
+      await fetchContract();
+      await fetchLogs();
+      if (clientEmail) {
+        const signLink = `${window.location.origin}/contract/sign/${json.token}`;
+        requestEmailConfirm({
+          recipientName: clientName, recipientEmail: clientEmail,
+          emailType: "contract_sent",
+          extraData: { contract_link: signLink },
+          onConfirm: () => sendNotification("contract_sent", clientEmail, clientName, { contract_link: signLink }),
+        });
+      }
+      if (!["contracted", "in_progress", "submitted", "approved", "declined"].includes(currentStatus)) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.from("deals").update({ status: "contracted" }).eq("id", id);
+          setDeal(d => d ? { ...d, status: "contracted" } : d);
+        }
+      }
+      setMessage({ type: "success", text: "Contract sent to client." });
+    } finally {
+      setIsContractChanging(false);
+    }
+  };
+
+  const handleResendContractEmail = () => {
+    if (!contract?.client_sign_token || !clientEmail) {
+      setMessage({ type: "error", text: "No client email or sign token available." });
+      return;
+    }
+    const signLink = `${window.location.origin}/contract/sign/${contract.client_sign_token}`;
+    requestEmailConfirm({
+      recipientName: clientName, recipientEmail: clientEmail,
+      emailType: "contract_sent",
+      extraData: { contract_link: signLink },
+      onConfirm: () => sendNotification("contract_sent", clientEmail, clientName, { contract_link: signLink }),
+    });
   };
 
   const handleContractFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "contract_file_url" | "signed_file_url") => {
@@ -1119,7 +1203,7 @@ export default function DealDetailPage() {
           {/* Fee inputs */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4">
             <div><label className={labelClass}>Service Fee ($)</label><input name="service_fee" value={form.service_fee} onChange={handleChange} type="number" step="0.01" min="0" className={inputClass} /></div>
-            <div><label className={labelClass}>Government Fee ($)</label><input name="government_fee" value={form.government_fee} onChange={handleChange} type="number" step="0.01" min="0" className={inputClass} /></div>
+            <div><label className={labelClass}>INZ Application Fee ($)</label><input name="inz_application_fee" value={form.inz_application_fee} onChange={handleChange} type="number" step="0.01" min="0" className={inputClass} /></div>
             <div><label className={labelClass}>Other Fee ($)</label><input name="other_fee" value={form.other_fee} onChange={handleChange} type="number" step="0.01" min="0" className={inputClass} /></div>
           </div>
           <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 mb-4">
@@ -1135,7 +1219,7 @@ export default function DealDetailPage() {
           )}
           {pendingGovFee && (
             <div className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 mb-3 text-sm text-orange-300">
-              ⚠ Government fee payment pending — Cannot submit application
+              ⚠ INZ application fee payment pending — Cannot submit application
             </div>
           )}
 
@@ -1196,11 +1280,6 @@ export default function DealDetailPage() {
 
           <div className="flex flex-wrap gap-2">
             <button onClick={openAddPayment} className={btnSecondary}>+ Add Payment</button>
-            {currentStatus === "draft" && (
-              <button onClick={() => handleStatusChange("quoted")} disabled={isStatusChanging} className={btnPrimary}>
-                Mark as Quoted
-              </button>
-            )}
             <button onClick={handleSave} disabled={isSaving || !hasUnsavedChanges} className={`${btnPrimary} ml-auto`}>
               {isSaving ? "Saving..." : "Save Fees"}
             </button>
@@ -1216,7 +1295,7 @@ export default function DealDetailPage() {
                 <div><label className={labelClass}>Type</label>
                   <select value={paymentForm.payment_type} onChange={e => setPaymentForm(f => ({ ...f, payment_type: e.target.value }))} className={selectClass}>
                     <option value="service_fee" className="bg-blue-900">Service Fee</option>
-                    <option value="government_fee" className="bg-blue-900">Government Fee</option>
+                    <option value="inz_application_fee" className="bg-blue-900">INZ Application Fee</option>
                     <option value="other" className="bg-blue-900">Other</option>
                   </select>
                 </div>
@@ -1282,7 +1361,7 @@ export default function DealDetailPage() {
               </div>
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1">
-                  <label className={labelClass}>Contract Content (HTML)</label>
+                  <label className={labelClass}>Contract Content</label>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setContractPreviewMode(false)} className={`text-xs px-3 py-1 rounded ${!contractPreviewMode ? "bg-blue-600 text-white" : "border border-white/20 text-white/60 hover:text-white"}`}>Edit</button>
                     <button type="button" onClick={() => setContractPreviewMode(true)} className={`text-xs px-3 py-1 rounded ${contractPreviewMode ? "bg-blue-600 text-white" : "border border-white/20 text-white/60 hover:text-white"}`}>Preview</button>
@@ -1375,32 +1454,59 @@ export default function DealDetailPage() {
                 </div>
               )}
 
-              {/* Contract view/share link */}
-              <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 mb-4">
-                <p className="text-xs text-white/50 mb-1">Contract Link (share with client)</p>
-                <div className="flex items-center gap-2">
-                  <a href={`/contract/view/${contract.id}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-300 hover:underline truncate flex-1">
-                    {typeof window !== "undefined" ? window.location.origin : ""}/contract/view/{contract.id}
-                  </a>
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/contract/view/${contract.id}`); setMessage({ type: "success", text: "Link copied!" }); }}
-                    className="text-xs text-white/50 hover:text-white border border-white/20 rounded px-2 py-0.5 shrink-0"
-                  >Copy</button>
+              {/* LIA Preview & Sign link */}
+              {!["completed", "cancelled"].includes(contract.status) && (contract.contract_html || contract.content) && (
+                <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 px-3 py-2.5 mb-4">
+                  <p className="text-xs text-blue-300 mb-1 font-medium">LIA — Review & Sign</p>
+                  <div className="flex items-center gap-2">
+                    <a href={`/contract/preview/${contract.id}`} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-blue-300 hover:underline truncate flex-1">
+                      {typeof window !== "undefined" ? window.location.origin : ""}/contract/preview/{contract.id}
+                    </a>
+                    <a href={`/contract/preview/${contract.id}`} target="_blank" rel="noopener noreferrer"
+                      className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded px-2 py-1 shrink-0">
+                      Preview & Sign →
+                    </a>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Client sign link (when sent_to_client) */}
+              {contract.status === "sent_to_client" && contract.client_sign_token && (
+                <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2.5 mb-4">
+                  <p className="text-xs text-white/50 mb-1">Client Sign Link</p>
+                  <div className="flex items-center gap-2">
+                    <code className="text-xs text-green-300 truncate flex-1">
+                      {typeof window !== "undefined" ? window.location.origin : ""}/contract/sign/{contract.client_sign_token}
+                    </code>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/contract/sign/${contract.client_sign_token}`); setMessage({ type: "success", text: "Link copied!" }); }}
+                      className="text-xs text-white/50 hover:text-white border border-white/20 rounded px-2 py-0.5 shrink-0"
+                    >Copy</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Signature status */}
+              {(contract.adviser_signed_at || contract.client_signed_at) && (
+                <div className="flex gap-4 mb-4 text-xs text-white/60">
+                  {contract.adviser_signed_at && <span className="text-green-400">✓ LIA signed {new Date(contract.adviser_signed_at).toLocaleDateString()}</span>}
+                  {contract.client_signed_at && <span className="text-green-400">✓ Client signed {new Date(contract.client_signed_at).toLocaleDateString()}</span>}
+                </div>
+              )}
 
               {/* Contract status flow buttons */}
               {!["completed", "cancelled"].includes(contract.status) && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {contract.status === "draft" && (
                     <button onClick={() => handleContractStatusChange("sent_to_lia")} disabled={isContractChanging} className={btnPrimary}>
-                      Send to LIA
+                      Send to LIA for Review
                     </button>
                   )}
                   {contract.status === "sent_to_lia" && (
                     <>
                       <button onClick={() => handleContractStatusChange("lia_signed")} disabled={isContractChanging} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
-                        Approve (LIA Sign)
+                        Mark LIA Approved
                       </button>
                       <button onClick={() => setShowRejectModal(true)} disabled={isContractChanging} className={btnDanger}>
                         Reject
@@ -1408,14 +1514,19 @@ export default function DealDetailPage() {
                     </>
                   )}
                   {contract.status === "lia_signed" && (
-                    <button onClick={() => handleContractStatusChange("sent_to_client")} disabled={isContractChanging} className={btnPrimary}>
-                      Send to Client
+                    <button onClick={() => handleContractSendToClient()} disabled={isContractChanging} className={btnPrimary}>
+                      Send Contract Email to Client
                     </button>
                   )}
                   {contract.status === "sent_to_client" && (
-                    <button onClick={() => handleContractStatusChange("completed")} disabled={isContractChanging} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
-                      Mark as Client Signed
-                    </button>
+                    <>
+                      <button onClick={handleResendContractEmail} disabled={isContractChanging} className={btnPrimary}>
+                        Resend Contract Email
+                      </button>
+                      <button onClick={() => handleContractStatusChange("completed")} disabled={isContractChanging} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                        Mark as Client Signed
+                      </button>
+                    </>
                   )}
                   {contract.status === "rejected" && (
                     <button onClick={handleCreateContract} className={btnPrimary}>
@@ -1673,12 +1784,12 @@ export default function DealDetailPage() {
                       handleStatusChange("submitted");
                     }}
                     disabled={pendingGovFee || isStatusChanging}
-                    title={pendingGovFee ? "Government fee must be paid first" : ""}
+                    title={pendingGovFee ? "INZ application fee must be paid first" : ""}
                     className={`rounded-lg px-5 py-2.5 font-bold text-sm text-white disabled:opacity-50 ${pendingGovFee ? "bg-gray-600 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700"}`}
                   >
                     {pendingGovFee ? "⚠ Mark as Submitted (blocked)" : "Mark as Submitted"}
                   </button>
-                  {pendingGovFee && <p className="text-xs text-orange-400 mt-1.5">Government fee payment must be marked as paid before submitting.</p>}
+                  {pendingGovFee && <p className="text-xs text-orange-400 mt-1.5">INZ application fee payment must be marked as paid before submitting.</p>}
                 </div>
               )}
             </div>

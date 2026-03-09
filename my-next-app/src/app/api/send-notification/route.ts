@@ -37,15 +37,26 @@ ${base}We will be in touch shortly with the next steps. If you have any question
 ${sign}`,
       };
 
-    case "contract_sent":
+    case "contract_sent": {
+      const contractLink = extraData?.contract_link as string | undefined;
       return {
         subject: `Contract Ready for Signing - ${dealNumber}`,
         html: `${base}Dear ${clientName},</p>
 ${base}Your service agreement for case <strong>${dealNumber}</strong> is ready for your review and signature.</p>
-${base}Please review the contract carefully and sign at your earliest convenience. If you have any questions about the terms, please contact your consultant${liaName ? ` <strong>${liaName}</strong>` : ""} before signing.</p>
-${base}Once signed, please return the signed copy to us so we can proceed with your application.</p>
+${base}Please click the button below to review and sign your contract:</p>
+${contractLink ? `<p style="margin:20px 0"><a href="${contractLink}" style="background:#1e3a5f;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px">Review &amp; Sign Contract →</a></p>
+${base}Or copy this link into your browser:<br><a href="${contractLink}" style="color:#2563eb;font-size:13px">${contractLink}</a></p>` : ""}
+${base}Please also review the following reference documents before signing:</p>
+<ul style="color:#555;font-size:14px;line-height:2;padding-left:20px">
+  <li><a href="[REFERENCE_DOC_1_URL]" style="color:#2563eb">[Reference Document 1 — e.g. Privacy Policy]</a></li>
+  <li><a href="[REFERENCE_DOC_2_URL]" style="color:#2563eb">[Reference Document 2 — e.g. Complaints Procedure]</a></li>
+  <li><a href="[REFERENCE_DOC_3_URL]" style="color:#2563eb">[Reference Document 3 — e.g. Code of Conduct]</a></li>
+  <li><a href="[REFERENCE_DOC_4_URL]" style="color:#2563eb">[Reference Document 4 — e.g. Client Obligations]</a></li>
+</ul>
+${base}If you have any questions about the terms, please contact your consultant${liaName ? ` <strong>${liaName}</strong>` : ""} before signing.</p>
 ${sign}`,
       };
+    }
 
     case "contract_signed":
       return {

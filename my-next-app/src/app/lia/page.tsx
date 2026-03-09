@@ -142,7 +142,7 @@ export default function LiaDashboardPage() {
     const hasIntake = intakeForms.find(f => f.deal_id === deal.id);
     const dealPayments = payments.filter(p => p.deal_id === deal.id);
     const pendingServiceFee = dealPayments.some(p => p.payment_type === "service_fee" && p.status === "pending");
-    const pendingGovFee = dealPayments.some(p => p.payment_type === "government_fee" && p.status === "pending");
+    const pendingGovFee = dealPayments.some(p => p.payment_type === "inz_application_fee" && p.status === "pending");
 
     switch (deal.status) {
       case "draft": return "Create contract and send to client";

@@ -71,15 +71,17 @@ function NewDealPage() {
     visa_type: "",
     description: "",
     service_fee: "",
-    government_fee: "",
+    inz_application_fee: "",
     other_fee: "",
     notes: "",
     department: "",
+    preferred_language: "en",
+    refund_percentage: "50",
   });
 
   const totalAmount =
     (parseFloat(form.service_fee) || 0) +
-    (parseFloat(form.government_fee) || 0) +
+    (parseFloat(form.inz_application_fee) || 0) +
     (parseFloat(form.other_fee) || 0);
 
   useEffect(() => {
@@ -178,9 +180,11 @@ function NewDealPage() {
       description: form.description.trim() || null,
       status: "draft",
       service_fee: form.service_fee ? parseFloat(form.service_fee) : null,
-      government_fee: form.government_fee ? parseFloat(form.government_fee) : null,
+      inz_application_fee: form.inz_application_fee ? parseFloat(form.inz_application_fee) : null,
       other_fee: form.other_fee ? parseFloat(form.other_fee) : null,
       total_amount: totalAmount > 0 ? totalAmount : null,
+      preferred_language: form.preferred_language || "en",
+      refund_percentage: form.refund_percentage ? parseInt(form.refund_percentage) : 50,
       payment_status: "unpaid",
       assigned_sales_id: userId,
       department: dept,
@@ -398,14 +402,28 @@ function NewDealPage() {
           {/* Pricing */}
           <div className={sectionClass}>
             <h3 className="text-base font-bold mb-4">Pricing</h3>
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={labelClass}>Contract Language</label>
+                <select name="preferred_language" value={form.preferred_language} onChange={handleChange} className={selectClass}>
+                  <option value="en" className="bg-blue-900">English</option>
+                  <option value="zh" className="bg-blue-900">Chinese (中文)</option>
+                  <option value="th" className="bg-blue-900">Thai (ภาษาไทย)</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Refund Percentage (%)</label>
+                <input name="refund_percentage" value={form.refund_percentage} onChange={handleChange} type="number" min="0" max="100" placeholder="50" className={inputClass} />
+              </div>
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className={labelClass}>Service Fee ($)</label>
                 <input name="service_fee" value={form.service_fee} onChange={handleChange} type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Government Fee ($)</label>
-                <input name="government_fee" value={form.government_fee} onChange={handleChange} type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
+                <label className={labelClass}>INZ Application Fee ($)</label>
+                <input name="inz_application_fee" value={form.inz_application_fee} onChange={handleChange} type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Other Fee ($)</label>
@@ -418,8 +436,16 @@ function NewDealPage() {
             </div>
           </div>
 
-          {/* Department (if admin) */}
-          {!isSales && (
+          {/* Department */}
+          {isSales ? (
+            <div className={sectionClass}>
+              <h3 className="text-base font-bold mb-4">Department</h3>
+              <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white/80 max-w-xs">
+                {DEPT_LABELS[form.department] ?? form.department ?? "—"}
+              </div>
+              <p className="mt-1 text-xs text-white/40">Department is automatically set based on your account.</p>
+            </div>
+          ) : (
             <div className={sectionClass}>
               <h3 className="text-base font-bold mb-4">Department *</h3>
               <select name="department" value={form.department} onChange={handleChange} className={`${selectClass} max-w-xs`}>

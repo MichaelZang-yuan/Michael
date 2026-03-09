@@ -60,6 +60,7 @@ export default function IntakeTemplatesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   // Field editor modal
   const [editingField, setEditingField] = useState<FormField | null>(null);
@@ -122,6 +123,33 @@ export default function IntakeTemplatesPage() {
     setIsSaving(false);
     setEditingId(null);
     await fetchTemplates();
+  };
+
+  const handleSeedTemplates = async () => {
+    if (!window.confirm("Insert the 6 default intake templates? Existing templates with the same category will be updated.")) return;
+    setIsSeeding(true);
+    setMessage(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setMessage({ type: "error", text: "Not authenticated." }); return; }
+      const res = await fetch("/api/seed-intake-templates", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: json.error ?? "Seed failed." });
+      } else {
+        const inserted = json.results?.filter((r: { action: string }) => r.action === "inserted").length ?? 0;
+        const updated = json.results?.filter((r: { action: string }) => r.action === "updated").length ?? 0;
+        setMessage({ type: "success", text: `Done — ${inserted} inserted, ${updated} updated.` });
+        await fetchTemplates();
+      }
+    } catch {
+      setMessage({ type: "error", text: "Network error." });
+    } finally {
+      setIsSeeding(false);
+    }
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -240,7 +268,12 @@ export default function IntakeTemplatesPage() {
             <h1 className="text-2xl font-bold">Intake Form Templates</h1>
           </div>
           {editingId === null && (
-            <button onClick={openNew} className={btnPrimary}>+ New Template</button>
+            <div className="flex gap-2">
+              <button onClick={handleSeedTemplates} disabled={isSeeding} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10 disabled:opacity-50">
+                {isSeeding ? "Seeding..." : "Seed Default Templates"}
+              </button>
+              <button onClick={openNew} className={btnPrimary}>+ New Template</button>
+            </div>
           )}
         </div>
 
