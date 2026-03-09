@@ -149,6 +149,28 @@ ${base}Please log in to review the submitted information and proceed with the ap
 ${sign}`,
       };
 
+    case "contract_review_lia": {
+      const dealType = extraData?.deal_type as string | undefined ?? "";
+      const extVisaType = extraData?.visa_type as string | undefined ?? "";
+      const previewSignUrl = extraData?.preview_sign_url as string | undefined ?? "#";
+      return {
+        subject: `New Contract Pending Your Review — ${dealNumber}`,
+        html: `${base}Hi ${clientName},</p>
+${base}A new Immigration Services Agreement has been generated and requires your review and signature.</p>
+<p style="color:#555;font-size:14px;line-height:1.6"><strong>Deal Details:</strong></p>
+<ul style="color:#555;font-size:14px;line-height:2;padding-left:20px;list-style:disc">
+  <li>Deal Number: ${dealNumber}</li>
+  <li>Client: ${extraData?.client_name as string ?? ""}</li>
+  <li>Deal Type: ${dealType}</li>
+  <li>Visa Type: ${extVisaType}</li>
+</ul>
+${base}Please review the contract and sign it at your earliest convenience:</p>
+<p style="margin:20px 0"><a href="${previewSignUrl}" style="background:#1e3a5f;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px">Review &amp; Sign Contract</a></p>
+${base}If you have any concerns or require amendments, please contact the admin team.</p>
+<p style="color:#555;font-size:14px;margin-top:20px">Thank you,<br><strong>PJ International System</strong></p>`,
+      };
+    }
+
     default:
       return {
         subject: `Update - ${dealNumber}`,

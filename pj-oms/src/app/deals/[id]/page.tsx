@@ -176,6 +176,7 @@ const INTAKE_STATUS_COLORS: Record<string, string> = {
 
 const EMAIL_TYPE_LABELS: Record<string, string> = {
   welcome: "Welcome", contract_sent: "Contract Sent", contract_signed: "Contract Signed",
+  contract_review_lia: "Contract Review (LIA)",
   intake_form_sent: "Intake Form Sent", intake_completed: "Intake Completed",
   payment_received: "Payment Received", application_submitted: "Application Submitted",
   application_approved: "Application Approved", application_declined: "Application Declined",
@@ -839,6 +840,29 @@ export default function DealDetailPage() {
     await fetchLogs();
     setShowContractCreateModal(false);
     setIsContractCreating(false);
+
+    // Send email to assigned LIA for contract review
+    if (deal?.assigned_lia_id && contractData?.id) {
+      const liaUser = salesUsers.find(s => s.id === deal.assigned_lia_id);
+      if (liaUser) {
+        // Fetch LIA email from profiles
+        const { data: liaProfile } = await supabase.from("profiles").select("email").eq("id", deal.assigned_lia_id).single();
+        if (liaProfile?.email) {
+          const previewSignUrl = `https://www.pjcommission.com/contract/preview/${contractData.id}`;
+          const liaClientName = deal.contacts
+            ? `${deal.contacts.first_name} ${deal.contacts.last_name}`.trim()
+            : deal.companies?.company_name ?? "";
+          await sendNotification("contract_review_lia", liaProfile.email, liaUser.full_name ?? "LIA", {
+            client_name: liaClientName,
+            deal_type: form.deal_type ?? "",
+            visa_type: form.visa_type ?? "",
+            preview_sign_url: previewSignUrl,
+          });
+        }
+      }
+    } else if (!deal?.assigned_lia_id) {
+      setMessage({ type: "error", text: "No LIA assigned, email notification skipped" });
+    }
   };
 
   const handleContractStatusChange = async (newStatus: string) => {
