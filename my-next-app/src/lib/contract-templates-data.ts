@@ -865,42 +865,42 @@ const TH_EMPLOYER = `${STYLE}
 export const CONTRACT_TEMPLATES = [
   {
     name: "Individual Visa Service Agreement (English)",
-    language: "english",
+    language: "en",
     target_type: "individual",
     content: EN_INDIVIDUAL,
     is_active: true,
   },
   {
     name: "Employer Immigration Services Agreement (English)",
-    language: "english",
+    language: "en",
     target_type: "company",
     content: EN_EMPLOYER,
     is_active: true,
   },
   {
     name: "签证移民服务合同（个人）",
-    language: "chinese",
+    language: "zh",
     target_type: "individual",
     content: ZH_INDIVIDUAL,
     is_active: true,
   },
   {
     name: "雇主移民服务合同（公司）",
-    language: "chinese",
+    language: "zh",
     target_type: "company",
     content: ZH_EMPLOYER,
     is_active: true,
   },
   {
     name: "สัญญาบริการวีซ่า (บุคคลธรรมดา)",
-    language: "thai",
+    language: "th",
     target_type: "individual",
     content: TH_INDIVIDUAL,
     is_active: true,
   },
   {
     name: "สัญญาบริการสำหรับนายจ้าง",
-    language: "thai",
+    language: "th",
     target_type: "company",
     content: TH_EMPLOYER,
     is_active: true,
@@ -910,6 +910,8 @@ export const CONTRACT_TEMPLATES = [
 // Insert function for use in seed route
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function insertContractTemplates(supabase: any) {
+  // Delete all existing templates to avoid duplicates on re-seed
+  await supabase.from("contract_templates").delete().neq("id", "00000000-0000-0000-0000-000000000000");
   const { error } = await supabase.from("contract_templates").insert(CONTRACT_TEMPLATES);
   return error;
 }

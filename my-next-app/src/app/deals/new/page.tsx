@@ -95,7 +95,7 @@ function NewDealPage() {
       setIsSales(sales);
       if (profileData?.department) {
         setUserDept(profileData.department);
-        if (sales) setForm(f => ({ ...f, department: profileData.department }));
+        setForm(f => ({ ...f, department: profileData.department }));
       }
 
       // Pre-fill if contact_id or company_id passed

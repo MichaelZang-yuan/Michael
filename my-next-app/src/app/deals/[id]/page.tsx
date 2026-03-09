@@ -552,8 +552,10 @@ export default function DealDetailPage() {
       date_today: today,
       signature_client: "________________________",
       signature_lia: "________________________",
-      adviser_sign_date: "___________________",
-      client_sign_date: "___________________",
+      adviser_signature: "<!-- [adviser-sig] -->",
+      client_signature: "<!-- [client-sig] -->",
+      adviser_sign_date: "<!-- [adviser-date] -->___________________",
+      client_sign_date: "<!-- [client-date] -->___________________",
     };
   };
 
@@ -1351,23 +1353,13 @@ export default function DealDetailPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
             <div className="w-full max-w-3xl rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
               <h4 className="text-lg font-bold mb-5">Create Contract</h4>
-              <div className="mb-4">
-                <label className={labelClass}>Select Template</label>
-                <select
-                  value={selectedContractTemplateId}
-                  onChange={e => handleContractTemplateSelect(e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="" className="bg-blue-900">No template (blank)</option>
-                  {contractTemplates
-                    .filter(t => !t.target_type || t.target_type === (deal?.contact_id ? "individual" : "company"))
-                    .map(t => (
-                      <option key={t.id} value={t.id} className="bg-blue-900">
-                        {t.name}{t.language ? ` (${t.language})` : ""}
-                      </option>
-                    ))
-                  }
-                </select>
+              <div className="mb-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
+                {(() => {
+                  const matched = contractTemplates.find(t => t.id === selectedContractTemplateId);
+                  return matched
+                    ? <><span className="text-white/40">Template: </span><span className="font-medium text-white">{matched.name}</span><span className="ml-2 text-white/40 text-xs">(auto-matched to deal language)</span></>
+                    : <span className="text-yellow-400/80">No matching template found for this language/type. Content will be blank.</span>;
+                })()}
               </div>
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1">

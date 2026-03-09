@@ -60,12 +60,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     const signDate = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
     const currentHtml = contract.contract_html ?? contract.content ?? "";
     const sigImg = `<img src="${signature}" style="max-height:80px;max-width:240px;" alt="Client signature" />`;
-    let updatedHtml = currentHtml.includes("{{client_signature}}")
-      ? currentHtml.replace("{{client_signature}}", sigImg)
-      : currentHtml;
-    if (updatedHtml.includes("{{client_sign_date}}")) {
-      updatedHtml = updatedHtml.replace("{{client_sign_date}}", signDate);
-    }
+    // Support both HTML comment markers (new) and {{...}} placeholders (fallback)
+    let updatedHtml = currentHtml
+      .replace("<!-- [client-sig] -->", sigImg)
+      .replace("{{client_signature}}", sigImg);
+    updatedHtml = updatedHtml
+      .replace("<!-- [client-date] -->___________________", signDate)
+      .replace("{{client_sign_date}}", signDate);
 
     const { error } = await supabase
       .from("deal_contracts")
