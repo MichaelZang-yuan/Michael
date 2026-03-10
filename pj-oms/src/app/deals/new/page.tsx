@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -89,6 +89,30 @@ function NewDealPage() {
   });
 
   const [paymentStages, setPaymentStages] = useState<StageRow[]>([newStageRow()]);
+  const prevDeptRef = useRef(form.department);
+
+  // Auto-add "Education Consultation" stage when department changes to Myanmar
+  useEffect(() => {
+    const prev = prevDeptRef.current;
+    prevDeptRef.current = form.department;
+
+    if (form.department === "myanmar" && prev !== "myanmar") {
+      // Check if education consultation stage already exists
+      const hasEduStage = paymentStages.some(s => s.stage_details === "Education Consultation Fee");
+      if (!hasEduStage) {
+        const eduStage: StageRow = {
+          tempId: "edu-consult-" + Math.random().toString(36).slice(2),
+          stage_name: "Stage I",
+          stage_details: "Education Consultation Fee",
+          service_fee: "",
+          inz_fee: "",
+          other_fee: "",
+          gst_type: "Exclusive",
+        };
+        setPaymentStages(ps => [eduStage, ...ps]);
+      }
+    }
+  }, [form.department, paymentStages]);
 
   const stageServiceTotal = paymentStages.reduce((s, r) => s + (parseFloat(r.service_fee) || 0), 0);
   const stageInzTotal = paymentStages.reduce((s, r) => s + (parseFloat(r.inz_fee) || 0), 0);

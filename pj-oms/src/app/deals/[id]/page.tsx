@@ -143,6 +143,8 @@ const DEAL_STATUS_LABELS: Record<string, string> = {
   draft: "Draft", quoted: "Quoted", contracted: "Contracted", in_progress: "In Progress",
   submitted: "Submitted", approved: "Approved", declined: "Declined",
   completed: "Completed", cancelled: "Cancelled",
+  education_consultation: "Education Consultation", school_application: "School Application",
+  offer_received: "Offer Received", education_only: "Education Only",
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
@@ -151,6 +153,8 @@ const DEAL_STATUS_COLORS: Record<string, string> = {
   submitted: "bg-orange-500/20 text-orange-400", approved: "bg-green-500/20 text-green-400",
   declined: "bg-red-500/20 text-red-400", completed: "bg-green-600/20 text-green-300",
   cancelled: "bg-red-600/20 text-red-300",
+  education_consultation: "bg-teal-500/20 text-teal-400", school_application: "bg-indigo-500/20 text-indigo-400",
+  offer_received: "bg-cyan-500/20 text-cyan-400", education_only: "bg-teal-600/20 text-teal-300",
 };
 
 const CONTRACT_STATUS_LABELS: Record<string, string> = {
@@ -195,12 +199,29 @@ const CHECKLIST_PRESETS: Record<string, string[]> = {
 const STATUS_PREV: Record<string, string> = {
   quoted: "draft", contracted: "draft", in_progress: "contracted",
   submitted: "in_progress", approved: "submitted", declined: "submitted",
+  // Myanmar-specific undo paths
+  education_consultation: "draft",
+  school_application: "education_consultation",
+  offer_received: "school_application",
 };
 
 // ─── Workflow step computation ────────────────────────────────────────────────
 
 const WORKFLOW_STEPS = [
   { key: "draft", label: "Draft" },
+  { key: "contract_sent", label: "Contract Sent" },
+  { key: "contract_signed", label: "Contract Signed" },
+  { key: "intake_sent", label: "Intake Sent" },
+  { key: "in_progress", label: "In Progress" },
+  { key: "submitted", label: "Submitted" },
+  { key: "resolved", label: "Approved / Declined" },
+];
+
+const MYANMAR_WORKFLOW_STEPS = [
+  { key: "draft", label: "Draft" },
+  { key: "education_consultation", label: "Edu Consult" },
+  { key: "school_application", label: "School App" },
+  { key: "offer_received", label: "Offer Received" },
   { key: "contract_sent", label: "Contract Sent" },
   { key: "contract_signed", label: "Contract Signed" },
   { key: "intake_sent", label: "Intake Sent" },
@@ -217,6 +238,21 @@ function computeWorkflowStep(dealStatus: string, contract: DealContract | null, 
   if (contract && contract.status === "completed") return 2;
   if (contract && ["sent_to_lia", "lia_signed", "sent_to_client"].includes(contract.status)) return 1;
   if (dealStatus === "contracted") return 1;
+  return 0;
+}
+
+function computeMyanmarWorkflowStep(dealStatus: string, contract: DealContract | null, intake: IntakeForm | null): number {
+  if (dealStatus === "education_only") return 3; // special terminal at offer_received
+  if (["approved", "declined", "completed", "cancelled"].includes(dealStatus)) return 9;
+  if (dealStatus === "submitted") return 8;
+  if (dealStatus === "in_progress") return 7;
+  if (intake && ["sent", "in_progress", "completed", "submitted"].includes(intake.status)) return 6;
+  if (contract && contract.status === "completed") return 5;
+  if (contract && ["sent_to_lia", "lia_signed", "sent_to_client"].includes(contract.status)) return 4;
+  if (dealStatus === "contracted") return 4;
+  if (dealStatus === "offer_received") return 3;
+  if (dealStatus === "school_application") return 2;
+  if (dealStatus === "education_consultation") return 1;
   return 0;
 }
 
@@ -332,6 +368,14 @@ export default function DealDetailPage() {
   const [commissionPaidDate, setCommissionPaidDate] = useState(new Date().toISOString().split("T")[0]);
   const [agentName, setAgentName] = useState("");
 
+  // School application state (Myanmar)
+  const [schoolsList, setSchoolsList] = useState<{ id: string; name: string }[]>([]);
+  const [schoolAppForm, setSchoolAppForm] = useState({
+    school_id: "", course: "", status: "pending", application_date: "",
+    offer_date: "", tuition_fee: "", enrollment_date: "", notes: "",
+  });
+  const [isSavingSchoolApp, setIsSavingSchoolApp] = useState(false);
+
   // Upload state
   const [isUploading, setIsUploading] = useState(false);
   const [isStatusChanging, setIsStatusChanging] = useState(false);
@@ -349,8 +393,12 @@ export default function DealDetailPage() {
   const outstandingAmount = stageTotalAmount - totalPaidAmount;
 
   const currentStatus = deal?.status ?? "draft";
-  const workflowStep = computeWorkflowStep(currentStatus, contract, intakeForm);
-  const isTerminal = ["approved", "declined", "completed", "cancelled"].includes(currentStatus);
+  const isMyanmar = form.department === "myanmar";
+  const workflowStep = isMyanmar
+    ? computeMyanmarWorkflowStep(currentStatus, contract, intakeForm)
+    : computeWorkflowStep(currentStatus, contract, intakeForm);
+  const activeWorkflowSteps = isMyanmar ? MYANMAR_WORKFLOW_STEPS : WORKFLOW_STEPS;
+  const isTerminal = ["approved", "declined", "completed", "cancelled", "education_only"].includes(currentStatus);
   const isAdmin = hasRole(profile, "admin");
   const canChangeStatus = isAdmin || (deal?.assigned_lia_id === profile?.id);
 
@@ -548,6 +596,22 @@ export default function DealDetailPage() {
         if (agentData) setAgentName(agentData.agent_name ?? "");
       }
 
+      // Load school application data (Myanmar workflow)
+      if (dealData.department === "myanmar") {
+        setSchoolAppForm({
+          school_id: dealData.school_application_school_id ?? "",
+          course: dealData.school_application_course ?? "",
+          status: dealData.school_application_status ?? "pending",
+          application_date: dealData.school_application_date ?? "",
+          offer_date: dealData.school_application_offer_date ?? "",
+          tuition_fee: dealData.school_application_tuition_fee != null ? String(dealData.school_application_tuition_fee) : "",
+          enrollment_date: dealData.school_application_enrollment_date ?? "",
+          notes: dealData.school_application_notes ?? "",
+        });
+        const { data: schoolsData } = await supabase.from("schools").select("id, name").order("name");
+        if (schoolsData) setSchoolsList(schoolsData as { id: string; name: string }[]);
+      }
+
       await Promise.all([
         fetchPayments(), fetchContract(), fetchIntakeForm(), fetchChecklist(),
         fetchEmailLogs(), fetchApplicants(), fetchAttachments(), fetchLogs(),
@@ -663,6 +727,29 @@ export default function DealDetailPage() {
       adviser_sign_date: "<!-- [adviser-date] -->___________________",
       client_sign_date: "<!-- [client-date] -->___________________",
     };
+  };
+
+  // ─── School Application (Myanmar) ────────────────────────────────────────
+
+  const handleSaveSchoolApp = async () => {
+    setIsSavingSchoolApp(true);
+    setMessage(null);
+    const { error } = await supabase.from("deals").update({
+      school_application_school_id: schoolAppForm.school_id || null,
+      school_application_course: schoolAppForm.course.trim() || null,
+      school_application_status: schoolAppForm.status || null,
+      school_application_date: schoolAppForm.application_date || null,
+      school_application_offer_date: schoolAppForm.offer_date || null,
+      school_application_tuition_fee: schoolAppForm.tuition_fee ? parseFloat(schoolAppForm.tuition_fee) : null,
+      school_application_enrollment_date: schoolAppForm.enrollment_date || null,
+      school_application_notes: schoolAppForm.notes.trim() || null,
+    }).eq("id", id);
+    if (error) {
+      setMessage({ type: "error", text: "Failed to save school application: " + error.message });
+    } else {
+      setMessage({ type: "success", text: "School application saved." });
+    }
+    setIsSavingSchoolApp(false);
   };
 
   // ─── Deal CRUD ────────────────────────────────────────────────────────────
@@ -1372,16 +1459,24 @@ export default function DealDetailPage() {
 
         {/* ── Workflow Progress Bar ───────────────────────────────────────── */}
         <div className="mb-6 rounded-xl border border-white/10 bg-white/5 px-6 py-5">
+          {currentStatus === "education_only" && (
+            <div className="mb-3 rounded-lg border border-teal-500 bg-teal-500/20 px-4 py-2.5 text-center">
+              <span className="text-sm font-bold text-teal-300">Education Only — Visa Service Not Proceeded</span>
+            </div>
+          )}
           <div className="flex items-center gap-0">
-            {WORKFLOW_STEPS.map((step, i) => {
+            {activeWorkflowSteps.map((step, i) => {
               const isCompleted = i < workflowStep;
               const isActive = i === workflowStep;
-              const isDeclined = currentStatus === "declined" && i === 7;
+              const totalSteps = activeWorkflowSteps.length;
+              const isDeclined = currentStatus === "declined" && i === totalSteps;
+              const isEdOnly = currentStatus === "education_only" && i === workflowStep;
               return (
                 <div key={step.key} className="flex items-center flex-1 min-w-0">
                   <div className="flex flex-col items-center min-w-0">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border-2 transition-all ${
                       isCompleted ? "bg-blue-500 border-blue-500 text-white" :
+                      isEdOnly ? "bg-teal-500 border-teal-500 text-white" :
                       isActive && !isTerminal ? "bg-blue-500/20 border-blue-400 text-blue-300" :
                       isActive && currentStatus === "approved" ? "bg-green-500 border-green-500 text-white" :
                       isActive && isDeclined ? "bg-red-500 border-red-500 text-white" :
@@ -1393,7 +1488,7 @@ export default function DealDetailPage() {
                       {step.label}
                     </span>
                   </div>
-                  {i < WORKFLOW_STEPS.length - 1 && (
+                  {i < totalSteps - 1 && (
                     <div className={`flex-1 h-0.5 mx-1 ${i < workflowStep ? "bg-blue-500" : "bg-white/10"}`} />
                   )}
                 </div>
@@ -1405,6 +1500,49 @@ export default function DealDetailPage() {
         {/* ── Status action buttons (terminal/cancel/approve-decline) ──────── */}
         {canChangeStatus && (
           <div className="mb-6 flex flex-wrap gap-2">
+            {/* Myanmar-specific workflow buttons */}
+            {isMyanmar && currentStatus === "draft" && (
+              <button onClick={() => handleStatusChange("education_consultation")} disabled={isStatusChanging} className="rounded-lg bg-teal-600 px-5 py-2.5 font-bold text-white hover:bg-teal-700 disabled:opacity-50 text-sm">
+                Start Education Consultation
+              </button>
+            )}
+            {isMyanmar && currentStatus === "education_consultation" && (
+              <>
+                <button onClick={() => handleStatusChange("school_application")} disabled={isStatusChanging} className="rounded-lg bg-indigo-600 px-5 py-2.5 font-bold text-white hover:bg-indigo-700 disabled:opacity-50 text-sm">
+                  Proceed to School Application
+                </button>
+                <button onClick={() => handleStatusChange("contracted")} disabled={isStatusChanging} className="rounded-lg bg-purple-600 px-5 py-2.5 font-bold text-white hover:bg-purple-700 disabled:opacity-50 text-sm">
+                  Skip to Contract
+                </button>
+              </>
+            )}
+            {isMyanmar && currentStatus === "school_application" && (
+              <button
+                onClick={() => {
+                  if (schoolAppForm.status !== "offer_received") {
+                    setMessage({ type: "error", text: "Please update the School Application status to 'Offer Received' before proceeding." });
+                    return;
+                  }
+                  handleStatusChange("offer_received");
+                }}
+                disabled={isStatusChanging}
+                className="rounded-lg bg-cyan-600 px-5 py-2.5 font-bold text-white hover:bg-cyan-700 disabled:opacity-50 text-sm"
+              >
+                Mark Offer Received
+              </button>
+            )}
+            {isMyanmar && currentStatus === "offer_received" && (
+              <>
+                <button onClick={() => handleStatusChange("contracted")} disabled={isStatusChanging} className="rounded-lg bg-purple-600 px-5 py-2.5 font-bold text-white hover:bg-purple-700 disabled:opacity-50 text-sm">
+                  Proceed to Contract
+                </button>
+                <button onClick={() => handleStatusChange("education_only")} disabled={isStatusChanging} className="rounded-lg bg-teal-600 px-5 py-2.5 font-bold text-white hover:bg-teal-700 disabled:opacity-50 text-sm">
+                  Mark as Education Only
+                </button>
+              </>
+            )}
+
+            {/* Standard workflow buttons */}
             {currentStatus === "submitted" && (
               <>
                 <button onClick={() => { if (clientEmail) { requestEmailConfirm({ recipientName: clientName, recipientEmail: clientEmail, emailType: "application_approved", onConfirm: () => sendNotification("application_approved", clientEmail, clientName) }); } handleStatusChange("approved"); }} disabled={isStatusChanging} className="rounded-lg bg-green-600 px-5 py-2.5 font-bold text-white hover:bg-green-700 disabled:opacity-50 text-sm">
@@ -1420,16 +1558,73 @@ export default function DealDetailPage() {
                 Reopen as Draft
               </button>
             )}
+            {isTerminal && currentStatus === "education_only" && isAdmin && (
+              <button onClick={() => handleStatusChange("offer_received")} disabled={isStatusChanging} className={`${btnSecondary} text-sm`}>
+                Reopen to Offer Received
+              </button>
+            )}
             {!isTerminal && (
               <button onClick={() => handleStatusChange("cancelled")} disabled={isStatusChanging} className={`${btnDanger} text-sm`}>
                 Cancel Deal
               </button>
             )}
-            {currentStatus !== "draft" && !isTerminal && (
+            {currentStatus !== "draft" && !isTerminal && STATUS_PREV[currentStatus] && (
               <button onClick={() => handleStatusChange(STATUS_PREV[currentStatus])} disabled={isStatusChanging} className={`${btnSecondary} text-sm`}>
                 ↩ Undo to {DEAL_STATUS_LABELS[STATUS_PREV[currentStatus]] ?? "Previous"}
               </button>
             )}
+          </div>
+        )}
+
+        {/* ── Section: School Application (Myanmar only) ──────────────────── */}
+        {isMyanmar && !["draft"].includes(currentStatus) && currentStatus !== "education_only" && (
+          <div className={sectionClass}>
+            <h3 className="text-lg font-bold mb-4">School Application</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={labelClass}>School</label>
+                <select value={schoolAppForm.school_id} onChange={e => setSchoolAppForm(f => ({ ...f, school_id: e.target.value }))} className={selectClass}>
+                  <option value="" className="bg-blue-900">Select school...</option>
+                  {schoolsList.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Course Name</label>
+                <input value={schoolAppForm.course} onChange={e => setSchoolAppForm(f => ({ ...f, course: e.target.value }))} placeholder="e.g. Bachelor of IT" className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Application Status</label>
+                <select value={schoolAppForm.status} onChange={e => setSchoolAppForm(f => ({ ...f, status: e.target.value }))} className={selectClass}>
+                  <option value="pending" className="bg-blue-900">Pending</option>
+                  <option value="submitted" className="bg-blue-900">Submitted</option>
+                  <option value="offer_received" className="bg-blue-900">Offer Received</option>
+                  <option value="rejected" className="bg-blue-900">Rejected</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Application Date</label>
+                <input type="date" value={schoolAppForm.application_date} onChange={e => setSchoolAppForm(f => ({ ...f, application_date: e.target.value }))} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Offer Date</label>
+                <input type="date" value={schoolAppForm.offer_date} onChange={e => setSchoolAppForm(f => ({ ...f, offer_date: e.target.value }))} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Tuition Fee ($)</label>
+                <input type="number" step="0.01" min="0" value={schoolAppForm.tuition_fee} onChange={e => setSchoolAppForm(f => ({ ...f, tuition_fee: e.target.value }))} placeholder="0.00" className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Enrollment Date</label>
+                <input type="date" value={schoolAppForm.enrollment_date} onChange={e => setSchoolAppForm(f => ({ ...f, enrollment_date: e.target.value }))} className={inputClass} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Notes</label>
+                <textarea value={schoolAppForm.notes} onChange={e => setSchoolAppForm(f => ({ ...f, notes: e.target.value }))} rows={2} className={`${inputClass} resize-none`} />
+              </div>
+            </div>
+            <button onClick={handleSaveSchoolApp} disabled={isSavingSchoolApp} className={`mt-4 ${btnPrimary}`}>
+              {isSavingSchoolApp ? "Saving..." : "Save School Application"}
+            </button>
           </div>
         )}
 
@@ -1733,7 +1928,7 @@ export default function DealDetailPage() {
         )}
 
         {/* ── Section: Contract ───────────────────────────────────────────── */}
-        <div className={sectionClass}>
+        {currentStatus !== "education_only" && <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Contract</h3>
 
           {!contract ? (
@@ -1894,7 +2089,7 @@ export default function DealDetailPage() {
               )}
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ── Intake Create Modal ────────────────────────────────────────── */}
         {showIntakeCreateModal && (
@@ -1928,7 +2123,7 @@ export default function DealDetailPage() {
         )}
 
         {/* ── Section: Intake Forms ──────────────────────────────────────── */}
-        <div className={sectionClass}>
+        {currentStatus !== "education_only" && <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Intake Forms ({intakeForms.length})</h3>
             <button onClick={handleCreateIntakeForm} className={btnSecondary}>+ Create</button>
@@ -2091,10 +2286,10 @@ export default function DealDetailPage() {
               )}
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ── Section: Document Checklist ─────────────────────────────────── */}
-        <div className={sectionClass}>
+        {currentStatus !== "education_only" && <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Document Checklist ({checklist.length})</h3>
             <div className="flex gap-2">
@@ -2190,10 +2385,10 @@ export default function DealDetailPage() {
               </div>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ── Section: Cover Letter ─────────────────────────────────────── */}
-        <div className={sectionClass}>
+        {currentStatus !== "education_only" && <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Cover Letter</h3>
             <div className="flex gap-2">
@@ -2271,7 +2466,7 @@ export default function DealDetailPage() {
               </div>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ── Section: Agent Commission ─────────────────────────────────── */}
         {deal?.agent_id && (

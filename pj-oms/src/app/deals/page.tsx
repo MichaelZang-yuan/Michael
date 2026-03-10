@@ -33,6 +33,8 @@ const DEAL_STATUS_LABELS: Record<string, string> = {
   draft: "Draft", quoted: "Quoted", contracted: "Contracted", in_progress: "In Progress",
   submitted: "Submitted", approved: "Approved", declined: "Declined",
   completed: "Completed", cancelled: "Cancelled",
+  education_consultation: "Education Consultation", school_application: "School Application",
+  offer_received: "Offer Received", education_only: "Education Only",
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
@@ -41,6 +43,8 @@ const DEAL_STATUS_COLORS: Record<string, string> = {
   submitted: "bg-orange-500/20 text-orange-400", approved: "bg-green-500/20 text-green-400",
   declined: "bg-red-500/20 text-red-400", completed: "bg-green-600/20 text-green-300",
   cancelled: "bg-red-600/20 text-red-300",
+  education_consultation: "bg-teal-500/20 text-teal-400", school_application: "bg-indigo-500/20 text-indigo-400",
+  offer_received: "bg-cyan-500/20 text-cyan-400", education_only: "bg-teal-600/20 text-teal-300",
 };
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
