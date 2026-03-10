@@ -10,14 +10,14 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { deal_id: string };
+  let body: { deal_id: string; additional_notes?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { deal_id } = body;
+  const { deal_id, additional_notes } = body;
   if (!deal_id) {
     return NextResponse.json({ error: "deal_id is required" }, { status: 400 });
   }
@@ -109,11 +109,16 @@ Write a professional, well-structured cover letter that:
 7. Ends with a polite closing requesting favourable consideration
 8. Uses proper letter formatting with paragraphs
 
+${additional_notes ? `IMPORTANT: The Licensed Immigration Adviser has provided additional notes below. These notes contain critical context about the client's circumstances, strengths, and key points to emphasize. You MUST prioritize these notes and use them to personalize the cover letter. Do NOT write generic boilerplate — tailor every paragraph to reflect the adviser's specific guidance.` : ""}
+
 Do NOT include placeholder brackets like [insert date]. Use the information provided to write a complete letter. If certain information is not available, omit that section rather than using placeholders.
 
 Sign the letter as "Licensed Immigration Adviser" without a specific name (the adviser will add their details).`;
 
-  const userPrompt = `Write a cover letter to INZ for the following visa application:\n\n${contextParts.join("\n")}`;
+  let userPrompt = `Write a cover letter to INZ for the following visa application:\n\n${contextParts.join("\n")}`;
+  if (additional_notes?.trim()) {
+    userPrompt += `\n\n--- ADVISER'S ADDITIONAL NOTES (prioritize this information) ---\n${additional_notes.trim()}`;
+  }
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {

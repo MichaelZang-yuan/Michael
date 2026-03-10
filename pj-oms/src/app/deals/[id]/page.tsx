@@ -313,6 +313,8 @@ export default function DealDetailPage() {
   const [coverLetter, setCoverLetter] = useState<{ id: string; content: string; status: string; pdf_url: string | null } | null>(null);
   const [coverLetterDraft, setCoverLetterDraft] = useState("");
   const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
+  const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
+  const [coverLetterNotes, setCoverLetterNotes] = useState("");
   const [isSavingCoverLetter, setIsSavingCoverLetter] = useState(false);
   const [isExportingCoverLetterPdf, setIsExportingCoverLetterPdf] = useState(false);
 
@@ -1176,13 +1178,14 @@ export default function DealDetailPage() {
 
   // ─── Cover letter handlers ─────────────────────────────────────────────
 
-  const handleGenerateCoverLetter = async () => {
+  const handleGenerateCoverLetter = async (additionalNotes?: string) => {
     setIsGeneratingCoverLetter(true);
+    setShowCoverLetterModal(false);
     try {
       const res = await fetch("/api/generate-cover-letter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deal_id: id }),
+        body: JSON.stringify({ deal_id: id, additional_notes: additionalNotes || "" }),
       });
       const data = await res.json();
       if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Cover letter generation failed" }); return; }
@@ -2218,13 +2221,56 @@ export default function DealDetailPage() {
           </div>
 
           <div className="flex gap-2">
-            <button onClick={handleGenerateCoverLetter} disabled={isGeneratingCoverLetter} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-50">
+            <button onClick={() => setShowCoverLetterModal(true)} disabled={isGeneratingCoverLetter} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-50">
               {isGeneratingCoverLetter ? "Generating..." : (coverLetterDraft ? "Regenerate" : "Generate Cover Letter")}
             </button>
             <button onClick={handleSaveCoverLetter} disabled={isSavingCoverLetter || !coverLetterDraft.trim()} className={btnPrimary}>
               {isSavingCoverLetter ? "Saving..." : "Save Draft"}
             </button>
           </div>
+
+          {/* Generate Cover Letter Modal */}
+          {showCoverLetterModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-950 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <h4 className="text-lg font-bold mb-4">Generate Cover Letter</h4>
+
+                <div className="mb-4">
+                  <label className={labelClass}>Additional Notes for AI</label>
+                  <textarea
+                    value={coverLetterNotes}
+                    onChange={e => setCoverLetterNotes(e.target.value)}
+                    rows={6}
+                    className={`${inputClass} resize-y text-sm`}
+                    placeholder="Describe the client's special circumstances, key strengths, reasons for application, any points you want emphasized in the cover letter..."
+                  />
+                </div>
+
+                <div className="mb-5 rounded-lg border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-medium text-white/50 mb-2">Auto-included information:</p>
+                  <ul className="space-y-1 text-xs text-white/40">
+                    <li>Client: <span className="text-white/60">{clientName}</span></li>
+                    {deal?.contacts?.nationality && <li>Nationality: <span className="text-white/60">{deal.contacts.nationality}</span></li>}
+                    {form.visa_type && <li>Visa Type: <span className="text-white/60">{form.visa_type}</span></li>}
+                    {form.deal_type && <li>Deal Type: <span className="text-white/60">{form.deal_type.replace(/_/g, " ")}</span></li>}
+                    {form.description && <li>Description: <span className="text-white/60">{form.description.length > 80 ? form.description.slice(0, 80) + "..." : form.description}</span></li>}
+                    {applicants.length > 0 && <li>Family Members / Applicants: <span className="text-white/60">{applicants.length}</span></li>}
+                    {intakeForm && intakeForm.status !== "draft" && <li>Intake Form data: <span className="text-white/60">included</span></li>}
+                  </ul>
+                </div>
+
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setShowCoverLetterModal(false)} className={btnSecondary}>Cancel</button>
+                  <button
+                    onClick={() => handleGenerateCoverLetter(coverLetterNotes)}
+                    className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700"
+                  >
+                    Generate
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Section: Agent Commission ─────────────────────────────────── */}
