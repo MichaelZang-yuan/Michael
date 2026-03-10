@@ -843,25 +843,40 @@ export default function DealDetailPage() {
 
     // Send email to assigned LIA for contract review
     if (deal?.assigned_lia_id && contractData?.id) {
+      console.log("[contract] LIA assigned, fetching LIA profile:", deal.assigned_lia_id);
       const liaUser = salesUsers.find(s => s.id === deal.assigned_lia_id);
       if (liaUser) {
-        // Fetch LIA email from profiles
         const { data: liaProfile } = await supabase.from("profiles").select("email").eq("id", deal.assigned_lia_id).single();
+        console.log("[contract] LIA profile fetched:", { name: liaUser.full_name, email: liaProfile?.email });
         if (liaProfile?.email) {
           const previewSignUrl = `https://www.pjcommission.com/contract/preview/${contractData.id}`;
           const liaClientName = deal.contacts
             ? `${deal.contacts.first_name} ${deal.contacts.last_name}`.trim()
             : deal.companies?.company_name ?? "";
-          await sendNotification("contract_review_lia", liaProfile.email, liaUser.full_name ?? "LIA", {
-            client_name: liaClientName,
-            deal_type: form.deal_type ?? "",
-            visa_type: form.visa_type ?? "",
-            preview_sign_url: previewSignUrl,
-          });
+          console.log("[contract] Sending contract_review_lia email to:", liaProfile.email);
+          try {
+            await sendNotification("contract_review_lia", liaProfile.email, liaUser.full_name ?? "LIA", {
+              client_name: liaClientName,
+              deal_type: form.deal_type ?? "",
+              visa_type: form.visa_type ?? "",
+              preview_sign_url: previewSignUrl,
+            });
+            console.log("[contract] LIA email sent successfully");
+            setMessage({ type: "success", text: `Contract created. LIA notification sent to ${liaUser.full_name}.` });
+          } catch (err) {
+            console.error("[contract] LIA email failed:", err);
+            setMessage({ type: "error", text: "Contract created, but failed to send LIA notification." });
+          }
+        } else {
+          console.warn("[contract] LIA has no email address");
+          setMessage({ type: "error", text: "Contract created. LIA has no email address — notification skipped." });
         }
+      } else {
+        console.warn("[contract] LIA user not found in salesUsers list");
       }
-    } else if (!deal?.assigned_lia_id) {
-      setMessage({ type: "error", text: "No LIA assigned, email notification skipped" });
+    } else {
+      console.log("[contract] No LIA assigned to this deal, skipping email");
+      setMessage({ type: "success", text: "Contract created. No LIA assigned — email notification skipped." });
     }
   };
 
