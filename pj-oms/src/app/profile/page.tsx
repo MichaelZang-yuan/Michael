@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
-import { hasRole, formatRoles, ROLE_LABELS } from "@/lib/roles";
+import SignaturePad from "@/components/SignaturePad";
+import { hasRole, hasAnyRole, formatRoles, ROLE_LABELS } from "@/lib/roles";
 
 type Profile = {
   full_name: string | null;
@@ -13,6 +14,7 @@ type Profile = {
   role: string;
   roles: string[] | null;
   department: string;
+  default_signature_url: string | null;
 };
 
 type MyStudent = {
@@ -79,6 +81,8 @@ export default function ProfilePage() {
     newPassword: "",
     confirmPassword: "",
   });
+  const [isSavingSig, setIsSavingSig] = useState(false);
+  const [sigMessage, setSigMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const yearRange = getYearRange();
   const [dateFrom, setDateFrom] = useState(yearRange.from);
@@ -110,7 +114,7 @@ export default function ProfilePage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("full_name, email, role, roles, department")
+        .select("full_name, email, role, roles, department, default_signature_url")
         .eq("id", session.user.id)
         .single();
 
@@ -123,6 +127,7 @@ export default function ProfilePage() {
           role: "sales",
           roles: null,
           department: "china",
+          default_signature_url: null,
         });
       }
       setIsLoading(false);
@@ -283,6 +288,70 @@ export default function ProfilePage() {
   }
 
   const isSales = hasRole(profile, "sales");
+  const isLia = hasAnyRole(profile, ["lia"]);
+
+  const handleSaveSignature = async (dataUrl: string) => {
+    if (!userId) return;
+    setIsSavingSig(true);
+    setSigMessage(null);
+
+    try {
+      // Convert data URL to blob
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const filePath = `signatures/${userId}/default.png`;
+
+      // Upload to Supabase Storage
+      const { error: uploadErr } = await supabase.storage
+        .from("attachments")
+        .upload(filePath, blob, { upsert: true, contentType: "image/png" });
+
+      if (uploadErr) {
+        setSigMessage({ type: "error", text: "Failed to upload signature: " + uploadErr.message });
+        setIsSavingSig(false);
+        return;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage.from("attachments").getPublicUrl(filePath);
+      const publicUrl = urlData.publicUrl + "?t=" + Date.now();
+
+      // Save URL to profile
+      const { error: updateErr } = await supabase
+        .from("profiles")
+        .update({ default_signature_url: publicUrl })
+        .eq("id", userId);
+
+      if (updateErr) {
+        setSigMessage({ type: "error", text: "Failed to save signature URL." });
+      } else {
+        setProfile((prev) => prev ? { ...prev, default_signature_url: publicUrl } : prev);
+        setSigMessage({ type: "success", text: "Signature saved successfully!" });
+      }
+    } catch {
+      setSigMessage({ type: "error", text: "An error occurred while saving the signature." });
+    }
+    setIsSavingSig(false);
+  };
+
+  const handleRemoveSignature = async () => {
+    if (!userId) return;
+    setIsSavingSig(true);
+    setSigMessage(null);
+
+    const { error: updateErr } = await supabase
+      .from("profiles")
+      .update({ default_signature_url: null })
+      .eq("id", userId);
+
+    if (updateErr) {
+      setSigMessage({ type: "error", text: "Failed to remove signature." });
+    } else {
+      setProfile((prev) => prev ? { ...prev, default_signature_url: null } : prev);
+      setSigMessage({ type: "success", text: "Signature removed." });
+    }
+    setIsSavingSig(false);
+  };
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
@@ -333,6 +402,50 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* My Signature（仅 LIA 显示） */}
+        {isLia && (
+          <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+            <h3 className="text-lg font-bold mb-4">My Signature</h3>
+            <p className="text-sm text-white/50 mb-4">
+              Save a default signature to quickly sign contracts without redrawing each time.
+            </p>
+
+            {sigMessage && (
+              <p className={`mb-4 text-sm ${sigMessage.type === "success" ? "text-green-400" : "text-red-400"}`}>
+                {sigMessage.text}
+              </p>
+            )}
+
+            {profile?.default_signature_url ? (
+              <div className="mb-4">
+                <p className="text-sm font-semibold text-white/70 mb-2">Current Saved Signature:</p>
+                <div className="rounded-lg border border-white/20 bg-white p-4 inline-block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={profile.default_signature_url} alt="Saved signature" className="max-h-20 object-contain" />
+                </div>
+                <div className="flex gap-3 mt-3">
+                  <button
+                    type="button"
+                    onClick={handleRemoveSignature}
+                    disabled={isSavingSig}
+                    className="rounded-lg border border-red-500/50 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
+                  >
+                    Remove Signature
+                  </button>
+                </div>
+                <p className="text-xs text-white/40 mt-3">Upload a new signature below to replace:</p>
+              </div>
+            ) : null}
+
+            <SignaturePad
+              onSignature={handleSaveSignature}
+              submitLabel={isSavingSig ? "Saving..." : "Save as Default Signature"}
+              disabled={isSavingSig}
+              theme="dark"
+            />
+          </div>
+        )}
 
         {/* My Students（仅 sales 显示） */}
         {isSales && (

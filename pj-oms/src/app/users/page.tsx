@@ -218,8 +218,7 @@ export default function UsersPage() {
     setIsSavingEdit(false);
   };
 
-  const canEditUser = (user: Profile) =>
-    !hasRole(user, "admin") && user.id !== currentUser?.id;
+  const canEditUser = () => true;
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -395,7 +394,7 @@ export default function UsersPage() {
             <tbody>
               {users.map((user) => {
                 const isEditing = editingUserId === user.id;
-                const showEditButton = isAdmin && canEditUser(user);
+                const showEditButton = isAdmin && canEditUser();
                 const userRoles = user.roles ?? [user.role];
 
                 return (

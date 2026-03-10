@@ -574,6 +574,31 @@ export default function ContactDetailPage() {
               <input type="file" accept="image/*,.pdf" className="hidden" onChange={handlePassportExtract} disabled={isExtractingPassport} />
             </label>
           </div>
+          {/* Visa expiry warning */}
+          {form.visa_expiry_date && (() => {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const expiry = new Date(form.visa_expiry_date);
+            const days = Math.ceil((expiry.getTime() - today.getTime()) / (1000*60*60*24));
+            if (days <= 30) {
+              const isExpired = days <= 0;
+              return (
+                <div className={`mb-4 rounded-lg border px-4 py-3 flex items-center gap-3 ${isExpired ? "border-red-500 bg-red-500/20" : "border-orange-500 bg-orange-500/20"}`}>
+                  <span className="text-2xl">{isExpired ? "🚨" : "⚠️"}</span>
+                  <div>
+                    <p className={`text-sm font-bold ${isExpired ? "text-red-300" : "text-orange-300"}`}>
+                      {isExpired ? "Visa Expired!" : "Visa Expiring Soon!"}
+                    </p>
+                    <p className={`text-xs ${isExpired ? "text-red-400" : "text-orange-400"}`}>
+                      {isExpired
+                        ? `Visa expired ${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} ago (${new Date(form.visa_expiry_date).toLocaleDateString("en-NZ")})`
+                        : `${days} day${days !== 1 ? "s" : ""} until expiry (${new Date(form.visa_expiry_date).toLocaleDateString("en-NZ")})`}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
             <div>
               <label className={labelClass}>Current Visa Type</label>

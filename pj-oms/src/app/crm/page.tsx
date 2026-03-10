@@ -56,6 +56,33 @@ type RecentDeal = {
   profiles: { full_name: string | null } | null;
 };
 
+type VisaAlert = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  visa_expiry_date: string;
+  department: string | null;
+  assigned_sales_name: string | null;
+  days_remaining: number;
+  urgency: "expired" | "14_days" | "30_days" | "60_days" | "90_days";
+};
+
+const URGENCY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  expired: { bg: "bg-red-900/30 border-red-700", text: "text-red-300", label: "Expired" },
+  "14_days": { bg: "bg-red-500/20 border-red-500", text: "text-red-400", label: "< 14 days" },
+  "30_days": { bg: "bg-orange-500/20 border-orange-500", text: "text-orange-400", label: "< 30 days" },
+  "60_days": { bg: "bg-yellow-500/20 border-yellow-500", text: "text-yellow-400", label: "< 60 days" },
+  "90_days": { bg: "bg-green-500/20 border-green-500", text: "text-green-400", label: "< 90 days" },
+};
+
+function getUrgency(daysRemaining: number): VisaAlert["urgency"] {
+  if (daysRemaining <= 0) return "expired";
+  if (daysRemaining <= 14) return "14_days";
+  if (daysRemaining <= 30) return "30_days";
+  if (daysRemaining <= 60) return "60_days";
+  return "90_days";
+}
+
 export default function CrmDashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +98,7 @@ export default function CrmDashboardPage() {
   const [recentDeals, setRecentDeals] = useState<RecentDeal[]>([]);
   const [dealsByStatus, setDealsByStatus] = useState<{ name: string; value: number }[]>([]);
   const [dealsByDept, setDealsByDept] = useState<{ name: string; value: number }[]>([]);
+  const [visaAlerts, setVisaAlerts] = useState<VisaAlert[]>([]);
 
   useEffect(() => {
     async function init() {
@@ -153,6 +181,39 @@ export default function CrmDashboardPage() {
       if (!isAdmin && dept) recentQuery = recentQuery.eq("department", dept);
       const { data: recentData } = await recentQuery;
       if (recentData) setRecentDeals(recentData as unknown as RecentDeal[]);
+
+      // Visa expiry alerts — contacts with visa_expiry_date within 90 days or expired
+      let visaQuery = supabase
+        .from("contacts")
+        .select("id, first_name, last_name, visa_expiry_date, department, profiles!contacts_assigned_sales_id_fkey(full_name)")
+        .not("visa_expiry_date", "is", null);
+      if (!isAdmin && dept) visaQuery = visaQuery.eq("department", dept);
+
+      const { data: visaData } = await visaQuery;
+      if (visaData) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const alerts: VisaAlert[] = [];
+        for (const c of visaData as unknown as { id: string; first_name: string; last_name: string; visa_expiry_date: string; department: string | null; profiles: { full_name: string | null } | null }[]) {
+          const expiry = new Date(c.visa_expiry_date);
+          const diffMs = expiry.getTime() - today.getTime();
+          const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          if (daysRemaining <= 90) {
+            alerts.push({
+              id: c.id,
+              first_name: c.first_name,
+              last_name: c.last_name,
+              visa_expiry_date: c.visa_expiry_date,
+              department: c.department,
+              assigned_sales_name: c.profiles?.full_name ?? null,
+              days_remaining: daysRemaining,
+              urgency: getUrgency(daysRemaining),
+            });
+          }
+        }
+        alerts.sort((a, b) => a.days_remaining - b.days_remaining);
+        setVisaAlerts(alerts);
+      }
 
       setIsLoading(false);
     }
@@ -271,6 +332,61 @@ export default function CrmDashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Visa Expiry Alerts */}
+        {visaAlerts.length > 0 && (
+          <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Visa Expiry Alerts</h3>
+              <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400">
+                {visaAlerts.length} alert{visaAlerts.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px] border-collapse">
+                <thead>
+                  <tr className="border-b border-white/20">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Visa Expiry</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Days Left</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Assigned Sales</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Dept</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Urgency</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visaAlerts.map((alert) => {
+                    const style = URGENCY_STYLES[alert.urgency];
+                    return (
+                      <tr key={alert.id} className={`border-b border-white/10 last:border-b-0 hover:bg-white/5 ${alert.urgency === "expired" ? "bg-red-900/10" : ""}`}>
+                        <td className="px-4 py-3 text-sm">
+                          <Link href={`/contacts/${alert.id}`} className="text-blue-400 hover:underline font-medium">
+                            {alert.first_name} {alert.last_name}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-white/90">
+                          {new Date(alert.visa_expiry_date).toLocaleDateString("en-NZ")}
+                        </td>
+                        <td className={`px-4 py-3 text-sm font-bold ${style.text}`}>
+                          {alert.days_remaining <= 0 ? `${Math.abs(alert.days_remaining)} days ago` : `${alert.days_remaining} days`}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-white/70">{alert.assigned_sales_name ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs text-white/60">
+                          {alert.department ? DEPT_LABELS[alert.department] ?? alert.department : "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`rounded-full border px-2 py-0.5 text-xs font-bold ${style.bg} ${style.text}`}>
+                            {style.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Recent Deals */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">

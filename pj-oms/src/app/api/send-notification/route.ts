@@ -171,6 +171,26 @@ ${base}If you have any concerns or require amendments, please contact the admin 
       };
     }
 
+    case "visa_expiry": {
+      const contactName = extraData?.contact_name as string ?? clientName;
+      const expiryDate = extraData?.visa_expiry_date as string ?? "";
+      const daysRemaining = extraData?.days_remaining as number ?? 0;
+      const visaTypeName = extraData?.visa_type as string ?? "Visa";
+      return {
+        subject: `Visa Expiry Alert — ${contactName} (${daysRemaining <= 0 ? "EXPIRED" : `${daysRemaining} days remaining`})`,
+        html: `${base}Hi ${clientName},</p>
+${base}This is an automated reminder that your client <strong>${contactName}</strong>'s <strong>${visaTypeName}</strong> ${daysRemaining <= 0 ? "has expired" : `will expire in <strong>${daysRemaining} days</strong>`}.</p>
+<table style="border-collapse:collapse;width:100%;max-width:400px;margin:16px 0">
+  <tr><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px"><strong>Client</strong></td><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px">${contactName}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px"><strong>Visa Type</strong></td><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px">${visaTypeName}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px"><strong>Expiry Date</strong></td><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px">${expiryDate}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px"><strong>Status</strong></td><td style="padding:8px;border:1px solid #ddd;color:#555;font-size:14px;${daysRemaining <= 0 ? "color:red;font-weight:bold" : daysRemaining <= 14 ? "color:#dc2626" : daysRemaining <= 30 ? "color:#ea580c" : ""}">${daysRemaining <= 0 ? "EXPIRED" : `${daysRemaining} days remaining`}</td></tr>
+</table>
+${base}Please take appropriate action to assist the client with their visa renewal.</p>
+${sign}`,
+      };
+    }
+
     default:
       return {
         subject: `Update - ${dealNumber}`,
