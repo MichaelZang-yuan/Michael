@@ -229,7 +229,6 @@ export default function DealDetailPage() {
   // Core deal state
   const [profile, setProfile] = useState<{ role: string; id: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [salesUsers, setSalesUsers] = useState<SalesUser[]>([]);
@@ -256,7 +255,6 @@ export default function DealDetailPage() {
     submitted_date: "", approved_date: "", declined_date: "", notes: "",
     preferred_language: "en", refund_percentage: "50",
   });
-  const [initialForm, setInitialForm] = useState("");
 
   // New section data
   const [payments, setPayments] = useState<DealPayment[]>([]);
@@ -334,7 +332,6 @@ export default function DealDetailPage() {
     : deal?.companies?.company_name ?? "—";
   const clientEmail = deal?.contacts?.email ?? deal?.companies?.email ?? "";
 
-  const hasUnsavedChanges = JSON.stringify(form) !== initialForm;
 
   // ─── Fetch functions ─────────────────────────────────────────────────────────
 
@@ -482,7 +479,6 @@ export default function DealDetailPage() {
         refund_percentage: dealData.refund_percentage != null ? String(dealData.refund_percentage) : "50",
       };
       setForm(lf);
-      setInitialForm(JSON.stringify(lf));
 
       await Promise.all([
         fetchPayments(), fetchContract(), fetchIntakeForm(), fetchChecklist(),
@@ -601,46 +597,6 @@ export default function DealDetailPage() {
   };
 
   // ─── Deal CRUD ────────────────────────────────────────────────────────────
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true); setMessage(null);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const clean = (v: string) => v.trim() || null;
-    const payload = {
-      deal_type: form.deal_type || null,
-      visa_type: form.deal_type === "individual_visa" ? (clean(form.visa_type)) : null,
-      description: clean(form.description),
-      service_fee: form.service_fee ? parseFloat(form.service_fee) : null,
-      inz_application_fee: form.inz_application_fee ? parseFloat(form.inz_application_fee) : null,
-      other_fee: form.other_fee ? parseFloat(form.other_fee) : null,
-      preferred_language: form.preferred_language || "en",
-      refund_percentage: form.refund_percentage ? parseInt(form.refund_percentage) : 50,
-      total_amount: stageTotalAmount > 0 ? stageTotalAmount : null,
-      payment_status: form.payment_status,
-      assigned_sales_id: form.assigned_sales_id || null,
-      assigned_lia_id: form.assigned_lia_id || null,
-      agent_id: form.agent_id || null,
-      department: form.department || null,
-      submitted_date: form.submitted_date || null,
-      approved_date: form.approved_date || null,
-      declined_date: form.declined_date || null,
-      notes: clean(form.notes),
-    };
-    const { error } = await supabase.from("deals").update(payload).eq("id", id);
-    if (error) { setMessage({ type: "error", text: error.message }); }
-    else {
-      setInitialForm(JSON.stringify(form));
-      setMessage({ type: "success", text: "Deal saved." });
-      await logActivity(supabase, session.user.id, "updated_deal", "deals", id, { deal_number: deal?.deal_number });
-      await fetchLogs();
-    }
-    setIsSaving(false);
-  };
 
   const handleStatusChange = async (newStatus: string) => {
     if (!canChangeStatus) { setMessage({ type: "error", text: "You do not have permission to change deal status." }); return; }
