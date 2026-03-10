@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -54,7 +55,7 @@ export default function ContactDetailPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const [profile, setProfile] = useState<{ role: string; department: string } | null>(null);
+  const [profile, setProfile] = useState<{ role: string; roles: string[]; department: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -95,6 +96,14 @@ export default function ContactDetailPage() {
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
+  // Passport extraction
+  const [isExtractingPassport, setIsExtractingPassport] = useState(false);
+  const [passportExtraction, setPassportExtraction] = useState<{
+    full_name: string | null; passport_number: string | null; nationality: string | null;
+    date_of_birth: string | null; expiry_date: string | null; gender: string | null;
+  } | null>(null);
+  const [showPassportConfirm, setShowPassportConfirm] = useState(false);
+
   const fetchAttachments = useCallback(async () => {
     const res = await fetch(`/api/attachments?type=contacts&id=${id}`);
     const json = await res.json().catch(() => ({ files: [] }));
@@ -134,13 +143,13 @@ export default function ContactDetailPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profileData } = await supabase.from("profiles").select("role, department").eq("id", session.user.id).single();
+      const { data: profileData } = await supabase.from("profiles").select("role, roles, department").eq("id", session.user.id).single();
       if (profileData) setProfile(profileData);
 
       const { data: agentsData } = await supabase.from("agents").select("id, agent_name").order("agent_name");
       if (agentsData) setAgents(agentsData as Agent[]);
 
-      const { data: salesData } = await supabase.from("profiles").select("id, full_name").in("role", ["admin", "sales"]).order("full_name");
+      const { data: salesData } = await supabase.from("profiles").select("id, full_name").overlaps("roles", ["admin", "sales"]).order("full_name");
       if (salesData) setSalesUsers(salesData as SalesUser[]);
 
       const { data: contactData } = await supabase.from("contacts").select("*").eq("id", id).single();
@@ -220,8 +229,8 @@ export default function ContactDetailPage() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const isAdmin = profile?.role === "admin";
-  const isSales = profile?.role === "sales";
+  const isAdmin = hasRole(profile, "admin");
+  const isSales = !isAdmin && hasRole(profile, "sales");
 
   const handleSave = async () => {
     if (!form.first_name.trim() || !form.last_name.trim()) { setMessage({ type: "error", text: "First and last name are required." }); return; }
@@ -353,6 +362,68 @@ export default function ContactDetailPage() {
     if (res.ok) await fetchAttachments();
     setIsUploading(false);
     e.target.value = "";
+  };
+
+  const handlePassportExtract = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsExtractingPassport(true);
+    try {
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1]);
+        };
+      });
+      reader.readAsDataURL(file);
+      const base64Data = await base64Promise;
+
+      const isPdf = file.type === "application/pdf";
+      const res = await fetch("/api/extract-passport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base64Data,
+          fileType: isPdf ? "pdf" : "image",
+          mediaType: file.type || (isPdf ? "application/pdf" : "image/jpeg"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Passport extraction failed" }); return; }
+      setPassportExtraction(data);
+      setShowPassportConfirm(true);
+    } catch (err) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Passport extraction failed" });
+    } finally {
+      setIsExtractingPassport(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleApplyPassportData = () => {
+    if (!passportExtraction) return;
+    setForm(f => {
+      const updates: Partial<typeof f> = {};
+      if (passportExtraction.passport_number) updates.passport_number = passportExtraction.passport_number;
+      if (passportExtraction.date_of_birth) updates.date_of_birth = passportExtraction.date_of_birth;
+      if (passportExtraction.nationality) updates.nationality = passportExtraction.nationality;
+      if (passportExtraction.expiry_date) updates.passport_expiry_date = passportExtraction.expiry_date;
+      if (passportExtraction.gender) updates.gender = passportExtraction.gender;
+      if (passportExtraction.full_name && !f.first_name && !f.last_name) {
+        const parts = passportExtraction.full_name.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          updates.last_name = parts[0];
+          updates.first_name = parts.slice(1).join(" ");
+        } else {
+          updates.first_name = passportExtraction.full_name;
+        }
+      }
+      return { ...f, ...updates };
+    });
+    setShowPassportConfirm(false);
+    setPassportExtraction(null);
+    setMessage({ type: "success", text: "Passport data applied to form. Remember to save." });
   };
 
   if (isLoading) return (
@@ -496,7 +567,13 @@ export default function ContactDetailPage() {
           </div>
 
           {/* Visa & Passport */}
-          <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Visa & Passport</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-bold text-white/40 uppercase tracking-wider">Visa & Passport</p>
+            <label className={`cursor-pointer rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 ${isExtractingPassport ? "opacity-50 pointer-events-none" : ""}`}>
+              {isExtractingPassport ? "Extracting..." : "Extract from Passport"}
+              <input type="file" accept="image/*,.pdf" className="hidden" onChange={handlePassportExtract} disabled={isExtractingPassport} />
+            </label>
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
             <div>
               <label className={labelClass}>Current Visa Type</label>
@@ -784,6 +861,45 @@ export default function ContactDetailPage() {
             </ul>
           )}
         </div>
+
+        {/* Passport Extraction Confirm Modal */}
+        {showPassportConfirm && passportExtraction && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6">
+              <h4 className="text-lg font-bold mb-4">Passport Data Extracted</h4>
+              <p className="text-sm text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
+              <div className="space-y-2 mb-5">
+                {([
+                  ["Full Name", passportExtraction.full_name, `${form.first_name} ${form.last_name}`.trim()],
+                  ["Passport Number", passportExtraction.passport_number, form.passport_number],
+                  ["Nationality", passportExtraction.nationality, form.nationality],
+                  ["Date of Birth", passportExtraction.date_of_birth, form.date_of_birth],
+                  ["Passport Expiry", passportExtraction.expiry_date, form.passport_expiry_date],
+                  ["Gender", passportExtraction.gender, form.gender],
+                ] as [string, string | null, string][]).map(([label, extracted, current]) => (
+                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm">
+                    <span className="text-white/50">{label}</span>
+                    <span className="text-green-400">{extracted ?? "—"}</span>
+                    <span className="text-white/40">{current || "—"}</span>
+                  </div>
+                ))}
+                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-white/30">
+                  <span>Field</span>
+                  <span>Extracted</span>
+                  <span>Current</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleApplyPassportData} className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700">
+                  Apply
+                </button>
+                <button onClick={() => { setShowPassportConfirm(false); setPassportExtraction(null); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </main>
     </div>

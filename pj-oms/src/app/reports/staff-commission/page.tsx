@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -107,8 +108,8 @@ export default function StaffCommissionPage() {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
-      if (!profile || profile.role !== "admin") { router.push("/crm"); return; }
+      const { data: profile } = await supabase.from("profiles").select("role, roles").eq("id", session.user.id).single();
+      if (!profile || !hasRole(profile, "admin")) { router.push("/crm"); return; }
       setUserId(session.user.id);
       await Promise.all([fetchSettings(), fetchCommissions(), fetchDeals(), fetchProfiles()]);
       setIsLoading(false);
@@ -117,7 +118,7 @@ export default function StaffCommissionPage() {
   }, [router]);
 
   const fetchSettings = async () => {
-    const { data: profilesData } = await supabase.from("profiles").select("id, full_name, role").order("full_name");
+    const { data: profilesData } = await supabase.from("profiles").select("id, full_name, role, roles").order("full_name");
     const { data: settingsData } = await supabase.from("staff_commission_settings").select("id, user_id, default_commission_rate");
     const settingsMap = new Map((settingsData ?? []).map(s => [s.user_id, s]));
     const merged: StaffSetting[] = (profilesData ?? []).map(p => ({
@@ -144,7 +145,7 @@ export default function StaffCommissionPage() {
   };
 
   const fetchProfiles = async () => {
-    const { data } = await supabase.from("profiles").select("id, full_name, role").order("full_name");
+    const { data } = await supabase.from("profiles").select("id, full_name, role, roles").order("full_name");
     if (data) setProfiles(data as ProfileOption[]);
   };
 

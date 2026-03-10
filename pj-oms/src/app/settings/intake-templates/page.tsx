@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
+import { hasRole } from "@/lib/roles";
 
 type FieldType = "text" | "textarea" | "date" | "email" | "phone" | "number" | "select" | "radio" | "checkbox" | "file";
 
@@ -74,8 +75,8 @@ export default function IntakeTemplatesPage() {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
-      if (!profile || profile.role !== "admin") { router.push("/crm"); return; }
+      const { data: profile } = await supabase.from("profiles").select("role, roles").eq("id", session.user.id).single();
+      if (!profile || !hasRole(profile, "admin")) { router.push("/crm"); return; }
       setUserId(session.user.id);
       await fetchTemplates();
       setIsLoading(false);

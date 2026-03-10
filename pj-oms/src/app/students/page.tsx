@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 
 type CommissionRow = {
@@ -97,7 +98,7 @@ export default function StudentsPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("role, department")
+        .select("role, roles, department")
         .eq("id", session.user.id)
         .single();
 
@@ -106,7 +107,7 @@ export default function StudentsPage() {
         .select("id, full_name, student_number, school_id, department, status, created_at, schools(name), commissions(year, status, enrollment_date), profiles!students_assigned_sales_id_fkey(full_name)")
         .order("created_at", { ascending: false });
 
-      if (profileData?.role === "sales" && profileData?.department) {
+      if (!hasRole(profileData, "admin") && hasRole(profileData, "sales") && profileData?.department) {
         studentsQuery = studentsQuery.eq("department", profileData.department);
       }
 

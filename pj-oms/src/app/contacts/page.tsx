@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 
 type Contact = {
@@ -51,9 +52,9 @@ export default function ContactsPage() {
       if (!session) { router.push("/admin"); return; }
 
       const { data: profileData } = await supabase
-        .from("profiles").select("role, department").eq("id", session.user.id).single();
+        .from("profiles").select("role, roles, department").eq("id", session.user.id).single();
 
-      const admin = profileData?.role === "admin";
+      const admin = hasRole(profileData, "admin");
       setIsAdmin(admin);
 
       let query = supabase

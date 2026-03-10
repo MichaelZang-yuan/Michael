@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 
 const ACTION_LABELS: Record<string, string> = {
@@ -108,13 +109,13 @@ export default function LogsPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, roles")
         .eq("id", session.user.id)
         .single();
 
       if (profileData) setProfile(profileData);
 
-      if (profileData?.role !== "admin") {
+      if (!hasRole(profileData, "admin")) {
         setIsLoading(false);
         return;
       }
@@ -138,10 +139,10 @@ export default function LogsPage() {
   }, [router]);
 
   useEffect(() => {
-    if (profile?.role === "admin") {
+    if (hasRole(profile, "admin")) {
       fetchLogs();
     }
-  }, [profile?.role, fetchLogs]);
+  }, [profile, fetchLogs]);
 
   const handleClearFilters = () => {
     setFilters({ userId: "all", entityType: "all", dateFrom: "", dateTo: "" });
@@ -158,7 +159,7 @@ export default function LogsPage() {
     );
   }
 
-  if (profile?.role !== "admin") {
+  if (!hasRole(profile, "admin")) {
     return (
       <div className="min-h-screen bg-blue-950 text-white">
         <Navbar />

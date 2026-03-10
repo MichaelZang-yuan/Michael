@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
@@ -58,7 +59,7 @@ type RecentDeal = {
 export default function CrmDashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<{ full_name: string; role: string; department: string } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string; role: string; roles: string[]; department: string } | null>(null);
   const [stats, setStats] = useState({
     totalContacts: 0,
     totalLeads: 0,
@@ -78,12 +79,12 @@ export default function CrmDashboardPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("full_name, role, department")
+        .select("full_name, role, roles, department")
         .eq("id", session.user.id)
         .single();
       if (profileData) setProfile(profileData);
 
-      const isAdmin = profileData?.role === "admin";
+      const isAdmin = hasRole(profileData, "admin");
       const dept = profileData?.department;
 
       // Contacts stats

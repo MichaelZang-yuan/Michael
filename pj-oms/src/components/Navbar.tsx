@@ -4,20 +4,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole, hasAnyRole, formatRoles } from "@/lib/roles";
 
 const DEPT_LABELS: Record<string, string> = {
   china: "China",
   thailand: "Thailand",
   myanmar: "Myanmar",
   korea_japan: "Korea & Japan",
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: "Admin",
-  accountant: "Accountant",
-  sales: "Sales",
-  lia: "LIA",
-  copywriter: "Copywriter",
 };
 
 type NavbarProps = {
@@ -44,6 +37,7 @@ const COMMISSION_LINKS = [
 const REPORTS_LINKS = [
   { href: "/reports", label: "Commission Reports" },
   { href: "/reports/staff-commission", label: "Staff Commission" },
+  { href: "/reports/agent-commissions", label: "Agent Commissions" },
 ];
 
 // Admin-only links
@@ -62,7 +56,7 @@ const SETTINGS_LINKS = [
 export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [profile, setProfile] = useState<{ full_name: string | null; role: string; department: string } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; role: string; roles: string[]; department: string } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [commissionOpen, setCommissionOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -77,7 +71,7 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
       if (!session) return;
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, role, department")
+        .select("full_name, role, roles, department")
         .eq("id", session.user.id)
         .single();
       if (data) setProfile(data);
@@ -114,11 +108,11 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
     router.push("/admin");
   };
 
-  const isAdmin = profile?.role === "admin";
-  const isLia = profile?.role === "lia";
+  const isAdmin = hasRole(profile, "admin");
+  const isLia = hasRole(profile, "lia");
   const showLiaDashboard = isAdmin || isLia;
-  // LIA users see only CRM + Deals + LIA Dashboard (not Commission admin)
-  const showCommission = !isLia;
+  // Show Commission if user has ANY non-lia role (admin/sales/accountant), even if also LIA
+  const showCommission = hasAnyRole(profile, ["admin", "sales", "accountant", "copywriter"]);
 
   const isCommissionActive = COMMISSION_LINKS.some(l => pathname === l.href || pathname.startsWith(l.href + "/"));
   const isReportsActive = REPORTS_LINKS.some(l => pathname === l.href || pathname.startsWith(l.href + "/"));
@@ -300,7 +294,7 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {profile && (
             <span className="hidden xl:inline text-white/60 text-sm truncate max-w-[200px]">
-              {profile.full_name ?? "User"} · {ROLE_LABELS[profile.role] ?? profile.role}
+              {profile.full_name ?? "User"} · {formatRoles(profile.roles)}
               {profile.department && ` · ${DEPT_LABELS[profile.department] ?? profile.department}`}
             </span>
           )}
@@ -451,7 +445,7 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
           {/* User info (mobile) */}
           {profile && (
             <p className="mt-3 px-4 py-2 text-xs text-white/40">
-              {profile.full_name ?? "User"} · {ROLE_LABELS[profile.role] ?? profile.role}
+              {profile.full_name ?? "User"} · {formatRoles(profile.roles)}
               {profile.department && ` · ${DEPT_LABELS[profile.department] ?? profile.department}`}
             </p>
           )}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -48,8 +49,8 @@ export default function NewContactPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profileData } = await supabase.from("profiles").select("role, department").eq("id", session.user.id).single();
-      const salesRole = profileData?.role === "sales";
+      const { data: profileData } = await supabase.from("profiles").select("role, roles, department").eq("id", session.user.id).single();
+      const salesRole = hasRole(profileData, "sales");
       setIsSales(salesRole);
       if (profileData?.department) {
         setUserDept(profileData.department);

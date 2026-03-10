@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
+import { hasRole, formatRoles, ROLE_LABELS } from "@/lib/roles";
 
 type Profile = {
   full_name: string | null;
   email: string | null;
   role: string;
+  roles: string[] | null;
   department: string;
 };
 
@@ -47,14 +49,6 @@ const DEPT_LABELS: Record<string, string> = {
   thailand: "Thailand",
   myanmar: "Myanmar",
   korea_japan: "Korea & Japan",
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: "Admin",
-  accountant: "Accountant",
-  sales: "Sales",
-  lia: "LIA",
-  copywriter: "Copywriter",
 };
 
 const inputClass =
@@ -116,7 +110,7 @@ export default function ProfilePage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("full_name, email, role, department")
+        .select("full_name, email, role, roles, department")
         .eq("id", session.user.id)
         .single();
 
@@ -127,6 +121,7 @@ export default function ProfilePage() {
           full_name: session.user.user_metadata?.full_name ?? null,
           email: session.user.email ?? null,
           role: "sales",
+          roles: null,
           department: "china",
         });
       }
@@ -138,7 +133,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function fetchMyStudents() {
-      if (!userId || profile?.role !== "sales") return;
+      if (!userId || !hasRole(profile, "sales")) return;
 
       setIsLoadingStudents(true);
       let studentsData: unknown[] | null = null;
@@ -287,7 +282,7 @@ export default function ProfilePage() {
     );
   }
 
-  const isSales = profile?.role === "sales";
+  const isSales = hasRole(profile, "sales");
 
   return (
     <div className="min-h-screen bg-blue-950 text-white">
@@ -322,7 +317,7 @@ export default function ProfilePage() {
               <label className="text-sm font-semibold text-white/70">Role</label>
               <input
                 type="text"
-                value={profile?.role ? ROLE_LABELS[profile.role] ?? profile.role : "—"}
+                value={profile?.roles ? formatRoles(profile.roles) : profile?.role ? ROLE_LABELS[profile.role] ?? profile.role : "—"}
                 readOnly
                 className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white/80 cursor-not-allowed"
               />

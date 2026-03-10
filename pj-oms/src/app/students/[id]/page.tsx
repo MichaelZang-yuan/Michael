@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole, hasAnyRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -145,7 +146,7 @@ export default function StudentDetailPage() {
       // 获取当前用户角色
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, roles")
         .eq("id", session.user.id)
         .single();
       if (profileData) setProfile(profileData);
@@ -695,8 +696,8 @@ export default function StudentDetailPage() {
 
   const existingYears = commissions.map(c => c.year);
   const availableYears = [1, 2, 3, 4].filter(y => !existingYears.includes(y));
-  const isAdmin = profile?.role === "admin";
-  const canEditDeleteCommission = profile?.role === "admin" || profile?.role === "sales";
+  const isAdmin = hasRole(profile, "admin");
+  const canEditDeleteCommission = hasAnyRole(profile, ["admin", "sales"]);
   const isDirty = initialForm !== "" && JSON.stringify(form) !== initialForm;
 
   return (

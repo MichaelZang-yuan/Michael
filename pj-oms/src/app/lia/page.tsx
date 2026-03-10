@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
+import { hasRole } from "@/lib/roles";
 
 type Deal = {
   id: string;
@@ -68,10 +69,10 @@ export default function LiaDashboardPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profileData } = await supabase.from("profiles").select("id, role, full_name").eq("id", session.user.id).single();
+      const { data: profileData } = await supabase.from("profiles").select("id, role, roles, full_name").eq("id", session.user.id).single();
       if (!profileData) { router.push("/admin"); return; }
 
-      if (profileData.role !== "admin" && profileData.role !== "lia") {
+      if (!hasRole(profileData, "admin") && !hasRole(profileData, "lia")) {
         router.push("/crm"); return;
       }
 
@@ -83,8 +84,8 @@ export default function LiaDashboardPage() {
         .in("status", ACTIVE_STATUSES)
         .order("created_at", { ascending: false });
 
-      // LIA only sees their assigned deals
-      if (profileData.role === "lia") {
+      // LIA only sees their assigned deals (non-admin LIA users)
+      if (!hasRole(profileData, "admin") && hasRole(profileData, "lia")) {
         dealsQuery = dealsQuery.eq("assigned_lia_id", session.user.id);
       }
 
@@ -109,7 +110,7 @@ export default function LiaDashboardPage() {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      if (profileData.role === "lia") {
+      if (!hasRole(profileData, "admin") && hasRole(profileData, "lia")) {
         recentQuery = recentQuery.eq("assigned_lia_id", session.user.id);
       }
 
@@ -123,7 +124,7 @@ export default function LiaDashboardPage() {
 
   if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
 
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = hasRole(profile, "admin");
 
   const getClientName = (deal: Deal) => {
     if (deal.contacts) return `${deal.contacts.first_name} ${deal.contacts.last_name}`;

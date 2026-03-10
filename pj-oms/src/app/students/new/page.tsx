@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -80,7 +81,7 @@ export default function NewStudentPage() {
     amount: "",
   });
 
-  const isSales = profile?.role === "sales";
+  const isSales = hasRole(profile, "sales");
   const isDirty =
     !!form.full_name ||
     !!form.student_number ||
@@ -102,13 +103,13 @@ export default function NewStudentPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("role, department")
+        .select("role, roles, department")
         .eq("id", session.user.id)
         .single();
 
       if (profileData) {
         setProfile(profileData);
-        if (profileData.role === "sales" && profileData.department) {
+        if (!hasRole(profileData, "admin") && hasRole(profileData, "sales") && profileData.department) {
           setForm((prev) => ({ ...prev, department: profileData.department }));
         }
       }

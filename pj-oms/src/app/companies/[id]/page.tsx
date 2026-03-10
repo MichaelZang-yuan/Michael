@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -74,7 +75,7 @@ export default function CompanyDetailPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profileData } = await supabase.from("profiles").select("role, department").eq("id", session.user.id).single();
+      const { data: profileData } = await supabase.from("profiles").select("role, roles, department").eq("id", session.user.id).single();
       if (profileData) setProfile(profileData);
 
       const { data: companyData } = await supabase.from("companies").select("*").eq("id", id).single();
@@ -123,8 +124,8 @@ export default function CompanyDetailPage() {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const isAdmin = profile?.role === "admin";
-  const isSales = profile?.role === "sales";
+  const isAdmin = hasRole(profile, "admin");
+  const isSales = !isAdmin && hasRole(profile, "sales");
 
   const handleSave = async () => {
     if (!form.company_name.trim()) { setMessage({ type: "error", text: "Company name is required." }); return; }

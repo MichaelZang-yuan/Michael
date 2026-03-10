@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { email?: string; full_name?: string; role?: string; department?: string };
+  let body: { email?: string; full_name?: string; role?: string; roles?: string[]; department?: string };
   try {
     body = await request.json();
   } catch {
@@ -23,7 +23,9 @@ export async function POST(request: Request) {
 
   const email = body.email?.trim();
   const full_name = body.full_name?.trim();
-  const role = body.role ?? "sales";
+  const roles: string[] = Array.isArray(body.roles) && body.roles.length > 0
+    ? body.roles
+    : [body.role ?? "sales"];
   const department = body.department ?? "china";
 
   if (!email) {
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
         id: user.user.id,
         full_name: full_name || null,
         email,
-        role,
+        roles,
         department,
       },
       { onConflict: "id" }
@@ -87,7 +89,8 @@ export async function POST(request: Request) {
       id: user.user.id,
       full_name: full_name || null,
       email,
-      role,
+      roles,
+      role: roles[0],
       department,
       created_at: new Date().toISOString(),
     },

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
+import { hasRole } from "@/lib/roles";
 
 type AttachmentFile = { name: string; url: string; createdAt: string | null };
 type ActivityLog = { id: string; action: string; details: Record<string, unknown> | null; created_at: string; user_id: string };
@@ -29,6 +30,26 @@ type RelatedDeal = {
   companies: { company_name: string } | null;
 };
 
+type AgentCommission = {
+  id: string;
+  created_at: string;
+  deal_id: string;
+  commission_type: string;
+  commission_rate: number;
+  base_amount: number;
+  commission_amount: number;
+  status: string;
+  paid_date: string | null;
+  invoice_number: string | null;
+  notes: string | null;
+  deals: {
+    deal_number: string | null;
+    total_amount: number | null;
+    contacts: { first_name: string; last_name: string } | null;
+    companies: { company_name: string } | null;
+  } | null;
+};
+
 const DEAL_STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-500/20 text-gray-400",
   quoted: "bg-blue-500/20 text-blue-400",
@@ -39,6 +60,12 @@ const DEAL_STATUS_COLORS: Record<string, string> = {
   declined: "bg-red-500/20 text-red-400",
   completed: "bg-green-600/20 text-green-300",
   cancelled: "bg-red-600/20 text-red-300",
+};
+
+const COMMISSION_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-500/20 text-yellow-400",
+  approved: "bg-blue-500/20 text-blue-400",
+  paid: "bg-green-500/20 text-green-400",
 };
 
 export default function AgentDetailPage() {
@@ -67,6 +94,10 @@ export default function AgentDetailPage() {
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
+  // Commissions state
+  const [commissions, setCommissions] = useState<AgentCommission[]>([]);
+  const [commissionFilter, setCommissionFilter] = useState({ from: "", to: "" });
+
   const fetchAttachments = useCallback(async () => {
     const res = await fetch(`/api/attachments?type=agents&id=${id}`);
     const json = await res.json().catch(() => ({ files: [] }));
@@ -91,12 +122,25 @@ export default function AgentDetailPage() {
     }
   }, [id]);
 
+  const fetchCommissions = useCallback(async (filter?: { from: string; to: string }) => {
+    const f = filter ?? commissionFilter;
+    let query = supabase
+      .from("agent_commissions")
+      .select("id, created_at, deal_id, commission_type, commission_rate, base_amount, commission_amount, status, paid_date, invoice_number, notes, deals(deal_number, total_amount, contacts(first_name, last_name), companies(company_name))")
+      .eq("agent_id", id)
+      .order("created_at", { ascending: false });
+    if (f.from) query = query.gte("created_at", f.from);
+    if (f.to) query = query.lte("created_at", f.to + "T23:59:59");
+    const { data } = await query;
+    if (data) setCommissions(data as unknown as AgentCommission[]);
+  }, [id, commissionFilter]);
+
   useEffect(() => {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profileData } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
+      const { data: profileData } = await supabase.from("profiles").select("role, roles").eq("id", session.user.id).single();
       if (profileData) setProfile(profileData);
 
       const { data: agentData } = await supabase.from("agents").select("*").eq("id", id).single();
@@ -121,12 +165,11 @@ export default function AgentDetailPage() {
         .from("deals").select("id, deal_number, deal_type, status, total_amount, contacts(first_name, last_name), companies(company_name)").eq("agent_id", id).order("created_at", { ascending: false });
       if (dealsData) setRelatedDeals(dealsData as unknown as RelatedDeal[]);
 
-      await fetchAttachments();
-      await fetchLogs();
+      await Promise.all([fetchAttachments(), fetchLogs(), fetchCommissions({ from: "", to: "" })]);
       setIsLoading(false);
     }
     init();
-  }, [id, router, fetchAttachments, fetchLogs]);
+  }, [id, router, fetchAttachments, fetchLogs, fetchCommissions]);
 
   const hasUnsavedChanges = JSON.stringify(form) !== initialForm;
 
@@ -186,6 +229,11 @@ export default function AgentDetailPage() {
     e.target.value = "";
   };
 
+  // Commission summary
+  const totalCommission = commissions.reduce((s, c) => s + (c.commission_amount || 0), 0);
+  const pendingCommission = commissions.filter(c => c.status === "pending" || c.status === "approved").reduce((s, c) => s + (c.commission_amount || 0), 0);
+  const paidCommission = commissions.filter(c => c.status === "paid").reduce((s, c) => s + (c.commission_amount || 0), 0);
+
   if (isLoading) return (
     <div className="flex min-h-screen items-center justify-center bg-blue-950">
       <p className="text-white/60">Loading...</p>
@@ -211,7 +259,7 @@ export default function AgentDetailPage() {
               {form.agent_type}
             </span>
           </div>
-          {profile?.role === "admin" && (
+          {hasRole(profile, "admin") && (
             <button onClick={handleDelete} disabled={isDeleting} className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50">
               {isDeleting ? "Deleting..." : "Delete Agent"}
             </button>
@@ -333,6 +381,114 @@ export default function AgentDetailPage() {
                           <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-500/20 text-gray-400"}`}>{d.status}</span>
                         </td>
                         <td className="px-3 py-2 text-sm text-white/90">{d.total_amount != null ? `$${d.total_amount.toLocaleString()}` : "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Commissions */}
+        <div className={sectionClass}>
+          <h3 className="text-lg font-bold mb-4">Commissions</h3>
+
+          {/* Summary cards */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-4">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <p className="text-xs text-white/50 mb-1">Total Commission</p>
+              <p className="text-xl font-bold">${totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <p className="text-xs text-white/50 mb-1">Pending</p>
+              <p className="text-xl font-bold text-yellow-400">${pendingCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <p className="text-xs text-white/50 mb-1">Paid</p>
+              <p className="text-xl font-bold text-green-400">${paidCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+          </div>
+
+          {/* Date filter */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            <div>
+              <label className="block text-xs text-white/50 mb-1">From</label>
+              <input
+                type="date"
+                value={commissionFilter.from}
+                onChange={e => {
+                  const f = { ...commissionFilter, from: e.target.value };
+                  setCommissionFilter(f);
+                  fetchCommissions(f);
+                }}
+                className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-white/50 mb-1">To</label>
+              <input
+                type="date"
+                value={commissionFilter.to}
+                onChange={e => {
+                  const f = { ...commissionFilter, to: e.target.value };
+                  setCommissionFilter(f);
+                  fetchCommissions(f);
+                }}
+                className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            {(commissionFilter.from || commissionFilter.to) && (
+              <div className="flex items-end">
+                <button
+                  onClick={() => {
+                    const f = { from: "", to: "" };
+                    setCommissionFilter(f);
+                    fetchCommissions(f);
+                  }}
+                  className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-bold hover:bg-white/10"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Commission table */}
+          {commissions.length === 0 ? (
+            <p className="text-white/50 text-sm">No commission records yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px] border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10">
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Deal #</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Client</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Service Fee</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Rate</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Commission</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Status</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Paid Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {commissions.map((c) => {
+                    const deal = c.deals;
+                    const client = deal?.contacts ? `${deal.contacts.first_name} ${deal.contacts.last_name}` : deal?.companies?.company_name ?? "—";
+                    const rateDisplay = c.commission_type === "percentage" ? `${c.commission_rate}%` : `$${c.commission_rate}`;
+                    return (
+                      <tr key={c.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                        <td className="px-3 py-2 text-sm">
+                          <Link href={`/deals/${c.deal_id}`} className="text-blue-400 hover:underline">{deal?.deal_number ?? "—"}</Link>
+                        </td>
+                        <td className="px-3 py-2 text-sm text-white/90">{client}</td>
+                        <td className="px-3 py-2 text-sm text-white/90">${(c.base_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="px-3 py-2 text-sm text-white/90">{rateDisplay}</td>
+                        <td className="px-3 py-2 text-sm font-medium">${(c.commission_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="px-3 py-2 text-sm">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${COMMISSION_STATUS_COLORS[c.status] ?? "bg-gray-500/20 text-gray-400"}`}>{c.status}</span>
+                        </td>
+                        <td className="px-3 py-2 text-sm text-white/70">{c.paid_date ?? "—"}</td>
                       </tr>
                     );
                   })}

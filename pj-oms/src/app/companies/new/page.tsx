@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -35,8 +36,8 @@ export default function NewCompanyPage() {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
-      const { data: profileData } = await supabase.from("profiles").select("role, department").eq("id", session.user.id).single();
-      const sales = profileData?.role === "sales";
+      const { data: profileData } = await supabase.from("profiles").select("role, roles, department").eq("id", session.user.id).single();
+      const sales = hasRole(profileData, "sales");
       setIsSales(sales);
       if (profileData?.department) {
         setUserDept(profileData.department);

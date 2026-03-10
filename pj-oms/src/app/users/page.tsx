@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
+import { hasRole, formatRoles, ROLE_LABELS, VALID_ROLES, MAX_ROLES } from "@/lib/roles";
 
 type Profile = {
   id: string;
   full_name: string | null;
   email: string | null;
   role: string;
+  roles: string[];
   department: string;
   created_at: string | null;
 };
@@ -29,19 +31,76 @@ const DEPT_LABELS: Record<string, string> = {
   korea_japan: "Korea & Japan",
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: "Admin",
-  sales: "Sales",
-  lia: "LIA",
-  accountant: "Accountant",
-  copywriter: "Copywriter",
-};
-
 const inputClass =
   "rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full";
 
 const selectClass =
   "rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full";
+
+function RolesCheckboxGroup({
+  selected,
+  onChange,
+  className,
+}: {
+  selected: string[];
+  onChange: (roles: string[]) => void;
+  className?: string;
+}) {
+  const toggle = (role: string) => {
+    if (selected.includes(role)) {
+      if (selected.length <= 1) return; // must have at least 1
+      onChange(selected.filter((r) => r !== role));
+    } else {
+      if (selected.length >= MAX_ROLES) return; // max 3
+      onChange([...selected, role]);
+    }
+  };
+
+  return (
+    <div className={`flex flex-wrap gap-2 ${className ?? ""}`}>
+      {VALID_ROLES.map((role) => {
+        const isSelected = selected.includes(role);
+        const isDisabled = !isSelected && selected.length >= MAX_ROLES;
+        return (
+          <button
+            key={role}
+            type="button"
+            onClick={() => toggle(role)}
+            disabled={isDisabled}
+            className={`rounded-lg border px-3 py-1.5 text-sm font-bold transition-colors ${
+              isSelected
+                ? "border-blue-400 bg-blue-600/30 text-blue-300"
+                : isDisabled
+                  ? "border-white/10 text-white/20 cursor-not-allowed"
+                  : "border-white/20 text-white/60 hover:bg-white/10"
+            }`}
+          >
+            {ROLE_LABELS[role]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function RoleBadges({ roles }: { roles: string[] }) {
+  const colors: Record<string, string> = {
+    admin: "bg-red-500/20 text-red-400",
+    sales: "bg-blue-500/20 text-blue-400",
+    lia: "bg-purple-500/20 text-purple-400",
+    accountant: "bg-green-500/20 text-green-400",
+    copywriter: "bg-yellow-500/20 text-yellow-400",
+  };
+  return (
+    <div className="flex flex-wrap gap-1">
+      {roles.map((r) => (
+        <span key={r} className={`rounded-full px-2 py-0.5 text-xs font-bold ${colors[r] ?? "bg-gray-500/20 text-gray-400"}`}>
+          {ROLE_LABELS[r] ?? r}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function UsersPage() {
   const router = useRouter();
@@ -52,14 +111,14 @@ export default function UsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ full_name: string; role: string; department: string } | null>(null);
+  const [editForm, setEditForm] = useState<{ full_name: string; roles: string[]; department: string } | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
   const [form, setForm] = useState({
     email: "",
     full_name: "",
-    role: "sales",
+    roles: ["sales"] as string[],
     department: "china",
   });
 
@@ -73,7 +132,7 @@ export default function UsersPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, full_name, email, role, department, created_at")
+        .select("id, full_name, email, role, roles, department, created_at")
         .eq("id", session.user.id)
         .single();
 
@@ -81,7 +140,7 @@ export default function UsersPage() {
 
       const { data: usersData, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email, role, department, created_at")
+        .select("id, full_name, email, role, roles, department, created_at")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -112,7 +171,7 @@ export default function UsersPage() {
     setEditingUserId(user.id);
     setEditForm({
       full_name: user.full_name ?? "",
-      role: user.role,
+      roles: user.roles ?? [user.role],
       department: user.department,
     });
     setMessage(null);
@@ -137,7 +196,7 @@ export default function UsersPage() {
       .from("profiles")
       .update({
         full_name: editForm.full_name.trim() || null,
-        role: editForm.role,
+        roles: editForm.roles,
         department: editForm.department,
       })
       .eq("id", editingUserId);
@@ -148,7 +207,7 @@ export default function UsersPage() {
       setUsers((prev) =>
         prev.map((u) =>
           u.id === editingUserId
-            ? { ...u, full_name: editForm.full_name.trim() || null, role: editForm.role, department: editForm.department }
+            ? { ...u, full_name: editForm.full_name.trim() || null, roles: editForm.roles, role: editForm.roles[0], department: editForm.department }
             : u
         )
       );
@@ -160,7 +219,7 @@ export default function UsersPage() {
   };
 
   const canEditUser = (user: Profile) =>
-    user.role !== "admin" && user.id !== currentUser?.id;
+    !hasRole(user, "admin") && user.id !== currentUser?.id;
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,7 +232,7 @@ export default function UsersPage() {
       body: JSON.stringify({
         email: form.email.trim(),
         full_name: form.full_name.trim(),
-        role: form.role,
+        roles: form.roles,
         department: form.department,
       }),
     });
@@ -188,23 +247,22 @@ export default function UsersPage() {
 
     setMessage({
       type: "success",
-      text: "✅ User created! They can login with password: Welcome123!",
+      text: "User created! They can login with password: Welcome123!",
     });
-    setForm({ email: "", full_name: "", role: "sales", department: "china" });
+    setForm({ email: "", full_name: "", roles: ["sales"], department: "china" });
     setShowInviteForm(false);
 
-    // 刷新用户列表
     const { data: usersData } = await supabase
       .from("profiles")
-      .select("id, full_name, email, role, department, created_at")
+      .select("id, full_name, email, role, roles, department, created_at")
       .order("created_at", { ascending: false });
     if (usersData) setUsers(usersData as unknown as Profile[]);
 
     setIsSubmitting(false);
   };
 
-  const handleDelete = async (id: string, role: string) => {
-    if (role === "admin") return;
+  const handleDelete = async (id: string, user: Profile) => {
+    if (hasRole(user, "admin")) return;
     if (!confirm("Are you sure you want to delete this user?")) return;
 
     setIsDeleting(id);
@@ -222,7 +280,7 @@ export default function UsersPage() {
     setIsDeleting(null);
   };
 
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = hasRole(currentUser, "admin");
 
   if (isLoading) {
     return (
@@ -289,15 +347,12 @@ export default function UsersPage() {
                   className={inputClass}
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-white/70">Role</label>
-                <select name="role" value={form.role} onChange={handleChange} className={selectClass}>
-                  <option value="admin" className="bg-blue-900 text-white">Admin</option>
-                  <option value="sales" className="bg-blue-900 text-white">Sales</option>
-                  <option value="lia" className="bg-blue-900 text-white">LIA</option>
-                  <option value="accountant" className="bg-blue-900 text-white">Accountant</option>
-                  <option value="copywriter" className="bg-blue-900 text-white">Copywriter</option>
-                </select>
+              <div className="flex flex-col gap-1.5 md:col-span-2">
+                <label className="text-sm font-semibold text-white/70">Roles (select up to {MAX_ROLES})</label>
+                <RolesCheckboxGroup
+                  selected={form.roles}
+                  onChange={(roles) => setForm({ ...form, roles })}
+                />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-white/70">Department</label>
@@ -331,7 +386,7 @@ export default function UsersPage() {
               <tr className="border-b border-white/10 bg-white/5">
                 <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Name</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Role</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Roles</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Department</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Created At</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Actions</th>
@@ -341,6 +396,7 @@ export default function UsersPage() {
               {users.map((user) => {
                 const isEditing = editingUserId === user.id;
                 const showEditButton = isAdmin && canEditUser(user);
+                const userRoles = user.roles ?? [user.role];
 
                 return (
                   <tr key={user.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
@@ -355,20 +411,12 @@ export default function UsersPage() {
                             placeholder="Full Name"
                           />
                         </td>
-                        <td className="px-6 py-4 text-white/70">{user.email ?? "—"}</td>
+                        <td className="px-6 py-4 text-white/70">{user.email ?? "---"}</td>
                         <td className="px-6 py-4">
-                          <select
-                            name="role"
-                            value={editForm.role}
-                            onChange={handleEditChange}
-                            className={`${selectClass} py-2 text-sm`}
-                          >
-                            <option value="admin" className="bg-blue-900 text-white">Admin</option>
-                            <option value="sales" className="bg-blue-900 text-white">Sales</option>
-                            <option value="lia" className="bg-blue-900 text-white">LIA</option>
-                            <option value="accountant" className="bg-blue-900 text-white">Accountant</option>
-                            <option value="copywriter" className="bg-blue-900 text-white">Copywriter</option>
-                          </select>
+                          <RolesCheckboxGroup
+                            selected={editForm.roles}
+                            onChange={(roles) => setEditForm({ ...editForm, roles })}
+                          />
                         </td>
                         <td className="px-6 py-4">
                           <select
@@ -384,7 +432,7 @@ export default function UsersPage() {
                           </select>
                         </td>
                         <td className="px-6 py-4 text-white/70">
-                          {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
+                          {user.created_at ? new Date(user.created_at).toLocaleString() : "---"}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
@@ -409,12 +457,12 @@ export default function UsersPage() {
                       </>
                     ) : (
                       <>
-                        <td className="px-6 py-4 font-semibold">{user.full_name ?? "—"}</td>
-                        <td className="px-6 py-4 text-white/70">{user.email ?? "—"}</td>
-                        <td className="px-6 py-4 text-white/70">{ROLE_LABELS[user.role] ?? user.role}</td>
+                        <td className="px-6 py-4 font-semibold">{user.full_name ?? "---"}</td>
+                        <td className="px-6 py-4 text-white/70">{user.email ?? "---"}</td>
+                        <td className="px-6 py-4"><RoleBadges roles={userRoles} /></td>
                         <td className="px-6 py-4 text-white/70">{DEPT_LABELS[user.department] ?? user.department}</td>
                         <td className="px-6 py-4 text-white/70">
-                          {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
+                          {user.created_at ? new Date(user.created_at).toLocaleString() : "---"}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-2">
@@ -427,9 +475,9 @@ export default function UsersPage() {
                                 Edit
                               </button>
                             )}
-                            {user.role !== "admin" && (
+                            {!hasRole(user, "admin") && (
                               <button
-                                onClick={() => handleDelete(user.id, user.role)}
+                                onClick={() => handleDelete(user.id, user)}
                                 disabled={isDeleting === user.id}
                                 className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
                               >
@@ -470,9 +518,9 @@ export default function UsersPage() {
                       <td className="px-6 py-4 text-white/70">
                         {new Date(log.created_at).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 font-semibold">{log.profiles?.full_name ?? "—"}</td>
+                      <td className="px-6 py-4 font-semibold">{log.profiles?.full_name ?? "---"}</td>
                       <td className="px-6 py-4 text-white/70">
-                        {log.profiles?.email ?? (log.details as { email?: string })?.email ?? "—"}
+                        {log.profiles?.email ?? (log.details as { email?: string })?.email ?? "---"}
                       </td>
                     </tr>
                   ))

@@ -4,12 +4,13 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
 type ContactOption = { id: string; first_name: string; last_name: string; department: string | null };
 type CompanyOption = { id: string; company_name: string; department: string | null };
-type AgentOption = { id: string; agent_name: string };
+type AgentOption = { id: string; agent_name: string; commission_rate: number | null; default_commission_type: string | null };
 type SalesUser = { id: string; full_name: string | null };
 
 type StageRow = { tempId: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; };
@@ -55,6 +56,7 @@ function NewDealPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isSales, setIsSales] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userDept, setUserDept] = useState("");
   const [userId, setUserId] = useState("");
 
@@ -99,16 +101,17 @@ function NewDealPage() {
       if (!session) { router.push("/admin"); return; }
       setUserId(session.user.id);
 
-      const { data: profileData } = await supabase.from("profiles").select("role, department").eq("id", session.user.id).single();
-      const sales = profileData?.role === "sales";
+      const { data: profileData } = await supabase.from("profiles").select("role, roles, department").eq("id", session.user.id).single();
+      const sales = hasRole(profileData, "sales");
       setIsSales(sales);
+      setIsAdmin(hasRole(profileData, "admin"));
       if (profileData?.department) {
         setUserDept(profileData.department);
         setForm(f => ({ ...f, department: profileData.department }));
       }
 
       // Fetch LIA-eligible users
-      const { data: liaData } = await supabase.from("profiles").select("id, full_name").in("role", ["admin", "sales", "lia"]).order("full_name");
+      const { data: liaData } = await supabase.from("profiles").select("id, full_name").overlaps("roles", ["admin", "sales", "lia"]).order("full_name");
       if (liaData) setLiaUsers(liaData as SalesUser[]);
 
       // Pre-fill if contact_id or company_id passed
@@ -148,7 +151,7 @@ function NewDealPage() {
     setAgentSearch(q);
     if (q.length < 2) { setAgentResults([]); return; }
     const { data } = await supabase.from("agents")
-      .select("id, agent_name")
+      .select("id, agent_name, commission_rate, default_commission_type")
       .ilike("agent_name", `%${q}%`)
       .limit(8);
     if (data) setAgentResults(data as AgentOption[]);
@@ -240,6 +243,24 @@ function NewDealPage() {
         deal_id: dealData.id,
         contact_id: selectedContact.id,
         relationship: "main",
+      });
+    }
+
+    // Auto-insert agent commission record
+    if (selectedAgent) {
+      const commType = selectedAgent.default_commission_type ?? "percentage";
+      const commRate = selectedAgent.commission_rate ?? 0;
+      const baseAmount = stageServiceTotal;
+      const commissionAmount = commType === "percentage" ? (baseAmount * commRate / 100) : commRate;
+      await supabase.from("agent_commissions").insert({
+        agent_id: selectedAgent.id,
+        deal_id: dealData.id,
+        commission_type: commType,
+        commission_rate: commRate,
+        base_amount: baseAmount,
+        commission_amount: commissionAmount,
+        status: "pending",
+        created_by: session.user.id,
       });
     }
 
@@ -527,7 +548,7 @@ function NewDealPage() {
           </div>
 
           {/* Department */}
-          {isSales ? (
+          {!isAdmin && isSales ? (
             <div className={sectionClass}>
               <h3 className="text-base font-bold mb-4">Department</h3>
               <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white/80 max-w-xs">

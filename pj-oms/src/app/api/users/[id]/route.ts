@@ -20,11 +20,11 @@ export async function DELETE(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, roles")
     .eq("id", id)
     .single();
 
-  if (profile?.role === "admin") {
+  if (profile?.roles?.includes("admin") || profile?.role === "admin") {
     return NextResponse.json(
       { error: "Cannot delete admin users" },
       { status: 403 }

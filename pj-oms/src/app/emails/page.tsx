@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
+import { hasRole } from "@/lib/roles";
 
 type EmailLog = {
   id: string;
@@ -52,8 +53,8 @@ export default function EmailsPage() {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
-      const { data } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
-      if (!data || data.role !== "admin") { router.push("/crm"); return; }
+      const { data } = await supabase.from("profiles").select("role, roles").eq("id", session.user.id).single();
+      if (!data || !hasRole(data, "admin")) { router.push("/crm"); return; }
       setIsLoading(false);
     }
     checkAuth();

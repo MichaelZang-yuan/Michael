@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole, ROLE_LABELS } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 type Profile = {
   full_name: string;
   role: string;
+  roles: string[];
   department: string;
 };
 
@@ -41,12 +43,6 @@ const DEPT_LABELS: Record<string, string> = {
   korea_japan: "Korea & Japan",
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: "Admin",
-  accountant: "Accountant",
-  sales: "Sales",
-};
-
 export default function DashboardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -74,23 +70,23 @@ export default function DashboardPage() {
       // 1. 先获取当前用户的 profile（role 和 department）
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("full_name, role, department")
+        .select("full_name, role, roles, department")
         .eq("id", session.user.id)
         .single();
 
       if (profileData) setProfile(profileData);
 
-      const isAdmin = profileData?.role === "admin";
+      const isAdmin = hasRole(profileData, "admin");
       if (isAdmin) {
         const statusRes = await fetch("/api/zoho/status");
         const statusData = await statusRes.json().catch(() => ({}));
         setZohoConnected(statusData.connected ?? false);
       }
-      const isSales = profileData?.role === "sales";
+      const isSales = hasRole(profileData, "sales");
 
       // 2. 获取学生统计（admin: 全部；sales: 仅本部门），并自动将 active→enrolled
       let studentsQuery = supabase.from("students").select("id, status, commissions(enrollment_date)");
-      if (isSales && profileData?.department) {
+      if (!isAdmin && isSales && profileData?.department) {
         studentsQuery = studentsQuery.eq("department", profileData.department);
       }
       const { data: studentsRaw } = await studentsQuery;
@@ -126,7 +122,7 @@ export default function DashboardPage() {
 
       // 3. 获取 pending claims（admin: 全部；sales: 仅本部门学生的 commission）
       let claims: PendingClaim[] | null = null;
-      if (isSales && profileData?.department) {
+      if (!isAdmin && isSales && profileData?.department) {
         const { data: deptStudents } = await supabase
           .from("students")
           .select("id")
@@ -159,7 +155,7 @@ export default function DashboardPage() {
 
       // 4. 获取 claimed commissions（用于月度图表）
       let claimedData: { amount: number; claimed_at: string }[] | null = null;
-      if (isSales && profileData?.department) {
+      if (!isAdmin && isSales && profileData?.department) {
         const deptStudentIds = (await supabase.from("students").select("id").eq("department", profileData.department)).data?.map((s) => s.id) ?? [];
         if (deptStudentIds.length > 0) {
           const { data } = await supabase
@@ -206,7 +202,7 @@ export default function DashboardPage() {
 
       // 5. 获取按部门分组的学生数（用于饼图）
       let studentsDeptQuery = supabase.from("students").select("department");
-      if (isSales && profileData?.department) {
+      if (!isAdmin && isSales && profileData?.department) {
         studentsDeptQuery = studentsDeptQuery.eq("department", profileData.department);
       }
       const { data: studentsDeptData } = await studentsDeptQuery;
@@ -303,7 +299,7 @@ export default function DashboardPage() {
             >
               📋 View Students
             </Link>
-            {profile?.role === "admin" && (
+            {hasRole(profile, "admin") && (
               <>
                 <Link
                   href="/schools"
@@ -334,7 +330,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {profile?.role === "admin" && zohoConnected !== null && (
+        {hasRole(profile, "admin") && zohoConnected !== null && (
           <div className="mb-6">
             {zohoConnected ? (
               <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { hasAnyRole } from "@/lib/roles";
 
 type ContractData = {
   id: string;
@@ -43,8 +44,8 @@ export default function ContractPreviewPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
-      if (!profile || !["admin", "lia"].includes(profile.role)) {
+      const { data: profile } = await supabase.from("profiles").select("role, roles").eq("id", session.user.id).single();
+      if (!profile || !hasAnyRole(profile, ["admin", "lia"])) {
         router.push("/crm"); return;
       }
       setUserId(session.user.id);

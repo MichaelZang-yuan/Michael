@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 
 const DEPT_LABELS: Record<string, string> = {
@@ -73,13 +74,13 @@ export default function ReportsPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, roles")
         .eq("id", session.user.id)
         .single();
 
       if (profileData) setProfile(profileData);
 
-      if (profileData?.role !== "admin") {
+      if (!hasRole(profileData, "admin")) {
         setIsLoading(false);
         return;
       }
@@ -205,7 +206,7 @@ export default function ReportsPage() {
     );
   }
 
-  if (profile?.role !== "admin") {
+  if (!hasRole(profile, "admin")) {
     return (
       <div className="min-h-screen bg-blue-950 text-white">
         <Navbar />

@@ -22,8 +22,8 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
-  const { data: profile } = await adminClient.from("profiles").select("role").eq("id", user.id).single();
-  if (!profile || profile.role !== "admin") {
+  const { data: profile } = await adminClient.from("profiles").select("role, roles").eq("id", user.id).single();
+  if (!profile || !(profile.roles?.includes("admin") || profile.role === "admin")) {
     return NextResponse.json({ error: "Admin only" }, { status: 403 });
   }
 

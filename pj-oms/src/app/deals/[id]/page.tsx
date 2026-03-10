@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasRole, hasAnyRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -227,7 +228,7 @@ export default function DealDetailPage() {
   const id = params.id as string;
 
   // Core deal state
-  const [profile, setProfile] = useState<{ role: string; id: string } | null>(null);
+  const [profile, setProfile] = useState<{ role: string; roles?: string[]; id: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -298,12 +299,36 @@ export default function DealDetailPage() {
   const [checklistName, setChecklistName] = useState("");
   const [checklistRequired, setChecklistRequired] = useState(true);
   const [uploadingChecklist, setUploadingChecklist] = useState<string | null>(null);
+  const [isGeneratingChecklist, setIsGeneratingChecklist] = useState(false);
+  const [aiChecklistPreview, setAiChecklistPreview] = useState<{ item_name: string; required: boolean; notes: string }[]>([]);
+  const [showAiChecklistModal, setShowAiChecklistModal] = useState(false);
 
   // UI state — Applicants
   const [showApplicantModal, setShowApplicantModal] = useState(false);
   const [applicantSearch, setApplicantSearch] = useState("");
   const [applicantResults, setApplicantResults] = useState<ContactSearch[]>([]);
   const [newApplicant, setNewApplicant] = useState({ contact_id: "", relationship: "main", notes: "" });
+
+  // Cover letter state
+  const [coverLetter, setCoverLetter] = useState<{ id: string; content: string; status: string; pdf_url: string | null } | null>(null);
+  const [coverLetterDraft, setCoverLetterDraft] = useState("");
+  const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
+  const [isSavingCoverLetter, setIsSavingCoverLetter] = useState(false);
+  const [isExportingCoverLetterPdf, setIsExportingCoverLetterPdf] = useState(false);
+
+  // Agent commission state
+  const [agentCommission, setAgentCommission] = useState<{
+    id: string; commission_type: string; commission_rate: number; base_amount: number;
+    commission_amount: number; status: string; paid_date: string | null;
+    invoice_number: string | null; notes: string | null;
+  } | null>(null);
+  const [agentCommissionForm, setAgentCommissionForm] = useState({
+    commission_type: "percentage", commission_rate: "", invoice_number: "", notes: "",
+  });
+  const [isSavingAgentCommission, setIsSavingAgentCommission] = useState(false);
+  const [showMarkCommissionPaidModal, setShowMarkCommissionPaidModal] = useState(false);
+  const [commissionPaidDate, setCommissionPaidDate] = useState(new Date().toISOString().split("T")[0]);
+  const [agentName, setAgentName] = useState("");
 
   // Upload state
   const [isUploading, setIsUploading] = useState(false);
@@ -324,7 +349,7 @@ export default function DealDetailPage() {
   const currentStatus = deal?.status ?? "draft";
   const workflowStep = computeWorkflowStep(currentStatus, contract, intakeForm);
   const isTerminal = ["approved", "declined", "completed", "cancelled"].includes(currentStatus);
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = hasRole(profile, "admin");
   const canChangeStatus = isAdmin || (deal?.assigned_lia_id === profile?.id);
 
   const clientName = deal?.contacts
@@ -399,6 +424,41 @@ export default function DealDetailPage() {
     if (data) setApplicants(data as unknown as Applicant[]);
   }, [id]);
 
+  const fetchCoverLetter = useCallback(async () => {
+    const { data } = await supabase.from("cover_letters")
+      .select("id, content, status, pdf_url")
+      .eq("deal_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setCoverLetter(data as { id: string; content: string; status: string; pdf_url: string | null });
+      setCoverLetterDraft(data.content ?? "");
+    } else {
+      setCoverLetter(null);
+      setCoverLetterDraft("");
+    }
+  }, [id]);
+
+  const fetchAgentCommission = useCallback(async () => {
+    const { data } = await supabase.from("agent_commissions")
+      .select("id, commission_type, commission_rate, base_amount, commission_amount, status, paid_date, invoice_number, notes")
+      .eq("deal_id", id)
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setAgentCommission(data as typeof agentCommission);
+      setAgentCommissionForm({
+        commission_type: data.commission_type ?? "percentage",
+        commission_rate: data.commission_rate != null ? String(data.commission_rate) : "",
+        invoice_number: data.invoice_number ?? "",
+        notes: data.notes ?? "",
+      });
+    } else {
+      setAgentCommission(null);
+    }
+  }, [id]);
+
   // ─── Init ─────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -406,10 +466,10 @@ export default function DealDetailPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profileData } = await supabase.from("profiles").select("id, role").eq("id", session.user.id).single();
+      const { data: profileData } = await supabase.from("profiles").select("id, role, roles").eq("id", session.user.id).single();
       if (profileData) setProfile(profileData);
 
-      const { data: salesData } = await supabase.from("profiles").select("id, full_name").in("role", ["admin", "sales", "lia"]).order("full_name");
+      const { data: salesData } = await supabase.from("profiles").select("id, full_name").overlaps("roles", ["admin", "sales", "lia"]).order("full_name");
       if (salesData) setSalesUsers(salesData as SalesUser[]);
 
       const { data: agentsData } = await supabase.from("agents").select("id, agent_name").order("agent_name");
@@ -480,14 +540,21 @@ export default function DealDetailPage() {
       };
       setForm(lf);
 
+      // Fetch agent name if deal has an agent
+      if (dealData.agent_id) {
+        const { data: agentData } = await supabase.from("agents").select("agent_name").eq("id", dealData.agent_id).single();
+        if (agentData) setAgentName(agentData.agent_name ?? "");
+      }
+
       await Promise.all([
         fetchPayments(), fetchContract(), fetchIntakeForm(), fetchChecklist(),
         fetchEmailLogs(), fetchApplicants(), fetchAttachments(), fetchLogs(),
+        fetchCoverLetter(), fetchAgentCommission(),
       ]);
       setIsLoading(false);
     }
     init();
-  }, [id, router, fetchPayments, fetchContract, fetchIntakeForm, fetchChecklist, fetchEmailLogs, fetchApplicants, fetchAttachments, fetchLogs]);
+  }, [id, router, fetchPayments, fetchContract, fetchIntakeForm, fetchChecklist, fetchEmailLogs, fetchApplicants, fetchAttachments, fetchLogs, fetchCoverLetter, fetchAgentCommission]);
 
   // ─── Helper: send notification ────────────────────────────────────────────
 
@@ -1064,6 +1131,109 @@ export default function DealDetailPage() {
     e.target.value = "";
   };
 
+  // ─── AI Checklist generation ────────────────────────────────────────────
+
+  const handleAiGenerateChecklist = async () => {
+    if (!form.visa_type) { setMessage({ type: "error", text: "Set a visa type first." }); return; }
+    setIsGeneratingChecklist(true);
+    try {
+      const res = await fetch("/api/generate-checklist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          visa_type: form.visa_type,
+          description: form.description || undefined,
+          deal_type: form.deal_type || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Checklist generation failed" }); return; }
+      setAiChecklistPreview(data.items ?? []);
+      setShowAiChecklistModal(true);
+    } catch (err) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Checklist generation failed" });
+    } finally {
+      setIsGeneratingChecklist(false);
+    }
+  };
+
+  const handleAddAiChecklistItems = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const rows = aiChecklistPreview.map(item => ({
+      deal_id: id,
+      item_name: item.item_name,
+      required: item.required,
+      notes: item.notes || null,
+      created_by: session.user.id,
+    }));
+    await supabase.from("document_checklists").insert(rows);
+    await fetchChecklist();
+    setShowAiChecklistModal(false);
+    setAiChecklistPreview([]);
+    setMessage({ type: "success", text: `${rows.length} AI-generated items added.` });
+  };
+
+  // ─── Cover letter handlers ─────────────────────────────────────────────
+
+  const handleGenerateCoverLetter = async () => {
+    setIsGeneratingCoverLetter(true);
+    try {
+      const res = await fetch("/api/generate-cover-letter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deal_id: id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Cover letter generation failed" }); return; }
+      setCoverLetterDraft(data.content ?? "");
+      setMessage({ type: "success", text: "Cover letter generated. Edit and save when ready." });
+    } catch (err) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Cover letter generation failed" });
+    } finally {
+      setIsGeneratingCoverLetter(false);
+    }
+  };
+
+  const handleSaveCoverLetter = async () => {
+    if (!coverLetterDraft.trim()) return;
+    setIsSavingCoverLetter(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    try {
+      if (coverLetter) {
+        await supabase.from("cover_letters").update({ content: coverLetterDraft, status: "draft" }).eq("id", coverLetter.id);
+      } else {
+        await supabase.from("cover_letters").insert({
+          deal_id: id, content: coverLetterDraft, status: "draft", created_by: session.user.id,
+        });
+      }
+      await fetchCoverLetter();
+      setMessage({ type: "success", text: "Cover letter saved." });
+    } catch {
+      setMessage({ type: "error", text: "Failed to save cover letter." });
+    } finally {
+      setIsSavingCoverLetter(false);
+    }
+  };
+
+  const handleExportCoverLetterPdf = async () => {
+    if (!coverLetter) return;
+    setIsExportingCoverLetterPdf(true);
+    try {
+      const res = await fetch(`/api/cover-letter/${coverLetter.id}/export-pdf`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "PDF export failed" }); return; }
+      window.open(data.url, "_blank");
+      await fetchCoverLetter();
+      setMessage({ type: "success", text: "PDF exported." });
+    } catch {
+      setMessage({ type: "error", text: "PDF export failed." });
+    } finally {
+      setIsExportingCoverLetterPdf(false);
+    }
+  };
+
   // ─── Applicant handlers ───────────────────────────────────────────────────
 
   const searchApplicants = async (q: string) => {
@@ -1180,7 +1350,7 @@ export default function DealDetailPage() {
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
-            {(isAdmin || profile?.role === "accountant") && (
+            {hasAnyRole(profile, ["admin", "accountant"]) && (
               <button onClick={() => router.push(`/deals/${id}/edit`)} className={btnSecondary}>Edit Deal</button>
             )}
             {isAdmin && (
@@ -1264,7 +1434,7 @@ export default function DealDetailPage() {
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Pricing & Payment Stages</h3>
-            {!editingStages && (isAdmin || profile?.role === "accountant") && (
+            {!editingStages && hasAnyRole(profile, ["admin", "accountant"]) && (
               <button onClick={handleOpenEditStages} className={btnSecondary}>Edit Stages</button>
             )}
           </div>
@@ -1295,7 +1465,7 @@ export default function DealDetailPage() {
                   <th className="text-left py-2 px-2 text-white/50 font-medium">GST</th>
                   <th className="text-right py-2 px-2 text-white/50 font-medium">Total</th>
                   <th className="text-left py-2 px-2 text-white/50 font-medium">Status</th>
-                  {(isAdmin || profile?.role === "accountant") && <th className="py-2 px-2"></th>}
+                  {hasAnyRole(profile, ["admin", "accountant"]) && <th className="py-2 px-2"></th>}
                 </tr></thead>
                 <tbody>
                   {payments.map(p => {
@@ -1315,7 +1485,7 @@ export default function DealDetailPage() {
                             : <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-yellow-500/20 text-yellow-400">Unpaid</span>
                           }
                         </td>
-                        {(isAdmin || profile?.role === "accountant") && (
+                        {hasAnyRole(profile, ["admin", "accountant"]) && (
                           <td className="py-2 px-2">
                             {!p.is_paid && (
                               <button onClick={() => { setShowMarkPaidModal(p.id); setMarkPaidForm({ paid_date: new Date().toISOString().split("T")[0], payment_method: "bank_transfer" }); }}
@@ -1333,7 +1503,7 @@ export default function DealDetailPage() {
           {!editingStages && payments.length === 0 && (
             <div className="text-center py-6 text-white/40 text-sm">
               No payment stages defined.
-              {(isAdmin || profile?.role === "accountant") && (
+              {hasAnyRole(profile, ["admin", "accountant"]) && (
                 <button onClick={handleOpenEditStages} className="ml-2 text-blue-400 hover:text-blue-300 underline">Add stages</button>
               )}
             </div>
@@ -1925,6 +2095,11 @@ export default function DealDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Document Checklist ({checklist.length})</h3>
             <div className="flex gap-2">
+              {form.visa_type && (
+                <button onClick={handleAiGenerateChecklist} disabled={isGeneratingChecklist} className="rounded-lg bg-purple-600 px-3 py-2 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-50">
+                  {isGeneratingChecklist ? "Generating..." : "AI Generate"}
+                </button>
+              )}
               {form.visa_type && CHECKLIST_PRESETS[form.visa_type] && checklist.length === 0 && (
                 <button onClick={handlePresetChecklist} className={btnSecondary}>Load {form.visa_type} Preset</button>
               )}
@@ -1944,7 +2119,10 @@ export default function DealDetailPage() {
                     </span>
                     <div className="min-w-0">
                       <p className={`text-sm ${item.uploaded ? "text-white" : "text-white/70"}`}>{item.item_name}</p>
-                      {item.required && <span className="text-xs text-white/30">Required</span>}
+                      <div className="flex gap-2">
+                        {item.required && <span className="text-xs text-white/30">Required</span>}
+                        {item.notes && <span className="text-xs text-white/40 italic">{item.notes}</span>}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -1982,7 +2160,272 @@ export default function DealDetailPage() {
               </div>
             </div>
           )}
+
+          {/* AI Checklist Preview Modal */}
+          {showAiChecklistModal && aiChecklistPreview.length > 0 && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[80vh] overflow-y-auto">
+                <h4 className="text-lg font-bold mb-2">AI Generated Checklist</h4>
+                <p className="text-sm text-white/60 mb-4">{aiChecklistPreview.length} documents suggested for {form.visa_type} visa</p>
+                <div className="space-y-2 mb-5">
+                  {aiChecklistPreview.map((item, idx) => (
+                    <div key={idx} className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-white">{item.item_name}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${item.required ? "bg-red-500/20 text-red-400" : "bg-white/10 text-white/40"}`}>
+                          {item.required ? "Required" : "Optional"}
+                        </span>
+                      </div>
+                      {item.notes && <p className="text-xs text-white/50 mt-1">{item.notes}</p>}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleAddAiChecklistItems} className={btnPrimary}>Add All ({aiChecklistPreview.length})</button>
+                  <button onClick={() => { setShowAiChecklistModal(false); setAiChecklistPreview([]); }} className={btnSecondary}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* ── Section: Cover Letter ─────────────────────────────────────── */}
+        <div className={sectionClass}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold">Cover Letter</h3>
+            <div className="flex gap-2">
+              {coverLetter?.pdf_url && (
+                <a href={coverLetter.pdf_url} target="_blank" rel="noopener noreferrer" className={btnSecondary}>
+                  View PDF
+                </a>
+              )}
+              {coverLetter && (
+                <button onClick={handleExportCoverLetterPdf} disabled={isExportingCoverLetterPdf} className={btnSecondary}>
+                  {isExportingCoverLetterPdf ? "Exporting..." : "Export PDF"}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <textarea
+              value={coverLetterDraft}
+              onChange={e => setCoverLetterDraft(e.target.value)}
+              rows={16}
+              className={`${inputClass} font-serif text-sm resize-y leading-relaxed`}
+              placeholder="Generate or type a cover letter..."
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button onClick={handleGenerateCoverLetter} disabled={isGeneratingCoverLetter} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-50">
+              {isGeneratingCoverLetter ? "Generating..." : (coverLetterDraft ? "Regenerate" : "Generate Cover Letter")}
+            </button>
+            <button onClick={handleSaveCoverLetter} disabled={isSavingCoverLetter || !coverLetterDraft.trim()} className={btnPrimary}>
+              {isSavingCoverLetter ? "Saving..." : "Save Draft"}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Section: Agent Commission ─────────────────────────────────── */}
+        {deal?.agent_id && (
+          <div className={sectionClass}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">
+                Agent Commission
+                {agentName && (
+                  <Link href={`/agents/${deal.agent_id}`} className="ml-2 text-sm font-normal text-blue-400 hover:underline">
+                    ({agentName})
+                  </Link>
+                )}
+              </h3>
+              {agentCommission && (
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase ${
+                  agentCommission.status === "paid" ? "bg-green-500/20 text-green-400" :
+                  agentCommission.status === "approved" ? "bg-blue-500/20 text-blue-400" :
+                  "bg-yellow-500/20 text-yellow-400"
+                }`}>{agentCommission.status}</span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+              <div>
+                <label className={labelClass}>Commission Type</label>
+                <select
+                  value={agentCommissionForm.commission_type}
+                  onChange={e => setAgentCommissionForm(f => ({ ...f, commission_type: e.target.value }))}
+                  className={selectClass}
+                  disabled={agentCommission?.status === "paid"}
+                >
+                  <option value="percentage" className="bg-blue-900">Percentage</option>
+                  <option value="fixed" className="bg-blue-900">Fixed Amount</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>
+                  {agentCommissionForm.commission_type === "percentage" ? "Rate (%)" : "Fixed Amount ($)"}
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={agentCommissionForm.commission_rate}
+                  onChange={e => setAgentCommissionForm(f => ({ ...f, commission_rate: e.target.value }))}
+                  className={inputClass}
+                  disabled={agentCommission?.status === "paid"}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Base Amount (Service Fees)</label>
+                <p className="text-white/90 font-medium py-2">${stageServiceTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </div>
+              <div>
+                <label className={labelClass}>Commission Amount</label>
+                <p className="text-lg font-bold text-green-400 py-1">
+                  ${(agentCommissionForm.commission_type === "percentage"
+                    ? (stageServiceTotal * (parseFloat(agentCommissionForm.commission_rate) || 0) / 100)
+                    : (parseFloat(agentCommissionForm.commission_rate) || 0)
+                  ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <label className={labelClass}>Invoice Number</label>
+                <input
+                  value={agentCommissionForm.invoice_number}
+                  onChange={e => setAgentCommissionForm(f => ({ ...f, invoice_number: e.target.value }))}
+                  className={inputClass}
+                  placeholder="Optional"
+                  disabled={agentCommission?.status === "paid"}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Notes</label>
+                <input
+                  value={agentCommissionForm.notes}
+                  onChange={e => setAgentCommissionForm(f => ({ ...f, notes: e.target.value }))}
+                  className={inputClass}
+                  placeholder="Optional"
+                  disabled={agentCommission?.status === "paid"}
+                />
+              </div>
+            </div>
+
+            {agentCommission?.status === "paid" && agentCommission.paid_date && (
+              <p className="text-sm text-white/60 mb-4">Paid on {agentCommission.paid_date}</p>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              {agentCommission?.status !== "paid" && (
+                <button
+                  onClick={async () => {
+                    setIsSavingAgentCommission(true);
+                    const rate = parseFloat(agentCommissionForm.commission_rate) || 0;
+                    const baseAmount = stageServiceTotal;
+                    const commissionAmount = agentCommissionForm.commission_type === "percentage" ? (baseAmount * rate / 100) : rate;
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) { setIsSavingAgentCommission(false); return; }
+
+                    if (agentCommission) {
+                      await supabase.from("agent_commissions").update({
+                        commission_type: agentCommissionForm.commission_type,
+                        commission_rate: rate,
+                        base_amount: baseAmount,
+                        commission_amount: commissionAmount,
+                        invoice_number: agentCommissionForm.invoice_number || null,
+                        notes: agentCommissionForm.notes || null,
+                      }).eq("id", agentCommission.id);
+                    } else {
+                      await supabase.from("agent_commissions").insert({
+                        agent_id: deal.agent_id,
+                        deal_id: id,
+                        commission_type: agentCommissionForm.commission_type,
+                        commission_rate: rate,
+                        base_amount: baseAmount,
+                        commission_amount: commissionAmount,
+                        invoice_number: agentCommissionForm.invoice_number || null,
+                        notes: agentCommissionForm.notes || null,
+                        status: "pending",
+                        created_by: session.user.id,
+                      });
+                    }
+                    await logActivity(supabase, session.user.id, "saved_agent_commission", "deals", id, { agent_name: agentName, commission_amount: commissionAmount });
+                    await fetchAgentCommission();
+                    setIsSavingAgentCommission(false);
+                    setMessage({ type: "success", text: "Agent commission saved." });
+                  }}
+                  disabled={isSavingAgentCommission}
+                  className={btnPrimary}
+                >
+                  {isSavingAgentCommission ? "Saving..." : "Save"}
+                </button>
+              )}
+
+              {agentCommission?.status === "pending" && hasAnyRole(profile, ["admin", "accountant"]) && (
+                <button
+                  onClick={async () => {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) return;
+                    await supabase.from("agent_commissions").update({ status: "approved" }).eq("id", agentCommission.id);
+                    await logActivity(supabase, session.user.id, "approved_agent_commission", "deals", id, { agent_name: agentName });
+                    await fetchAgentCommission();
+                    setMessage({ type: "success", text: "Commission approved." });
+                  }}
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+                >
+                  Approve
+                </button>
+              )}
+
+              {agentCommission?.status === "approved" && hasAnyRole(profile, ["admin", "accountant"]) && (
+                <button
+                  onClick={() => setShowMarkCommissionPaidModal(true)}
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"
+                >
+                  Mark as Paid
+                </button>
+              )}
+            </div>
+
+            {/* Mark as Paid modal */}
+            {showMarkCommissionPaidModal && agentCommission && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+                <div className="w-full max-w-sm rounded-xl border border-white/10 bg-blue-950 p-6 shadow-2xl">
+                  <h4 className="text-lg font-bold mb-4">Mark Commission as Paid</h4>
+                  <div className="mb-4">
+                    <label className={labelClass}>Paid Date</label>
+                    <input
+                      type="date"
+                      value={commissionPaidDate}
+                      onChange={e => setCommissionPaidDate(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={() => setShowMarkCommissionPaidModal(false)} className={btnSecondary}>Cancel</button>
+                    <button
+                      onClick={async () => {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session) return;
+                        await supabase.from("agent_commissions").update({
+                          status: "paid",
+                          paid_date: commissionPaidDate,
+                          paid_by: session.user.id,
+                        }).eq("id", agentCommission.id);
+                        await logActivity(supabase, session.user.id, "paid_agent_commission", "deals", id, { agent_name: agentName, paid_date: commissionPaidDate });
+                        setShowMarkCommissionPaidModal(false);
+                        await fetchAgentCommission();
+                        setMessage({ type: "success", text: "Commission marked as paid." });
+                      }}
+                      className={btnPrimary}
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Section: Applicants ─────────────────────────────────────────── */}
         {(form.deal_type === "individual_visa" || deal?.contact_id) && (

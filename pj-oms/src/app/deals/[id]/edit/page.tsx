@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { hasAnyRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
@@ -79,16 +80,16 @@ export default function EditDealPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/admin"); return; }
 
-      const { data: profileData } = await supabase.from("profiles").select("role, department").eq("id", session.user.id).single();
+      const { data: profileData } = await supabase.from("profiles").select("role, roles, department").eq("id", session.user.id).single();
 
       // Only admin and accountant can edit deals
-      if (!profileData || !["admin", "accountant"].includes(profileData.role)) {
+      if (!profileData || !hasAnyRole(profileData, ["admin", "accountant"])) {
         router.push(`/deals/${id}`);
         return;
       }
 
       const [{ data: salesData }, { data: dealData }, { data: stagesData }] = await Promise.all([
-        supabase.from("profiles").select("id, full_name").in("role", ["admin", "sales", "lia"]).order("full_name"),
+        supabase.from("profiles").select("id, full_name").overlaps("roles", ["admin", "sales", "lia"]).order("full_name"),
         supabase.from("deals")
           .select("*, contacts(id, first_name, last_name, email, department), companies(id, company_name, email, department)")
           .eq("id", id).single(),
