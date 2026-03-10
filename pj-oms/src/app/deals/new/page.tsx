@@ -10,6 +10,7 @@ import { logActivity } from "@/lib/activityLog";
 type ContactOption = { id: string; first_name: string; last_name: string; department: string | null };
 type CompanyOption = { id: string; company_name: string; department: string | null };
 type AgentOption = { id: string; agent_name: string };
+type SalesUser = { id: string; full_name: string | null };
 
 type StageRow = { tempId: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; };
 const STAGE_NAMES = ["Stage I", "Stage II", "Stage III", "Stage IV", "Stage V", "Stage VI"];
@@ -71,6 +72,10 @@ function NewDealPage() {
   const [agentResults, setAgentResults] = useState<AgentOption[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | null>(null);
 
+  // Assignment
+  const [liaUsers, setLiaUsers] = useState<SalesUser[]>([]);
+  const [assignedLiaId, setAssignedLiaId] = useState("");
+
   const [form, setForm] = useState({
     deal_type: "individual_visa",
     visa_type: "",
@@ -101,6 +106,10 @@ function NewDealPage() {
         setUserDept(profileData.department);
         setForm(f => ({ ...f, department: profileData.department }));
       }
+
+      // Fetch LIA-eligible users
+      const { data: liaData } = await supabase.from("profiles").select("id, full_name").in("role", ["admin", "sales", "lia"]).order("full_name");
+      if (liaData) setLiaUsers(liaData as SalesUser[]);
 
       // Pre-fill if contact_id or company_id passed
       if (preContactId) {
@@ -191,6 +200,7 @@ function NewDealPage() {
       refund_percentage: form.refund_percentage ? parseInt(form.refund_percentage) : 50,
       payment_status: "unpaid",
       assigned_sales_id: userId,
+      assigned_lia_id: assignedLiaId || null,
       department: dept,
       notes: form.notes.trim() || null,
       created_by: userId,
@@ -538,6 +548,18 @@ function NewDealPage() {
               <p className="mt-1 text-xs text-white/40">If blank, department will be inferred from the selected client&apos;s department.</p>
             </div>
           )}
+
+          {/* Assignment */}
+          <div className={sectionClass}>
+            <h3 className="text-base font-bold mb-4">Assignment</h3>
+            <div>
+              <label className={labelClass}>Assigned LIA</label>
+              <select value={assignedLiaId} onChange={e => setAssignedLiaId(e.target.value)} className={`${selectClass} max-w-xs`}>
+                <option value="" className="bg-blue-900">— None —</option>
+                {liaUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+              </select>
+            </div>
+          </div>
 
           {/* Notes */}
           <div className={sectionClass}>
