@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { buildInvoiceHtml } from "@/lib/invoiceHtml";
 import { generateAndUploadInvoicePdf } from "@/lib/invoicePdf";
 
 export async function POST(
@@ -21,6 +20,7 @@ export async function POST(
     .single();
 
   if (error || !invoice) {
+    console.error("[generate-pdf] Invoice not found:", error);
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
@@ -32,7 +32,7 @@ export async function POST(
     ? `${contact.first_name} ${contact.last_name}`
     : (company?.company_name as string) ?? "Client";
 
-  const html = buildInvoiceHtml({
+  const pdfData = {
     invoice_number: invoice.invoice_number,
     issue_date: invoice.issue_date,
     due_date: invoice.due_date,
@@ -47,10 +47,10 @@ export async function POST(
     gst_amount: invoice.gst_amount,
     total: invoice.total,
     notes: invoice.notes,
-  });
+  };
 
   const filename = `${invoice.invoice_number}.pdf`;
-  const pdfUrl = await generateAndUploadInvoicePdf(html, invoice.deal_id, filename);
+  const pdfUrl = await generateAndUploadInvoicePdf(pdfData, invoice.deal_id, filename);
 
   if (!pdfUrl) {
     return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });

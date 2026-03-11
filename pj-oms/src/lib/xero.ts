@@ -121,7 +121,9 @@ export async function getXeroContacts(
 ): Promise<Record<string, unknown>[]> {
   let url = `${XERO_API_BASE}/Contacts`;
   if (nameOrEmail) {
-    url += `?where=Name=="${encodeURIComponent(nameOrEmail)}"`;
+    // Xero expects the where clause to NOT be double-encoded in the value
+    const escaped = nameOrEmail.replace(/"/g, '\\"');
+    url += `?where=${encodeURIComponent(`Name=="${escaped}"`)}`;
   }
   const res = await fetch(url, {
     headers: {
@@ -130,7 +132,10 @@ export async function getXeroContacts(
       Accept: "application/json",
     },
   });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    console.error("[Xero] Get contacts failed:", res.status, await res.text().catch(() => ""));
+    return [];
+  }
   const data = await res.json();
   return data?.Contacts ?? [];
 }
@@ -145,6 +150,8 @@ export async function createXeroContact(
     EmailAddress?: string;
   }
 ): Promise<{ ContactID: string } | null> {
+  const reqBody = JSON.stringify({ Contacts: [contact] });
+  console.log("[Xero] Creating contact:", reqBody);
   const res = await fetch(`${XERO_API_BASE}/Contacts`, {
     method: "POST",
     headers: {
@@ -152,13 +159,14 @@ export async function createXeroContact(
       "Xero-Tenant-Id": tenantId,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ Contacts: [contact] }),
+    body: reqBody,
   });
+  const resText = await res.text();
   if (!res.ok) {
-    console.error("[Xero] Create contact failed:", await res.text());
+    console.error("[Xero] Create contact failed:", res.status, resText);
     return null;
   }
-  const data = await res.json();
+  const data = JSON.parse(resText);
   return data?.Contacts?.[0] ?? null;
 }
 
@@ -188,7 +196,9 @@ export async function createXeroInvoice(
   accessToken: string,
   tenantId: string,
   invoice: XeroInvoicePayload
-): Promise<{ InvoiceID: string; InvoiceNumber: string } | null> {
+): Promise<{ InvoiceID: string; InvoiceNumber: string; error?: string } | null> {
+  const reqBody = JSON.stringify({ Invoices: [invoice] });
+  console.log("[Xero] Creating invoice, tenant:", tenantId, "payload:", reqBody);
   const res = await fetch(`${XERO_API_BASE}/Invoices`, {
     method: "POST",
     headers: {
@@ -196,13 +206,21 @@ export async function createXeroInvoice(
       "Xero-Tenant-Id": tenantId,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ Invoices: [invoice] }),
+    body: reqBody,
   });
+  const resText = await res.text();
   if (!res.ok) {
-    console.error("[Xero] Create invoice failed:", await res.text());
-    return null;
+    console.error("[Xero] Create invoice failed:", res.status, resText);
+    // Try to parse error message
+    try {
+      const errData = JSON.parse(resText);
+      return { InvoiceID: "", InvoiceNumber: "", error: errData?.Message || errData?.Detail || resText };
+    } catch {
+      return { InvoiceID: "", InvoiceNumber: "", error: resText };
+    }
   }
-  const data = await res.json();
+  const data = JSON.parse(resText);
+  console.log("[Xero] Invoice created successfully:", JSON.stringify(data?.Invoices?.[0]?.InvoiceID));
   const inv = data?.Invoices?.[0];
   return inv ? { InvoiceID: inv.InvoiceID, InvoiceNumber: inv.InvoiceNumber } : null;
 }
@@ -222,11 +240,12 @@ export async function updateXeroInvoice(
     },
     body: JSON.stringify({ Invoices: [{ InvoiceID: invoiceId, ...updates }] }),
   });
+  const resText = await res.text();
   if (!res.ok) {
-    console.error("[Xero] Update invoice failed:", await res.text());
+    console.error("[Xero] Update invoice failed:", res.status, resText);
     return null;
   }
-  const data = await res.json();
+  const data = JSON.parse(resText);
   const inv = data?.Invoices?.[0];
   return inv ? { InvoiceID: inv.InvoiceID, InvoiceNumber: inv.InvoiceNumber } : null;
 }

@@ -29,7 +29,7 @@ type InvoiceRow = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft", sent: "Sent", paid: "Paid", cancelled: "Cancelled", overdue: "Overdue",
+  draft: "Draft", sent: "Sent", paid: "Paid", cancelled: "Cancelled", overdue: "Overdue", partial: "Partial",
 };
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-500/20 text-gray-400",
@@ -37,6 +37,7 @@ const STATUS_COLORS: Record<string, string> = {
   paid: "bg-green-500/20 text-green-400",
   cancelled: "bg-red-500/20 text-red-400",
   overdue: "bg-orange-500/20 text-orange-400",
+  partial: "bg-yellow-500/20 text-yellow-400",
 };
 
 const CURRENCY_SYMBOLS: Record<string, string> = { NZD: "NZ$", CNY: "\u00A5", THB: "\u0E3F" };
@@ -110,8 +111,11 @@ export default function InvoicesPage() {
     setActionLoading(null);
   };
 
+  const [xeroMsg, setXeroMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   const handlePushToXero = async (id: string) => {
     setActionLoading(id);
+    setXeroMsg(null);
     try {
       const res = await fetch("/api/xero/create-invoice", {
         method: "POST",
@@ -120,9 +124,13 @@ export default function InvoicesPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Failed to push to Xero");
+        setXeroMsg({ type: "error", text: data.error || "Failed to push to Xero" });
+      } else {
+        setXeroMsg({ type: "success", text: `Pushed to Xero: ${data.xero_invoice_number || "OK"}` });
       }
-    } catch {}
+    } catch (e) {
+      setXeroMsg({ type: "error", text: `Xero error: ${e instanceof Error ? e.message : "Unknown"}` });
+    }
     await fetchInvoices();
     setActionLoading(null);
   };
@@ -169,6 +177,7 @@ export default function InvoicesPage() {
             <option value="" className="bg-blue-900">All Statuses</option>
             <option value="draft" className="bg-blue-900">Draft</option>
             <option value="sent" className="bg-blue-900">Sent</option>
+            <option value="partial" className="bg-blue-900">Partial</option>
             <option value="paid" className="bg-blue-900">Paid</option>
             <option value="cancelled" className="bg-blue-900">Cancelled</option>
           </select>
@@ -179,6 +188,12 @@ export default function InvoicesPage() {
             <option value="THB" className="bg-blue-900">THB</option>
           </select>
         </div>
+
+        {xeroMsg && (
+          <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${xeroMsg.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+            {xeroMsg.text}
+          </div>
+        )}
 
         {/* Table */}
         {filtered.length === 0 ? (
@@ -226,9 +241,9 @@ export default function InvoicesPage() {
                         <td className="py-3 px-4 text-white/60 text-xs">{inv.issue_date}</td>
                         <td className="py-3 px-4">
                           {inv.xero_invoice_id ? (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400">Synced</span>
-                          ) : inv.currency === "NZD" && (inv.status === "draft" || inv.status === "sent") ? (
-                            <button onClick={() => handlePushToXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">Push to Xero</button>
+                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                          ) : (inv.status === "draft" || inv.status === "sent") ? (
+                            <button onClick={() => handlePushToXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">{actionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
                           ) : (
                             <span className="text-xs text-white/30">—</span>
                           )}
@@ -243,8 +258,8 @@ export default function InvoicesPage() {
                             {inv.status === "draft" && (
                               <button onClick={() => handleSend(inv.id)} disabled={actionLoading === inv.id} className="text-green-400 hover:text-green-300 disabled:opacity-50">Send</button>
                             )}
-                            {(inv.status === "draft" || inv.status === "sent") && (
-                              <button onClick={() => handleMarkPaid(inv.id)} disabled={actionLoading === inv.id} className="text-green-400 hover:text-green-300 disabled:opacity-50">Paid</button>
+                            {inv.status !== "paid" && inv.status !== "cancelled" && (
+                              <Link href={`/deals/${inv.deal_id}`} className="text-green-400 hover:text-green-300">Record Pay</Link>
                             )}
                             {inv.status !== "cancelled" && inv.status !== "paid" && (
                               <button onClick={() => handleCancel(inv.id)} disabled={actionLoading === inv.id} className="text-red-400 hover:text-red-300 disabled:opacity-50">Cancel</button>

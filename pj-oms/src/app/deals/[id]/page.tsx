@@ -38,6 +38,11 @@ type DealPayment = {
   paid_date: string | null;
   payment_method: string | null;
   receipt_sent: boolean;
+  // per-fee paid tracking
+  service_fee_paid: boolean;
+  inz_fee_paid: boolean;
+  other_fee_paid: boolean;
+  paid_amount_total: number;
 };
 
 type EditStageRow = { id: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; currency: string; is_paid: boolean; };
@@ -313,7 +318,7 @@ export default function DealDetailPage() {
   // Invoice state
   type InvoiceRecord = {
     id: string; invoice_number: string; currency: string; status: string;
-    total: number; issue_date: string; due_date: string | null;
+    total: number; paid_amount: number; issue_date: string; due_date: string | null;
     pdf_url: string | null; payment_stage_ids: string[];
     xero_invoice_id: string | null;
   };
@@ -325,6 +330,13 @@ export default function DealDetailPage() {
   const [invoiceDueDate, setInvoiceDueDate] = useState("");
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [invoiceActionLoading, setInvoiceActionLoading] = useState<string | null>(null);
+  // Payment recording modal
+  const [showPaymentModal, setShowPaymentModal] = useState<InvoiceRecord | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
+  const [paymentNotes, setPaymentNotes] = useState("");
+  const [isRecordingPayment, setIsRecordingPayment] = useState(false);
 
   // UI state — Payment stages edit
   const [editingStages, setEditingStages] = useState(false);
@@ -407,7 +419,11 @@ export default function DealDetailPage() {
   const stageInzTotal = payments.reduce((s, p) => s + (p.inz_fee_amount || 0), 0);
   const stageOtherTotal = payments.reduce((s, p) => s + (p.other_fee_amount || 0), 0);
   const stageTotalAmount = stageServiceTotal + stageInzTotal + stageOtherTotal;
-  const totalPaidAmount = payments.filter(p => p.is_paid).reduce((s, p) => s + (p.service_fee_amount || 0) + (p.inz_fee_amount || 0) + (p.other_fee_amount || 0), 0);
+  const totalPaidAmount = payments.reduce((s, p) => {
+    if (p.is_paid) return s + (p.service_fee_amount || 0) + (p.inz_fee_amount || 0) + (p.other_fee_amount || 0);
+    // Include partial payments
+    return s + (p.paid_amount_total || 0);
+  }, 0);
   const outstandingAmount = stageTotalAmount - totalPaidAmount;
 
   const currentStatus = deal?.status ?? "draft";
@@ -438,7 +454,7 @@ export default function DealDetailPage() {
   }, [id]);
 
   const fetchInvoices = useCallback(async () => {
-    const { data } = await supabase.from("invoices").select("id, invoice_number, currency, status, total, issue_date, due_date, pdf_url, payment_stage_ids").eq("deal_id", id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("invoices").select("id, invoice_number, currency, status, total, paid_amount, issue_date, due_date, pdf_url, payment_stage_ids, xero_invoice_id").eq("deal_id", id).order("created_at", { ascending: false });
     setInvoices((data ?? []) as InvoiceRecord[]);
   }, [id]);
 
@@ -1707,7 +1723,13 @@ export default function DealDetailPage() {
                         <td className="py-2 px-2">
                           {p.is_paid
                             ? <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400">Paid</span>
-                            : <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-yellow-500/20 text-yellow-400">Unpaid</span>
+                            : (p.service_fee_paid || p.inz_fee_paid || p.other_fee_paid)
+                              ? <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-yellow-500/20 text-yellow-400" title={[
+                                  p.service_fee_paid ? "Svc: Paid" : (p.service_fee_amount ? "Svc: Unpaid" : null),
+                                  p.inz_fee_paid ? "INZ: Paid" : (p.inz_fee_amount ? "INZ: Unpaid" : null),
+                                  p.other_fee_paid ? "Other: Paid" : (p.other_fee_amount ? "Other: Unpaid" : null),
+                                ].filter(Boolean).join(", ")}>Partial (${fmt(p.paid_amount_total || 0)}/${fmt(stageTotal)})</span>
+                              : <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-red-500/20 text-red-400">Unpaid</span>
                           }
                         </td>
                         {hasAnyRole(profile, ["admin", "accountant"]) && (
@@ -1919,23 +1941,26 @@ export default function DealDetailPage() {
                         <td className="py-2 px-2">
                           <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
                             inv.status === "paid" ? "bg-green-500/20 text-green-400" :
+                            inv.status === "partial" ? "bg-yellow-500/20 text-yellow-400" :
                             inv.status === "sent" ? "bg-blue-500/20 text-blue-400" :
                             inv.status === "cancelled" ? "bg-red-500/20 text-red-400" :
                             "bg-gray-500/20 text-gray-400"
-                          }`}>{inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</span>
+                          }`}>{inv.status === "partial" ? `Partial (${fmt(inv.paid_amount || 0)}/${fmt(inv.total)})` : inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</span>
                         </td>
                         <td className="py-2 px-2">
                           {inv.xero_invoice_id ? (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400">Synced</span>
-                          ) : inv.currency === "NZD" && (inv.status === "draft" || inv.status === "sent") ? (
+                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                          ) : (inv.status === "draft" || inv.status === "sent") ? (
                             <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
                               setInvoiceActionLoading(inv.id);
                               try {
                                 const res = await fetch("/api/xero/create-invoice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ invoice_id: inv.id }) });
-                                const d = await res.json(); if (!res.ok) alert(d.error || "Failed");
-                              } catch {}
+                                const d = await res.json();
+                                if (!res.ok) { setMessage({ type: "error", text: `Xero: ${d.error || "Failed"}` }); }
+                                else { setMessage({ type: "success", text: `Pushed to Xero: ${d.xero_invoice_number || "OK"}` }); }
+                              } catch (e) { setMessage({ type: "error", text: `Xero error: ${e instanceof Error ? e.message : "Unknown"}` }); }
                               await fetchInvoices(); setInvoiceActionLoading(null);
-                            }} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">Push to Xero</button>
+                            }} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
                           ) : (
                             <span className="text-xs text-white/30">—</span>
                           )}
@@ -1959,12 +1984,15 @@ export default function DealDetailPage() {
                                 await fetchInvoices(); setInvoiceActionLoading(null);
                               }} className="text-green-400 hover:text-green-300 disabled:opacity-50">Send</button>
                             )}
-                            {(inv.status === "draft" || inv.status === "sent") && (
-                              <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
-                                setInvoiceActionLoading(inv.id);
-                                await supabase.from("invoices").update({ status: "paid" }).eq("id", inv.id);
-                                await fetchInvoices(); setInvoiceActionLoading(null);
-                              }} className="text-green-400 hover:text-green-300 disabled:opacity-50">Paid</button>
+                            {inv.status !== "paid" && inv.status !== "cancelled" && (
+                              <button onClick={() => {
+                                setShowPaymentModal(inv);
+                                const remaining = inv.total - (inv.paid_amount || 0);
+                                setPaymentAmount(remaining > 0 ? String(remaining) : String(inv.total));
+                                setPaymentDate(new Date().toISOString().split("T")[0]);
+                                setPaymentMethod("bank_transfer");
+                                setPaymentNotes("");
+                              }} className="text-green-400 hover:text-green-300">Record Payment</button>
                             )}
                             {inv.status !== "cancelled" && inv.status !== "paid" && (
                               <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
@@ -3067,6 +3095,102 @@ export default function DealDetailPage() {
             </div>
           )}
         </div>
+
+        {/* ── Payment Recording Modal ──────────────────────────────────────── */}
+        {showPaymentModal && (() => {
+          const inv = showPaymentModal;
+          const remaining = inv.total - (inv.paid_amount || 0);
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+              <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-950 p-6 shadow-2xl">
+                <h3 className="text-lg font-bold mb-4">Record Payment</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between text-white/60">
+                    <span>Invoice</span><span className="text-white font-medium">{inv.invoice_number}</span>
+                  </div>
+                  <div className="flex justify-between text-white/60">
+                    <span>Total</span><span className="text-white font-medium">${fmt(inv.total)}</span>
+                  </div>
+                  <div className="flex justify-between text-white/60">
+                    <span>Already Paid</span><span className="text-white font-medium">${fmt(inv.paid_amount || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-white/60">
+                    <span>Remaining</span><span className="text-white font-bold">${fmt(remaining)}</span>
+                  </div>
+                  <hr className="border-white/10" />
+                  <div>
+                    <label className="block text-white/60 mb-1">Payment Amount</label>
+                    <input type="number" step="0.01" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)}
+                      className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white focus:border-blue-400 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-white/60 mb-1">Payment Date</label>
+                    <input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)}
+                      className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white focus:border-blue-400 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-white/60 mb-1">Payment Method</label>
+                    <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
+                      className="w-full rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-white focus:border-blue-400 focus:outline-none">
+                      <option value="bank_transfer" className="bg-blue-900">Bank Transfer</option>
+                      <option value="cash" className="bg-blue-900">Cash</option>
+                      <option value="card" className="bg-blue-900">Card</option>
+                      <option value="other" className="bg-blue-900">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-white/60 mb-1">Notes (optional)</label>
+                    <input type="text" value={paymentNotes} onChange={e => setPaymentNotes(e.target.value)} placeholder="Payment reference..."
+                      className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none" />
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-6">
+                  <button
+                    disabled={isRecordingPayment || !paymentAmount || Number(paymentAmount) <= 0}
+                    onClick={async () => {
+                      setIsRecordingPayment(true);
+                      try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const res = await fetch(`/api/invoices/${inv.id}/record-payment`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            amount: Number(paymentAmount),
+                            payment_date: paymentDate,
+                            payment_method: paymentMethod,
+                            notes: paymentNotes || null,
+                            created_by: session?.user.id,
+                          }),
+                        });
+                        const d = await res.json();
+                        if (res.ok) {
+                          const matchMsg = d.matched_stage_id
+                            ? ` (matched to ${d.matched_fee_type === "total" ? "full stage" : d.matched_fee_type?.replace("_", " ")})`
+                            : "";
+                          setMessage({ type: "success", text: `Payment of $${Number(paymentAmount).toFixed(2)} recorded${matchMsg}` });
+                          setShowPaymentModal(null);
+                          await fetchInvoices();
+                          await fetchPayments();
+                        } else {
+                          setMessage({ type: "error", text: d.error || "Failed to record payment" });
+                        }
+                      } catch (e) {
+                        setMessage({ type: "error", text: `Error: ${e instanceof Error ? e.message : "Unknown"}` });
+                      }
+                      setIsRecordingPayment(false);
+                    }}
+                    className="flex-1 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-bold hover:bg-green-500 disabled:opacity-50 transition-colors"
+                  >
+                    {isRecordingPayment ? "Recording..." : "Record Payment"}
+                  </button>
+                  <button onClick={() => setShowPaymentModal(null)} className="rounded-lg border border-white/20 px-4 py-2.5 text-sm font-bold hover:bg-white/10 transition-colors">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
       </main>
     </div>
