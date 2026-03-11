@@ -288,7 +288,7 @@ export default function DealDetailPage() {
     agent_id: string | null;
     assigned_lia_id: string | null;
     assigned_sales_id: string | null;
-    contacts: { first_name: string; last_name: string; email: string | null; phone: string | null; address: string | null; passport_number: string | null; nationality: string | null; date_of_birth: string | null } | null;
+    contacts: { first_name: string; last_name: string; email: string | null; mobile: string | null; address: string | null; passport_number: string | null; nationality: string | null; date_of_birth: string | null } | null;
     companies: { company_name: string; email: string | null; address: string | null } | null;
   } | null>(null);
 
@@ -572,7 +572,7 @@ export default function DealDetailPage() {
 
       // Try full query first (with extended contact fields for placeholder filling)
       let { data: dealData, error: dealError } = await supabase.from("deals")
-        .select("*, contacts(first_name, last_name, email, phone, address, passport_number, nationality, date_of_birth), companies(company_name, email, address)")
+        .select("*, contacts(first_name, last_name, email, mobile, address, passport_number, nationality, date_of_birth), companies(company_name, email, address)")
         .eq("id", id).single();
 
       // If query errored (not just "no rows"), fall back to a minimal select
@@ -604,7 +604,7 @@ export default function DealDetailPage() {
         agent_id: dealData.agent_id,
         assigned_lia_id: dealData.assigned_lia_id,
         assigned_sales_id: dealData.assigned_sales_id,
-        contacts: dealData.contacts as { first_name: string; last_name: string; email: string | null; phone: string | null; address: string | null; passport_number: string | null; nationality: string | null; date_of_birth: string | null } | null,
+        contacts: dealData.contacts as { first_name: string; last_name: string; email: string | null; mobile: string | null; address: string | null; passport_number: string | null; nationality: string | null; date_of_birth: string | null } | null,
         companies: dealData.companies as { company_name: string; email: string | null; address: string | null } | null,
       });
 
@@ -733,8 +733,8 @@ export default function DealDetailPage() {
       date: today,
       client_name: contact ? `${contact.first_name} ${contact.last_name}` : (company?.company_name ?? ""),
       client_email: contact?.email ?? company?.email ?? "",
-      client_mobile: contact?.phone ?? "",
-      client_phone: contact?.phone ?? "",
+      client_mobile: contact?.mobile ?? "",
+      client_phone: contact?.mobile ?? "",
       client_address: contact?.address ?? company?.address ?? "",
       client_family_name: contact?.last_name ?? "",
       client_first_name: contact?.first_name ?? "",

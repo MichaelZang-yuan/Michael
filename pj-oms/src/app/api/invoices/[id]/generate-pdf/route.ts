@@ -15,7 +15,7 @@ export async function POST(
   // Fetch invoice with deal, contact, company
   const { data: invoice, error } = await supabase
     .from("invoices")
-    .select("*, deals(deal_number, contact_id, company_id, contacts(first_name, last_name, email, phone, address), companies(company_name, email, address))")
+    .select("*, deals(deal_number, contacts(first_name, last_name, email, mobile, address), companies(company_name, email, address))")
     .eq("id", id)
     .single();
 
@@ -40,7 +40,7 @@ export async function POST(
     client_name: clientName,
     client_email: (contact?.email as string) ?? (company?.email as string) ?? null,
     client_address: (contact?.address as string) ?? (company?.address as string) ?? null,
-    client_phone: (contact?.phone as string) ?? null,
+    client_phone: (contact?.mobile as string) ?? null,
     deal_number: (deal?.deal_number as string) ?? null,
     line_items: invoice.line_items as { description: string; quantity: number; unit_price: number; amount: number }[],
     subtotal: invoice.subtotal,

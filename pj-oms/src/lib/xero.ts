@@ -96,13 +96,18 @@ export async function fetchXeroConnections(
   accessToken: string
 ): Promise<{ tenantId: string; tenantName: string; tenantType: string }[]> {
   const res = await fetch(XERO_CONNECTIONS_URL, {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
   });
+  const resText = await res.text();
   if (!res.ok) {
-    console.error("[Xero] Failed to fetch connections:", await res.text());
+    console.error("[Xero] Failed to fetch connections:", res.status, resText);
     return [];
   }
-  const data = await res.json();
+  let data: unknown;
+  try { data = JSON.parse(resText); } catch {
+    console.error("[Xero] Connections: non-JSON response:", resText.slice(0, 500));
+    return [];
+  }
   return (data as { tenantId: string; tenantName: string; tenantType: string }[]).map(
     (c) => ({
       tenantId: c.tenantId,
@@ -132,12 +137,18 @@ export async function getXeroContacts(
       Accept: "application/json",
     },
   });
+  const resText = await res.text();
   if (!res.ok) {
-    console.error("[Xero] Get contacts failed:", res.status, await res.text().catch(() => ""));
+    console.error("[Xero] Get contacts failed:", res.status, resText);
     return [];
   }
-  const data = await res.json();
-  return data?.Contacts ?? [];
+  try {
+    const data = JSON.parse(resText);
+    return data?.Contacts ?? [];
+  } catch {
+    console.error("[Xero] Get contacts: non-JSON response:", resText.slice(0, 500));
+    return [];
+  }
 }
 
 export async function createXeroContact(
@@ -219,10 +230,15 @@ export async function createXeroInvoice(
       return { InvoiceID: "", InvoiceNumber: "", error: resText };
     }
   }
-  const data = JSON.parse(resText);
-  console.log("[Xero] Invoice created successfully:", JSON.stringify(data?.Invoices?.[0]?.InvoiceID));
-  const inv = data?.Invoices?.[0];
-  return inv ? { InvoiceID: inv.InvoiceID, InvoiceNumber: inv.InvoiceNumber } : null;
+  try {
+    const data = JSON.parse(resText);
+    console.log("[Xero] Invoice created successfully:", JSON.stringify(data?.Invoices?.[0]?.InvoiceID));
+    const inv = data?.Invoices?.[0];
+    return inv ? { InvoiceID: inv.InvoiceID, InvoiceNumber: inv.InvoiceNumber } : null;
+  } catch {
+    console.error("[Xero] Create invoice: non-JSON success response:", resText.slice(0, 500));
+    return { InvoiceID: "", InvoiceNumber: "", error: "Xero returned non-JSON response" };
+  }
 }
 
 export async function updateXeroInvoice(
@@ -245,9 +261,14 @@ export async function updateXeroInvoice(
     console.error("[Xero] Update invoice failed:", res.status, resText);
     return null;
   }
-  const data = JSON.parse(resText);
-  const inv = data?.Invoices?.[0];
-  return inv ? { InvoiceID: inv.InvoiceID, InvoiceNumber: inv.InvoiceNumber } : null;
+  try {
+    const data = JSON.parse(resText);
+    const inv = data?.Invoices?.[0];
+    return inv ? { InvoiceID: inv.InvoiceID, InvoiceNumber: inv.InvoiceNumber } : null;
+  } catch {
+    console.error("[Xero] Update invoice: non-JSON response:", resText.slice(0, 500));
+    return null;
+  }
 }
 
 export async function getXeroInvoice(
@@ -262,9 +283,17 @@ export async function getXeroInvoice(
       Accept: "application/json",
     },
   });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data?.Invoices?.[0] ?? null;
+  if (!res.ok) {
+    console.error("[Xero] Get invoice failed:", res.status, await res.text().catch(() => ""));
+    return null;
+  }
+  try {
+    const data = await res.json();
+    return data?.Invoices?.[0] ?? null;
+  } catch {
+    console.error("[Xero] Get invoice: non-JSON response");
+    return null;
+  }
 }
 
 /** Find or create a contact in Xero, returning the ContactID */

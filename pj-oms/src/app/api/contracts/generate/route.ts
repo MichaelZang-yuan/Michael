@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     // Fetch deal with contact/company info
     const { data: deal, error: dealErr } = await supabase
       .from("deals")
-      .select("*, contacts(first_name, last_name, email, phone, address, passport_number, nationality, date_of_birth), companies(company_name, email, address)")
+      .select("*, contacts(first_name, last_name, email, mobile, address, passport_number, nationality, date_of_birth), companies(company_name, email, address)")
       .eq("id", deal_id)
       .single();
     if (dealErr || !deal) return NextResponse.json({ error: "Deal not found" }, { status: 404 });
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Build placeholder data
-    const contact = deal.contacts as { first_name: string; last_name: string; email: string | null; phone: string | null; address: string | null; passport_number: string | null; nationality: string | null; date_of_birth: string | null } | null;
+    const contact = deal.contacts as { first_name: string; last_name: string; email: string | null; mobile: string | null; address: string | null; passport_number: string | null; nationality: string | null; date_of_birth: string | null } | null;
     const company = deal.companies as { company_name: string; email: string | null; address: string | null } | null;
     const fmtAmt = (n: number) => `NZ$${n.toLocaleString("en-NZ", { minimumFractionDigits: 2 })}`;
     const today = new Date().toLocaleDateString("en-NZ", { year: "numeric", month: "long", day: "numeric" });
@@ -80,8 +80,8 @@ export async function POST(req: NextRequest) {
       date_today: today,
       client_name: contact ? `${contact.first_name} ${contact.last_name}` : (company?.company_name ?? ""),
       client_email: contact?.email ?? company?.email ?? "",
-      client_mobile: contact?.phone ?? "",
-      client_phone: contact?.phone ?? "",
+      client_mobile: contact?.mobile ?? "",
+      client_phone: contact?.mobile ?? "",
       client_address: contact?.address ?? company?.address ?? "",
       client_family_name: contact?.last_name ?? "",
       client_first_name: contact?.first_name ?? "",
