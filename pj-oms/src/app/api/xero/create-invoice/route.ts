@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   // Fetch invoice with related data including deal's visa_type and created_by
   const { data: invoice, error: invErr } = await supabase
     .from("invoices")
-    .select("*, deals(deal_number, visa_type, created_by, contacts(first_name, last_name, email), companies(company_name, email))")
+    .select("*, deals(deal_number, deal_type, visa_type, created_by, contacts(first_name, last_name, email), companies(company_name, email))")
     .eq("id", invoice_id)
     .single();
 
@@ -67,7 +67,15 @@ export async function POST(request: Request) {
   const deal = invoice.deals as Record<string, unknown> | null;
   console.log("[Xero create-invoice] deal object:", JSON.stringify(deal));
   console.log("[Xero create-invoice] deal.visa_type raw:", deal?.visa_type);
+  const DEAL_TYPE_DISPLAY: Record<string, string> = {
+    individual_visa: "Individual Visa",
+    accreditation: "Accreditation",
+    job_check: "Job Check",
+    employer_services: "Employer Services",
+    school_application: "School Application",
+  };
   const visaType = (deal?.visa_type as string) ?? "";
+  const dealType = DEAL_TYPE_DISPLAY[(deal?.deal_type as string) ?? ""] ?? "";
   const dealCreatedBy = deal?.created_by as string | null;
 
   // Get department from deal creator's profile
@@ -173,7 +181,8 @@ export async function POST(request: Request) {
     const match = origDesc.match(/^(.+?)\s*\((Service Fee|INZ Fee|Other Fee)\)$/);
     const stageInfo = match ? match[1].trim() : origDesc;
 
-    const prefix = visaType ? `${visaType} - ` : "";
+    const typeLabel = visaType || dealType;
+    const prefix = typeLabel ? `${typeLabel} - ` : "";
     return `${prefix}${feeLabel} - ${stageInfo}`;
   };
 
@@ -207,7 +216,7 @@ export async function POST(request: Request) {
     LineItems: xeroLineItems,
     Date: invoice.issue_date,
     DueDate: dueDate || undefined,
-    Reference: visaType || invoice.invoice_number,
+    Reference: visaType || dealType || invoice.invoice_number,
     CurrencyCode: invoice.currency || "NZD",
     Status: "DRAFT",
   });

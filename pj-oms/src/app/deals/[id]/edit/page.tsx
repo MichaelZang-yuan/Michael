@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -36,6 +36,34 @@ const DEPT_LABELS: Record<string, string> = {
   china: "China", thailand: "Thailand", myanmar: "Myanmar", korea_japan: "Korea & Japan",
 };
 
+const COMPANY_VISA_OPTIONS = [
+  "Standard Accreditation",
+  "High Volume Accreditation",
+  "Post Accreditation Check",
+  "Accreditation + Job Check",
+  "Job Check",
+];
+
+const INDIVIDUAL_VISA_FALLBACK = [
+  "AEWV (Accredited Employer Work Visa)",
+  "Student Visa",
+  "Residence Visa",
+  "Visitor Visa",
+  "Partnership Visa",
+  "SMC (Skilled Migrant Category)",
+  "Work Visa",
+  "Post Study Work Visa",
+  "Specific Purpose Work Visa",
+  "Entrepreneur Work Visa",
+  "Investor Visa",
+  "Parent Retirement Visa",
+  "Dependent Child Visa",
+  "PRV (Permanent Residence Visa)",
+  "Variation of Conditions",
+  "Reconsideration / Appeal",
+  "Other",
+];
+
 export default function EditDealPage() {
   const router = useRouter();
   const params = useParams();
@@ -70,6 +98,15 @@ export default function EditDealPage() {
 
   const [paymentStages, setPaymentStages] = useState<StageRow[]>([newStageRow()]);
   const [refPrices, setRefPrices] = useState<{ service_name: string; service_fee: number; inz_fee: number }[]>([]);
+  const [priceListNames, setPriceListNames] = useState<string[]>([]);
+
+  const individualVisaOptions = useMemo(() => {
+    const merged = new Set([...priceListNames, ...INDIVIDUAL_VISA_FALLBACK]);
+    return [...merged];
+  }, [priceListNames]);
+
+  const isCompanyDeal = ["accreditation", "job_check", "employer_services"].includes(form.deal_type);
+  const visaTypeOptions = isCompanyDeal ? COMPANY_VISA_OPTIONS : individualVisaOptions;
 
   const VISA_TYPE_CATEGORY: Record<string, string> = {
     SV: "Student Visa", AEWV: "AEWV", WV: "Work Visa", RV: "Residence",
@@ -77,6 +114,17 @@ export default function EditDealPage() {
   };
   useEffect(() => {
     async function fetchPrices() {
+      if (!form.visa_type) { setRefPrices([]); return; }
+      // Try matching by service_name first (new full-name options)
+      const { data: byName } = await supabase.from("service_price_list")
+        .select("service_name, service_fee, inz_fee")
+        .ilike("service_name", `%${form.visa_type}%`).eq("is_active", true)
+        .order("display_order");
+      if (byName && byName.length > 0) {
+        setRefPrices(byName as { service_name: string; service_fee: number; inz_fee: number }[]);
+        return;
+      }
+      // Fallback: legacy short-code category lookup
       const cat = VISA_TYPE_CATEGORY[form.visa_type];
       if (!cat) { setRefPrices([]); return; }
       const { data } = await supabase.from("service_price_list")
@@ -118,6 +166,14 @@ export default function EditDealPage() {
       ]);
 
       if (salesData) setSalesUsers(salesData as SalesUser[]);
+
+      // Fetch price list service names for visa type options
+      const { data: plData } = await supabase
+        .from("service_price_list")
+        .select("service_name")
+        .eq("is_active", true)
+        .order("display_order");
+      if (plData) setPriceListNames([...new Set(plData.map((r: { service_name: string }) => r.service_name))]);
 
       if (!dealData) { router.push("/deals"); return; }
 
@@ -174,7 +230,20 @@ export default function EditDealPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === "deal_type") {
+      let newVisaType = form.visa_type;
+      if (value === "accreditation") newVisaType = "Standard Accreditation";
+      else if (value === "job_check") newVisaType = "Job Check";
+      else {
+        const newIsCompany = ["accreditation", "job_check", "employer_services"].includes(value);
+        const newOptions = newIsCompany ? COMPANY_VISA_OPTIONS : [...priceListNames, ...INDIVIDUAL_VISA_FALLBACK];
+        if (form.visa_type && !newOptions.includes(form.visa_type)) newVisaType = "";
+      }
+      setForm(f => ({ ...f, deal_type: value, visa_type: newVisaType }));
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -190,7 +259,7 @@ export default function EditDealPage() {
     // 1) Update deals table
     const { error: dealError } = await supabase.from("deals").update({
       deal_type: form.deal_type || null,
-      visa_type: form.deal_type === "individual_visa" ? clean(form.visa_type) : null,
+      visa_type: clean(form.visa_type),
       description: clean(form.description),
       department: form.department || null,
       assigned_sales_id: form.assigned_sales_id || null,
@@ -361,22 +430,21 @@ export default function EditDealPage() {
                   <option value="school_application" className="bg-blue-900">School Application</option>
                 </select>
               </div>
-              {form.deal_type === "individual_visa" && (
-                <div>
-                  <label className={labelClass}>Visa Type</label>
-                  <select name="visa_type" value={form.visa_type} onChange={handleChange} className={selectClass}>
-                    <option value="" className="bg-blue-900">Select...</option>
-                    <option value="AEWV" className="bg-blue-900">AEWV</option>
-                    <option value="SV" className="bg-blue-900">SV (Student Visa)</option>
-                    <option value="RV" className="bg-blue-900">RV (Resident Visa)</option>
-                    <option value="WV" className="bg-blue-900">WV (Work Visa)</option>
-                    <option value="Visitor" className="bg-blue-900">Visitor</option>
-                    <option value="Partnership" className="bg-blue-900">Partnership</option>
-                    <option value="SMC" className="bg-blue-900">SMC (Skilled Migrant)</option>
-                    <option value="Other" className="bg-blue-900">Other</option>
-                  </select>
-                </div>
-              )}
+              <div>
+                <label className={labelClass}>Visa / Service Type *</label>
+                <input
+                  list="visa-type-options"
+                  name="visa_type"
+                  value={form.visa_type}
+                  onChange={handleChange}
+                  required
+                  placeholder="Search or select..."
+                  className={inputClass}
+                />
+                <datalist id="visa-type-options">
+                  {visaTypeOptions.map(v => <option key={v} value={v} />)}
+                </datalist>
+              </div>
               <div className="sm:col-span-2">
                 <label className={labelClass}>Description</label>
                 <textarea name="description" value={form.description} onChange={handleChange} rows={2} className={`${inputClass} resize-none`} />
