@@ -8,6 +8,21 @@ import {
   type XeroLineItem,
 } from "@/lib/xero";
 
+// Department → Service Fee Account Code mapping
+const SERVICE_FEE_ACCOUNT_CODES: Record<string, string> = {
+  china: "201",
+  korea_japan: "201Korea",
+  myanmar: "201Myamar", // Xero spelling
+  thailand: "201Thai",
+};
+
+const INZ_FEE_ACCOUNT_CODE = "203";
+
+function getServiceAccountCode(department: string | null): string {
+  if (!department) return "201";
+  return SERVICE_FEE_ACCOUNT_CODES[department] ?? "201";
+}
+
 /**
  * POST: Push a CRM invoice to Xero (PJ Immigration Limited)
  * Body: { invoice_id: string }
@@ -33,10 +48,10 @@ export async function POST(request: Request) {
 
   console.log("[Xero create-invoice] Starting for invoice:", invoice_id);
 
-  // Fetch invoice with related data
+  // Fetch invoice with related data including deal's visa_type and created_by
   const { data: invoice, error: invErr } = await supabase
     .from("invoices")
-    .select("*, deals(deal_number, contacts(first_name, last_name, email), companies(company_name, email))")
+    .select("*, deals(deal_number, visa_type, created_by, contacts(first_name, last_name, email), companies(company_name, email))")
     .eq("id", invoice_id)
     .single();
 
@@ -48,6 +63,22 @@ export async function POST(request: Request) {
   if (invoice.xero_invoice_id) {
     return NextResponse.json({ error: "Invoice already pushed to Xero", xero_invoice_id: invoice.xero_invoice_id }, { status: 400 });
   }
+
+  const deal = invoice.deals as Record<string, unknown> | null;
+  const visaType = (deal?.visa_type as string) ?? "";
+  const dealCreatedBy = deal?.created_by as string | null;
+
+  // Get department from deal creator's profile
+  let department: string | null = null;
+  if (dealCreatedBy) {
+    const { data: creatorProfile } = await supabase
+      .from("profiles")
+      .select("department")
+      .eq("id", dealCreatedBy)
+      .single();
+    department = creatorProfile?.department ?? null;
+  }
+  console.log("[Xero create-invoice] visa_type:", visaType, "department:", department);
 
   // Get Xero access token and tenant
   const accessToken = await getXeroAccessToken();
@@ -63,7 +94,6 @@ export async function POST(request: Request) {
   }
 
   // Determine contact name and email
-  const deal = invoice.deals as Record<string, unknown> | null;
   const contact = deal?.contacts as { first_name: string; last_name: string; email?: string } | null;
   const company = deal?.companies as { company_name: string; email?: string } | null;
 
@@ -86,23 +116,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to find/create contact in Xero" }, { status: 500 });
   }
 
-  // Fetch the payment stages for GST type per line item
+  // Fetch the payment stages for GST type and stage details
   const stageIds = (invoice.payment_stage_ids ?? []) as string[];
   let stageGstMap: Record<string, string> = {};
+  let stageInfoMap: Record<string, { stage_name: string; stage_details: string; gst_type: string }> = {};
   if (stageIds.length > 0) {
     const { data: stages } = await supabase
       .from("deal_payments")
-      .select("id, gst_type")
+      .select("id, gst_type, stage_name, stage_details")
       .in("id", stageIds);
     if (stages) {
-      stageGstMap = Object.fromEntries(stages.map((s: { id: string; gst_type: string | null }) => [s.id, s.gst_type ?? "Exclusive"]));
+      for (const s of stages as { id: string; gst_type: string | null; stage_name: string | null; stage_details: string | null }[]) {
+        stageGstMap[s.id] = s.gst_type ?? "Exclusive";
+        stageInfoMap[s.id] = {
+          stage_name: s.stage_name ?? "Payment",
+          stage_details: s.stage_details ?? "",
+          gst_type: s.gst_type ?? "Exclusive",
+        };
+      }
     }
   }
 
   // Map GST type to Xero TaxType
-  // Exclusive = 15% GST added on top → OUTPUT
-  // Inclusive = 15% GST included → OUTPUT2
-  // Zero Rated = no GST → NONE
   const gstToXeroTax = (gstType: string): string => {
     switch (gstType) {
       case "Inclusive": return "OUTPUT2";
@@ -117,15 +152,43 @@ export async function POST(request: Request) {
     ? stageGstMap[stageIds[0]]
     : (invoice.gst_amount > 0 ? "Inclusive" : "Zero Rated");
 
-  // Build Xero line items from invoice line_items
+  // Account codes
+  const svcAccountCode = getServiceAccountCode(department);
+
+  // Determine fee type from line item description suffix
+  const getFeeType = (desc: string): "service" | "inz" | "other" => {
+    if (desc.includes("(INZ Fee)") || desc.includes("(INZ Application Fee)")) return "inz";
+    if (desc.includes("(Other Fee)")) return "other";
+    return "service"; // default: Service Fee
+  };
+
+  // Build improved description: "{visa_type} - {fee_label} - {stage_name}: {stage_details}"
+  const buildDescription = (origDesc: string, feeType: "service" | "inz" | "other"): string => {
+    const feeLabels = { service: "Service Fee", inz: "INZ Application Fee", other: "Other Fee" };
+    const feeLabel = feeLabels[feeType];
+
+    // Try to extract stage info from original description: "Stage I - details (Fee Type)"
+    const match = origDesc.match(/^(.+?)\s*\((Service Fee|INZ Fee|Other Fee)\)$/);
+    const stageInfo = match ? match[1].trim() : origDesc;
+
+    const prefix = visaType ? `${visaType} - ` : "";
+    return `${prefix}${feeLabel} - ${stageInfo}`;
+  };
+
+  // Build Xero line items
   const lineItems = invoice.line_items as { description: string; quantity: number; unit_price: number; amount: number }[];
-  const xeroLineItems: XeroLineItem[] = lineItems.map((item) => ({
-    Description: item.description,
-    Quantity: item.quantity,
-    UnitAmount: item.unit_price,
-    AccountCode: "200",
-    TaxType: gstToXeroTax(primaryGst),
-  }));
+  const xeroLineItems: XeroLineItem[] = lineItems.map((item) => {
+    const feeType = getFeeType(item.description);
+    const accountCode = feeType === "inz" ? INZ_FEE_ACCOUNT_CODE : svcAccountCode;
+
+    return {
+      Description: buildDescription(item.description, feeType),
+      Quantity: item.quantity,
+      UnitAmount: item.unit_price,
+      AccountCode: accountCode,
+      TaxType: gstToXeroTax(primaryGst),
+    };
+  });
 
   // DueDate: use invoice due_date, or issue_date + 30 days
   let dueDate = invoice.due_date;
@@ -135,14 +198,14 @@ export async function POST(request: Request) {
     dueDate = d.toISOString().split("T")[0];
   }
 
-  // Create draft invoice in Xero
+  // Create draft invoice in Xero — Reference = visa_type
   const xeroInvoice = await createXeroInvoice(accessToken, tenants.immigration, {
     Type: "ACCREC",
     Contact: { ContactID: xeroContactId },
     LineItems: xeroLineItems,
     Date: invoice.issue_date,
     DueDate: dueDate || undefined,
-    Reference: invoice.invoice_number,
+    Reference: visaType || invoice.invoice_number,
     CurrencyCode: invoice.currency || "NZD",
     Status: "DRAFT",
   });

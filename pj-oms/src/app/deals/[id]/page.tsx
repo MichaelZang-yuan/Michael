@@ -1949,7 +1949,19 @@ export default function DealDetailPage() {
                         </td>
                         <td className="py-2 px-2">
                           {inv.xero_invoice_id ? (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                              <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
+                                setInvoiceActionLoading(inv.id);
+                                try {
+                                  const res = await fetch("/api/xero/sync-invoice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ invoice_id: inv.id }) });
+                                  const d = await res.json();
+                                  if (res.ok) { setMessage({ type: "success", text: d.synced_payments > 0 ? `Synced: ${d.synced_payments} new payment(s) found` : "Already up to date" }); }
+                                  else { setMessage({ type: "error", text: `Sync failed: ${d.error || "Unknown"}` }); }
+                                } catch (e) { setMessage({ type: "error", text: `Sync error: ${e instanceof Error ? e.message : "Unknown"}` }); }
+                                await fetchInvoices(); await fetchPayments(); setInvoiceActionLoading(null);
+                              }} className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Syncing..." : "Sync"}</button>
+                            </div>
                           ) : (inv.status === "draft" || inv.status === "sent") ? (
                             <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
                               setInvoiceActionLoading(inv.id);

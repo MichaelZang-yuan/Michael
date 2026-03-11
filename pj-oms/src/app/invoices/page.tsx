@@ -135,6 +135,52 @@ export default function InvoicesPage() {
     setActionLoading(null);
   };
 
+  const handleSyncFromXero = async (id: string) => {
+    setActionLoading(id);
+    setXeroMsg(null);
+    try {
+      const res = await fetch("/api/xero/sync-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_id: id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setXeroMsg({ type: "success", text: data.synced_payments > 0 ? `Synced: ${data.synced_payments} new payment(s)` : "Already up to date" });
+      } else {
+        setXeroMsg({ type: "error", text: data.error || "Sync failed" });
+      }
+    } catch (e) {
+      setXeroMsg({ type: "error", text: `Sync error: ${e instanceof Error ? e.message : "Unknown"}` });
+    }
+    await fetchInvoices();
+    setActionLoading(null);
+  };
+
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const handleSyncAll = async () => {
+    setIsSyncingAll(true);
+    setXeroMsg(null);
+    const pushed = invoices.filter(inv => inv.xero_invoice_id);
+    let totalSynced = 0;
+    let errors = 0;
+    for (const inv of pushed) {
+      try {
+        const res = await fetch("/api/xero/sync-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invoice_id: inv.id }),
+        });
+        const data = await res.json();
+        if (res.ok) totalSynced += data.synced_payments;
+        else errors++;
+      } catch { errors++; }
+    }
+    await fetchInvoices();
+    setXeroMsg({ type: errors > 0 ? "error" : "success", text: `Synced ${pushed.length} invoices: ${totalSynced} new payment(s)${errors > 0 ? `, ${errors} error(s)` : ""}` });
+    setIsSyncingAll(false);
+  };
+
   const filtered = invoices.filter(inv => {
     if (filterStatus && inv.status !== filterStatus) return false;
     if (filterCurrency && inv.currency !== filterCurrency) return false;
@@ -168,6 +214,9 @@ export default function InvoicesPage() {
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Invoices</h2>
+          <button onClick={handleSyncAll} disabled={isSyncingAll} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-500 disabled:opacity-50">
+            {isSyncingAll ? "Syncing All..." : "Sync All from Xero"}
+          </button>
         </div>
 
         {/* Filters */}
@@ -241,7 +290,10 @@ export default function InvoicesPage() {
                         <td className="py-3 px-4 text-white/60 text-xs">{inv.issue_date}</td>
                         <td className="py-3 px-4">
                           {inv.xero_invoice_id ? (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                            <div className="flex items-center gap-2">
+                              <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                              <button onClick={() => handleSyncFromXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-cyan-400 hover:text-cyan-300 disabled:opacity-50">{actionLoading === inv.id ? "Syncing..." : "Sync"}</button>
+                            </div>
                           ) : (inv.status === "draft" || inv.status === "sent") ? (
                             <button onClick={() => handlePushToXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">{actionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
                           ) : (
