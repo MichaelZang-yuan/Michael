@@ -65,6 +65,8 @@ export async function POST(request: Request) {
   }
 
   const deal = invoice.deals as Record<string, unknown> | null;
+  console.log("[Xero create-invoice] deal object:", JSON.stringify(deal));
+  console.log("[Xero create-invoice] deal.visa_type raw:", deal?.visa_type);
   const visaType = (deal?.visa_type as string) ?? "";
   const dealCreatedBy = deal?.created_by as string | null;
 
@@ -221,10 +223,15 @@ export async function POST(request: Request) {
   }
 
   // Save Xero invoice ID back to our invoices table
-  await supabase
+  const { error: updateErr } = await supabase
     .from("invoices")
     .update({ xero_invoice_id: xeroInvoice.InvoiceID })
     .eq("id", invoice_id);
+
+  if (updateErr) {
+    console.error("[Xero create-invoice] Failed to save xero_invoice_id:", updateErr);
+    return NextResponse.json({ error: "Xero invoice created but failed to save ID locally", xero_invoice_id: xeroInvoice.InvoiceID }, { status: 500 });
+  }
 
   console.log("[Xero create-invoice] Success:", xeroInvoice.InvoiceID, xeroInvoice.InvoiceNumber);
 

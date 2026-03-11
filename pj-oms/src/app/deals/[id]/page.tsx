@@ -1106,8 +1106,8 @@ export default function DealDetailPage() {
     setIsContractChanging(true);
     try {
       const res = await fetch(`/api/contracts/${contract.id}/send`, { method: "POST" });
+      if (!res.ok) { const t = await res.text(); let err = "Failed to send contract."; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: err }); return; }
       const json = await res.json();
-      if (!res.ok) { setMessage({ type: "error", text: json.error ?? "Failed to send contract." }); return; }
       await fetchContract();
       await fetchLogs();
       if (clientEmail) {
@@ -1276,8 +1276,8 @@ export default function DealDetailPage() {
           deal_type: form.deal_type || undefined,
         }),
       });
+      if (!res.ok) { const t = await res.text(); let err = "Checklist generation failed"; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: err }); return; }
       const data = await res.json();
-      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Checklist generation failed" }); return; }
       setAiChecklistPreview(data.items ?? []);
       setShowAiChecklistModal(true);
     } catch (err) {
@@ -1315,8 +1315,8 @@ export default function DealDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ deal_id: id, additional_notes: additionalNotes || "" }),
       });
+      if (!res.ok) { const t = await res.text(); let err = "Cover letter generation failed"; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: err }); return; }
       const data = await res.json();
-      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Cover letter generation failed" }); return; }
       setCoverLetterDraft(data.content ?? "");
       setMessage({ type: "success", text: "Cover letter generated. Edit and save when ready." });
     } catch (err) {
@@ -1353,8 +1353,8 @@ export default function DealDetailPage() {
     setIsExportingCoverLetterPdf(true);
     try {
       const res = await fetch(`/api/cover-letter/${coverLetter.id}/export-pdf`, { method: "POST" });
+      if (!res.ok) { const t = await res.text(); let err = "PDF export failed"; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: err }); return; }
       const data = await res.json();
-      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "PDF export failed" }); return; }
       window.open(data.url, "_blank");
       await fetchCoverLetter();
       setMessage({ type: "success", text: "PDF exported." });
@@ -1955,9 +1955,8 @@ export default function DealDetailPage() {
                                 setInvoiceActionLoading(inv.id);
                                 try {
                                   const res = await fetch("/api/xero/sync-invoice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ invoice_id: inv.id }) });
-                                  const d = await res.json();
-                                  if (res.ok) { setMessage({ type: "success", text: d.synced_payments > 0 ? `Synced: ${d.synced_payments} new payment(s) found` : "Already up to date" }); }
-                                  else { setMessage({ type: "error", text: `Sync failed: ${d.error || "Unknown"}` }); }
+                                  if (res.ok) { const d = await res.json(); setMessage({ type: "success", text: d.synced_payments > 0 ? `Synced: ${d.synced_payments} new payment(s) found` : "Already up to date" }); }
+                                  else { const t = await res.text(); let err = "Unknown"; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: `Sync failed: ${err}` }); }
                                 } catch (e) { setMessage({ type: "error", text: `Sync error: ${e instanceof Error ? e.message : "Unknown"}` }); }
                                 await fetchInvoices(); await fetchPayments(); setInvoiceActionLoading(null);
                               }} className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Syncing..." : "Sync"}</button>
@@ -1967,9 +1966,8 @@ export default function DealDetailPage() {
                               setInvoiceActionLoading(inv.id);
                               try {
                                 const res = await fetch("/api/xero/create-invoice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ invoice_id: inv.id }) });
-                                const d = await res.json();
-                                if (!res.ok) { setMessage({ type: "error", text: `Xero: ${d.error || "Failed"}` }); }
-                                else { setMessage({ type: "success", text: `Pushed to Xero: ${d.xero_invoice_number || "OK"}` }); }
+                                if (res.ok) { const d = await res.json(); setMessage({ type: "success", text: `Pushed to Xero: ${d.xero_invoice_number || "OK"}` }); }
+                                else { const t = await res.text(); let err = "Failed"; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: `Xero: ${err}` }); }
                               } catch (e) { setMessage({ type: "error", text: `Xero error: ${e instanceof Error ? e.message : "Unknown"}` }); }
                               await fetchInvoices(); setInvoiceActionLoading(null);
                             }} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
@@ -2062,8 +2060,8 @@ export default function DealDetailPage() {
                 await fetchInvoices();
                 setMessage({ type: "success", text: "Invoice created." });
               } else {
-                const d = await res.json();
-                setMessage({ type: "error", text: d.error || "Failed to create invoice." });
+                const t = await res.text(); let err = "Failed to create invoice."; try { err = JSON.parse(t).error || err; } catch {}
+                setMessage({ type: "error", text: err });
               }
             } catch {
               setMessage({ type: "error", text: "Network error creating invoice." });
@@ -3174,8 +3172,8 @@ export default function DealDetailPage() {
                             created_by: session?.user.id,
                           }),
                         });
-                        const d = await res.json();
                         if (res.ok) {
+                          const d = await res.json();
                           const matchMsg = d.matched_stage_id
                             ? ` (matched to ${d.matched_fee_type === "total" ? "full stage" : d.matched_fee_type?.replace("_", " ")})`
                             : "";
@@ -3184,7 +3182,8 @@ export default function DealDetailPage() {
                           await fetchInvoices();
                           await fetchPayments();
                         } else {
-                          setMessage({ type: "error", text: d.error || "Failed to record payment" });
+                          const t = await res.text(); let err = "Failed to record payment"; try { err = JSON.parse(t).error || err; } catch {}
+                          setMessage({ type: "error", text: err });
                         }
                       } catch (e) {
                         setMessage({ type: "error", text: `Error: ${e instanceof Error ? e.message : "Unknown"}` });
