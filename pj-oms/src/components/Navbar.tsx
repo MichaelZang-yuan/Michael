@@ -24,6 +24,7 @@ const CRM_TOP_LINKS = [
   { href: "/companies", label: "Companies" },
   { href: "/agents", label: "Agents" },
   { href: "/deals", label: "Deals" },
+  { href: "/invoices", label: "Invoices" },
 ];
 
 // Commission sub-menu
@@ -49,6 +50,7 @@ const ADMIN_LINKS = [
 const SETTINGS_LINKS = [
   { href: "/settings/contract-templates", label: "Contract Templates" },
   { href: "/settings/intake-templates", label: "Intake Form Templates" },
+  { href: "/settings/price-list", label: "Price List" },
   { href: "/logs", label: "Logs" },
   { href: "/users", label: "Users" },
 ];

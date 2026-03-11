@@ -13,10 +13,11 @@ type CompanyOption = { id: string; company_name: string; department: string | nu
 type AgentOption = { id: string; agent_name: string; commission_rate: number | null; default_commission_type: string | null };
 type SalesUser = { id: string; full_name: string | null };
 
-type StageRow = { tempId: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; };
+type StageRow = { tempId: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; currency: string; };
 const STAGE_NAMES = ["Stage I", "Stage II", "Stage III", "Stage IV", "Stage V", "Stage VI"];
 const GST_TYPES = ["Exclusive", "Inclusive", "Zero Rated"];
-const newStageRow = (): StageRow => ({ tempId: Math.random().toString(36).slice(2), stage_name: "Stage I", stage_details: "", service_fee: "", inz_fee: "", other_fee: "", gst_type: "Exclusive" });
+const CURRENCIES = ["NZD", "CNY", "THB"];
+const newStageRow = (): StageRow => ({ tempId: Math.random().toString(36).slice(2), stage_name: "Stage I", stage_details: "", service_fee: "", inz_fee: "", other_fee: "", gst_type: "Exclusive", currency: "NZD" });
 
 const DEPT_LABELS: Record<string, string> = {
   china: "China", thailand: "Thailand", myanmar: "Myanmar", korea_japan: "Korea & Japan",
@@ -89,7 +90,27 @@ function NewDealPage() {
   });
 
   const [paymentStages, setPaymentStages] = useState<StageRow[]>([newStageRow()]);
+  const [refPrices, setRefPrices] = useState<{ service_name: string; service_fee: number; inz_fee: number }[]>([]);
   const prevDeptRef = useRef(form.department);
+
+  // Fetch reference prices when visa_type changes
+  const VISA_TYPE_CATEGORY: Record<string, string> = {
+    SV: "Student Visa", AEWV: "AEWV", WV: "Work Visa", RV: "Residence",
+    Visitor: "Visitor Visa", Partnership: "Partnership", SMC: "Residence",
+  };
+  useEffect(() => {
+    async function fetchPrices() {
+      const cat = VISA_TYPE_CATEGORY[form.visa_type];
+      if (!cat) { setRefPrices([]); return; }
+      const { data } = await supabase.from("service_price_list")
+        .select("service_name, service_fee, inz_fee")
+        .eq("category", cat).eq("is_active", true)
+        .order("display_order");
+      setRefPrices((data as { service_name: string; service_fee: number; inz_fee: number }[]) ?? []);
+    }
+    fetchPrices();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.visa_type]);
 
   // Auto-add "Education Consultation" stage when department changes to Myanmar
   useEffect(() => {
@@ -108,6 +129,7 @@ function NewDealPage() {
           inz_fee: "",
           other_fee: "",
           gst_type: "Exclusive",
+          currency: "NZD",
         };
         setPaymentStages(ps => [eduStage, ...ps]);
       }
@@ -250,6 +272,7 @@ function NewDealPage() {
         other_fee_amount: other,
         amount: svc + inz + other,
         gst_type: stage.gst_type,
+        currency: stage.currency,
         status: "pending",
         is_paid: false,
         created_by: session.user.id,
@@ -483,6 +506,22 @@ function NewDealPage() {
             </div>
           </div>
 
+          {/* Reference Prices */}
+          {refPrices.length > 0 && (
+            <div className={sectionClass}>
+              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Reference Prices</p>
+              <p className="text-xs text-white/40 mb-3">Reference price — actual fee may vary</p>
+              <div className="space-y-1">
+                {refPrices.map((p, i) => (
+                  <div key={i} className="flex justify-between text-sm text-white/70 py-1 border-b border-white/5">
+                    <span>{p.service_name}</span>
+                    <span className="text-white/90">Svc: ${p.service_fee.toLocaleString()} {p.inz_fee > 0 ? `| INZ: $${p.inz_fee.toLocaleString()}` : ""}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Pricing & Payment Stages */}
           <div className={sectionClass}>
             <h3 className="text-base font-bold mb-4">Pricing & Payment Stages</h3>
@@ -525,19 +564,19 @@ function NewDealPage() {
                         placeholder="e.g. Signing agreement" className={inputClass} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                     <div>
-                      <label className={labelClass}>Service Fee ($)</label>
+                      <label className={labelClass}>Service Fee</label>
                       <input value={stage.service_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, service_fee: e.target.value } : s))}
                         type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
                     </div>
                     <div>
-                      <label className={labelClass}>INZ Fee ($)</label>
+                      <label className={labelClass}>INZ Fee</label>
                       <input value={stage.inz_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, inz_fee: e.target.value } : s))}
                         type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
                     </div>
                     <div>
-                      <label className={labelClass}>Other Fee ($)</label>
+                      <label className={labelClass}>Other Fee</label>
                       <input value={stage.other_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, other_fee: e.target.value } : s))}
                         type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
                     </div>
@@ -545,6 +584,12 @@ function NewDealPage() {
                       <label className={labelClass}>GST</label>
                       <select value={stage.gst_type} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, gst_type: e.target.value } : s))} className={selectClass}>
                         {GST_TYPES.map(g => <option key={g} value={g} className="bg-blue-900">{g}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Currency</label>
+                      <select value={stage.currency} onChange={e => setPaymentStages(ps => ps.map(s => s.tempId === stage.tempId ? { ...s, currency: e.target.value } : s))} className={selectClass}>
+                        {CURRENCIES.map(c => <option key={c} value={c} className="bg-blue-900">{c}</option>)}
                       </select>
                     </div>
                   </div>

@@ -19,15 +19,17 @@ type StageRow = {
   inz_fee: string;
   other_fee: string;
   gst_type: string;
+  currency: string;
   is_paid: boolean;
 };
 
 const STAGE_NAMES = ["Stage I", "Stage II", "Stage III", "Stage IV", "Stage V", "Stage VI"];
 const GST_TYPES = ["Exclusive", "Inclusive", "Zero Rated"];
+const CURRENCIES = ["NZD", "CNY", "THB"];
 const newStageRow = (): StageRow => ({
   id: `new-${Math.random().toString(36).slice(2)}`,
   stage_name: "Stage I", stage_details: "", service_fee: "",
-  inz_fee: "", other_fee: "", gst_type: "Exclusive", is_paid: false,
+  inz_fee: "", other_fee: "", gst_type: "Exclusive", currency: "NZD", is_paid: false,
 });
 
 const DEPT_LABELS: Record<string, string> = {
@@ -67,6 +69,25 @@ export default function EditDealPage() {
   });
 
   const [paymentStages, setPaymentStages] = useState<StageRow[]>([newStageRow()]);
+  const [refPrices, setRefPrices] = useState<{ service_name: string; service_fee: number; inz_fee: number }[]>([]);
+
+  const VISA_TYPE_CATEGORY: Record<string, string> = {
+    SV: "Student Visa", AEWV: "AEWV", WV: "Work Visa", RV: "Residence",
+    Visitor: "Visitor Visa", Partnership: "Partnership", SMC: "Residence",
+  };
+  useEffect(() => {
+    async function fetchPrices() {
+      const cat = VISA_TYPE_CATEGORY[form.visa_type];
+      if (!cat) { setRefPrices([]); return; }
+      const { data } = await supabase.from("service_price_list")
+        .select("service_name, service_fee, inz_fee")
+        .eq("category", cat).eq("is_active", true)
+        .order("display_order");
+      setRefPrices((data as { service_name: string; service_fee: number; inz_fee: number }[]) ?? []);
+    }
+    fetchPrices();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.visa_type]);
 
   const stageServiceTotal = paymentStages.reduce((s, r) => s + (parseFloat(r.service_fee) || 0), 0);
   const stageInzTotal = paymentStages.reduce((s, r) => s + (parseFloat(r.inz_fee) || 0), 0);
@@ -132,6 +153,7 @@ export default function EditDealPage() {
           inz_fee: String(s.inz_fee_amount ?? 0),
           other_fee: String(s.other_fee_amount ?? 0),
           gst_type: (s.gst_type as string) ?? "Exclusive",
+          currency: (s.currency as string) ?? "NZD",
           is_paid: (s.is_paid as boolean) ?? false,
         }));
         setPaymentStages(rows);
@@ -215,6 +237,7 @@ export default function EditDealPage() {
         other_fee_amount: other,
         amount: svc + inz + other,
         gst_type: row.gst_type,
+        currency: row.currency,
       };
 
       if (row.id.startsWith("new-")) {
@@ -361,6 +384,22 @@ export default function EditDealPage() {
             </div>
           </div>
 
+          {/* Reference Prices */}
+          {refPrices.length > 0 && (
+            <div className={sectionClass}>
+              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Reference Prices</p>
+              <p className="text-xs text-white/40 mb-3">Reference price — actual fee may vary</p>
+              <div className="space-y-1">
+                {refPrices.map((p, i) => (
+                  <div key={i} className="flex justify-between text-sm text-white/70 py-1 border-b border-white/5">
+                    <span>{p.service_name}</span>
+                    <span className="text-white/90">Svc: ${p.service_fee.toLocaleString()} {p.inz_fee > 0 ? `| INZ: $${p.inz_fee.toLocaleString()}` : ""}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Pricing & Payment Stages */}
           <div className={sectionClass}>
             <h3 className="text-base font-bold mb-4">Pricing & Payment Stages</h3>
@@ -412,9 +451,9 @@ export default function EditDealPage() {
                       }
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                     <div>
-                      <label className={labelClass}>Service Fee ($)</label>
+                      <label className={labelClass}>Service Fee</label>
                       {stage.is_paid
                         ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(stage.service_fee) || 0)}</p>
                         : <input value={stage.service_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, service_fee: e.target.value } : s))}
@@ -422,7 +461,7 @@ export default function EditDealPage() {
                       }
                     </div>
                     <div>
-                      <label className={labelClass}>INZ Fee ($)</label>
+                      <label className={labelClass}>INZ Fee</label>
                       {stage.is_paid
                         ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(stage.inz_fee) || 0)}</p>
                         : <input value={stage.inz_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, inz_fee: e.target.value } : s))}
@@ -430,7 +469,7 @@ export default function EditDealPage() {
                       }
                     </div>
                     <div>
-                      <label className={labelClass}>Other Fee ($)</label>
+                      <label className={labelClass}>Other Fee</label>
                       {stage.is_paid
                         ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(stage.other_fee) || 0)}</p>
                         : <input value={stage.other_fee} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, other_fee: e.target.value } : s))}
@@ -443,6 +482,15 @@ export default function EditDealPage() {
                         ? <p className="text-sm text-white/70 px-1">{stage.gst_type}</p>
                         : <select value={stage.gst_type} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, gst_type: e.target.value } : s))} className={selectClass}>
                             {GST_TYPES.map(g => <option key={g} value={g} className="bg-blue-900">{g}</option>)}
+                          </select>
+                      }
+                    </div>
+                    <div>
+                      <label className={labelClass}>Currency</label>
+                      {stage.is_paid
+                        ? <p className="text-sm text-white/70 px-1">{stage.currency}</p>
+                        : <select value={stage.currency} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, currency: e.target.value } : s))} className={selectClass}>
+                            {CURRENCIES.map(c => <option key={c} value={c} className="bg-blue-900">{c}</option>)}
                           </select>
                       }
                     </div>

@@ -26,6 +26,7 @@ type DealPayment = {
   inz_fee_amount: number;
   other_fee_amount: number;
   gst_type: string | null;
+  currency: string | null;
   amount: number;
   is_paid: boolean;
   paid_at: string | null;
@@ -39,10 +40,11 @@ type DealPayment = {
   receipt_sent: boolean;
 };
 
-type EditStageRow = { id: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; is_paid: boolean; };
+type EditStageRow = { id: string; stage_name: string; stage_details: string; service_fee: string; inz_fee: string; other_fee: string; gst_type: string; currency: string; is_paid: boolean; };
 const STAGE_NAMES_DETAIL = ["Stage I", "Stage II", "Stage III", "Stage IV", "Stage V", "Stage VI"];
 const GST_TYPES_DETAIL = ["Exclusive", "Inclusive", "Zero Rated"];
-const newEditRow = (): EditStageRow => ({ id: `new-${Math.random().toString(36).slice(2)}`, stage_name: "Stage I", stage_details: "", service_fee: "", inz_fee: "", other_fee: "", gst_type: "Exclusive", is_paid: false });
+const CURRENCIES_DETAIL = ["NZD", "CNY", "THB"];
+const newEditRow = (): EditStageRow => ({ id: `new-${Math.random().toString(36).slice(2)}`, stage_name: "Stage I", stage_details: "", service_fee: "", inz_fee: "", other_fee: "", gst_type: "Exclusive", currency: "NZD", is_paid: false });
 
 type DealContract = {
   id: string;
@@ -308,6 +310,21 @@ export default function DealDetailPage() {
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
+  // Invoice state
+  type InvoiceRecord = {
+    id: string; invoice_number: string; currency: string; status: string;
+    total: number; issue_date: string; due_date: string | null;
+    pdf_url: string | null; payment_stage_ids: string[];
+  };
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceSelectedStages, setInvoiceSelectedStages] = useState<string[]>([]);
+  const [invoiceNotes, setInvoiceNotes] = useState("");
+  const [invoiceIssueDate, setInvoiceIssueDate] = useState(new Date().toISOString().split("T")[0]);
+  const [invoiceDueDate, setInvoiceDueDate] = useState("");
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  const [invoiceActionLoading, setInvoiceActionLoading] = useState<string | null>(null);
+
   // UI state — Payment stages edit
   const [editingStages, setEditingStages] = useState(false);
   const [editStageRows, setEditStageRows] = useState<EditStageRow[]>([]);
@@ -417,6 +434,11 @@ export default function DealDetailPage() {
       return;
     }
     setPayments((data ?? []) as DealPayment[]);
+  }, [id]);
+
+  const fetchInvoices = useCallback(async () => {
+    const { data } = await supabase.from("invoices").select("id, invoice_number, currency, status, total, issue_date, due_date, pdf_url, payment_stage_ids").eq("deal_id", id).order("created_at", { ascending: false });
+    setInvoices((data ?? []) as InvoiceRecord[]);
   }, [id]);
 
   const fetchContract = useCallback(async () => {
@@ -615,12 +637,12 @@ export default function DealDetailPage() {
       await Promise.all([
         fetchPayments(), fetchContract(), fetchIntakeForm(), fetchChecklist(),
         fetchEmailLogs(), fetchApplicants(), fetchAttachments(), fetchLogs(),
-        fetchCoverLetter(), fetchAgentCommission(),
+        fetchCoverLetter(), fetchAgentCommission(), fetchInvoices(),
       ]);
       setIsLoading(false);
     }
     init();
-  }, [id, router, fetchPayments, fetchContract, fetchIntakeForm, fetchChecklist, fetchEmailLogs, fetchApplicants, fetchAttachments, fetchLogs, fetchCoverLetter, fetchAgentCommission]);
+  }, [id, router, fetchPayments, fetchContract, fetchIntakeForm, fetchChecklist, fetchEmailLogs, fetchApplicants, fetchAttachments, fetchLogs, fetchCoverLetter, fetchAgentCommission, fetchInvoices]);
 
   // ─── Helper: send notification ────────────────────────────────────────────
 
@@ -800,6 +822,7 @@ export default function DealDetailPage() {
       inz_fee: String(p.inz_fee_amount || 0),
       other_fee: String(p.other_fee_amount || 0),
       gst_type: p.gst_type ?? "Exclusive",
+      currency: p.currency ?? "NZD",
       is_paid: p.is_paid,
     })));
     setEditingStages(true);
@@ -831,6 +854,7 @@ export default function DealDetailPage() {
         other_fee_amount: other,
         amount: svc + inz + other,
         gst_type: row.gst_type,
+        currency: row.currency,
       };
       if (row.id.startsWith("new-")) {
         await supabase.from("deal_payments").insert({ ...vals, deal_id: id, is_paid: false, status: "pending", created_by: session.user.id });
@@ -1661,6 +1685,7 @@ export default function DealDetailPage() {
                   <th className="text-right py-2 px-2 text-white/50 font-medium">INZ Fee</th>
                   <th className="text-right py-2 px-2 text-white/50 font-medium">Other</th>
                   <th className="text-left py-2 px-2 text-white/50 font-medium">GST</th>
+                  <th className="text-left py-2 px-2 text-white/50 font-medium">Ccy</th>
                   <th className="text-right py-2 px-2 text-white/50 font-medium">Total</th>
                   <th className="text-left py-2 px-2 text-white/50 font-medium">Status</th>
                   {hasAnyRole(profile, ["admin", "accountant"]) && <th className="py-2 px-2"></th>}
@@ -1676,6 +1701,7 @@ export default function DealDetailPage() {
                         <td className="py-2 px-2 text-right text-white/80">{p.inz_fee_amount ? `$${fmt(p.inz_fee_amount)}` : "-"}</td>
                         <td className="py-2 px-2 text-right text-white/80">{p.other_fee_amount ? `$${fmt(p.other_fee_amount)}` : "-"}</td>
                         <td className="py-2 px-2 text-white/60 text-xs">{p.gst_type ?? "—"}</td>
+                        <td className="py-2 px-2 text-white/60 text-xs">{p.currency ?? "NZD"}</td>
                         <td className="py-2 px-2 text-right font-semibold">${fmt(stageTotal)}</td>
                         <td className="py-2 px-2">
                           {p.is_paid
@@ -1742,9 +1768,9 @@ export default function DealDetailPage() {
                         }
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                       <div>
-                        <label className={labelClass}>Service Fee ($)</label>
+                        <label className={labelClass}>Service Fee</label>
                         {row.is_paid
                           ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(row.service_fee) || 0)}</p>
                           : <input value={row.service_fee} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, service_fee: e.target.value } : r))}
@@ -1752,7 +1778,7 @@ export default function DealDetailPage() {
                         }
                       </div>
                       <div>
-                        <label className={labelClass}>INZ Fee ($)</label>
+                        <label className={labelClass}>INZ Fee</label>
                         {row.is_paid
                           ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(row.inz_fee) || 0)}</p>
                           : <input value={row.inz_fee} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, inz_fee: e.target.value } : r))}
@@ -1760,7 +1786,7 @@ export default function DealDetailPage() {
                         }
                       </div>
                       <div>
-                        <label className={labelClass}>Other Fee ($)</label>
+                        <label className={labelClass}>Other Fee</label>
                         {row.is_paid
                           ? <p className="text-sm font-semibold px-1">${fmt(parseFloat(row.other_fee) || 0)}</p>
                           : <input value={row.other_fee} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, other_fee: e.target.value } : r))}
@@ -1773,6 +1799,15 @@ export default function DealDetailPage() {
                           ? <p className="text-sm text-white/70 px-1">{row.gst_type}</p>
                           : <select value={row.gst_type} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, gst_type: e.target.value } : r))} className={selectClass}>
                               {GST_TYPES_DETAIL.map(g => <option key={g} value={g} className="bg-blue-900">{g}</option>)}
+                            </select>
+                        }
+                      </div>
+                      <div>
+                        <label className={labelClass}>Currency</label>
+                        {row.is_paid
+                          ? <p className="text-sm text-white/70 px-1">{row.currency}</p>
+                          : <select value={row.currency} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, currency: e.target.value } : r))} className={selectClass}>
+                              {CURRENCIES_DETAIL.map(c => <option key={c} value={c} className="bg-blue-900">{c}</option>)}
                             </select>
                         }
                       </div>
@@ -1844,6 +1879,202 @@ export default function DealDetailPage() {
                 <div className="mt-4 flex gap-2">
                   <button onClick={handleMarkPaid} className={btnPrimary}>Confirm Paid</button>
                   <button onClick={() => setShowMarkPaidModal(null)} className={btnSecondary}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Section: Invoices ──────────────────────────────────────────── */}
+        {hasAnyRole(profile, ["admin", "accountant"]) && (
+          <div className={sectionClass}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Invoices</h3>
+              {payments.length > 0 && (
+                <button onClick={() => { setShowInvoiceModal(true); setInvoiceSelectedStages([]); setInvoiceNotes(""); setInvoiceIssueDate(new Date().toISOString().split("T")[0]); setInvoiceDueDate(""); }} className={btnSecondary}>
+                  + Create Invoice
+                </button>
+              )}
+            </div>
+            {invoices.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-white/10">
+                    <th className="text-left py-2 px-2 text-white/50 font-medium">Invoice #</th>
+                    <th className="text-left py-2 px-2 text-white/50 font-medium">Date</th>
+                    <th className="text-left py-2 px-2 text-white/50 font-medium">Ccy</th>
+                    <th className="text-right py-2 px-2 text-white/50 font-medium">Amount</th>
+                    <th className="text-left py-2 px-2 text-white/50 font-medium">Status</th>
+                    <th className="py-2 px-2"></th>
+                  </tr></thead>
+                  <tbody>
+                    {invoices.map(inv => (
+                      <tr key={inv.id} className="border-b border-white/5">
+                        <td className="py-2 px-2 font-medium text-white/80">{inv.invoice_number}</td>
+                        <td className="py-2 px-2 text-white/60 text-xs">{inv.issue_date}</td>
+                        <td className="py-2 px-2 text-white/60">{inv.currency}</td>
+                        <td className="py-2 px-2 text-right font-semibold">${fmt(inv.total)}</td>
+                        <td className="py-2 px-2">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                            inv.status === "paid" ? "bg-green-500/20 text-green-400" :
+                            inv.status === "sent" ? "bg-blue-500/20 text-blue-400" :
+                            inv.status === "cancelled" ? "bg-red-500/20 text-red-400" :
+                            "bg-gray-500/20 text-gray-400"
+                          }`}>{inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</span>
+                        </td>
+                        <td className="py-2 px-2">
+                          <div className="flex gap-2 text-xs">
+                            {inv.pdf_url ? (
+                              <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">PDF</a>
+                            ) : (
+                              <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
+                                setInvoiceActionLoading(inv.id);
+                                const res = await fetch(`/api/invoices/${inv.id}/generate-pdf`, { method: "POST" });
+                                if (res.ok) { const d = await res.json(); if (d.url) window.open(d.url, "_blank"); }
+                                await fetchInvoices(); setInvoiceActionLoading(null);
+                              }} className="text-blue-400 hover:text-blue-300 disabled:opacity-50">Gen PDF</button>
+                            )}
+                            {inv.status === "draft" && (
+                              <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
+                                setInvoiceActionLoading(inv.id);
+                                await fetch(`/api/invoices/${inv.id}/send`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+                                await fetchInvoices(); setInvoiceActionLoading(null);
+                              }} className="text-green-400 hover:text-green-300 disabled:opacity-50">Send</button>
+                            )}
+                            {(inv.status === "draft" || inv.status === "sent") && (
+                              <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
+                                setInvoiceActionLoading(inv.id);
+                                await supabase.from("invoices").update({ status: "paid" }).eq("id", inv.id);
+                                await fetchInvoices(); setInvoiceActionLoading(null);
+                              }} className="text-green-400 hover:text-green-300 disabled:opacity-50">Paid</button>
+                            )}
+                            {inv.status !== "cancelled" && inv.status !== "paid" && (
+                              <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
+                                setInvoiceActionLoading(inv.id);
+                                await supabase.from("invoices").update({ status: "cancelled" }).eq("id", inv.id);
+                                await fetchInvoices(); setInvoiceActionLoading(null);
+                              }} className="text-red-400 hover:text-red-300 disabled:opacity-50">Cancel</button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-white/40 text-center py-4">No invoices yet.</p>
+            )}
+          </div>
+        )}
+
+        {/* ── Invoice Create Modal ─────────────────────────────────────────── */}
+        {showInvoiceModal && (() => {
+          const unpaidStages = payments.filter(p => !p.is_paid || true); // show all stages
+          const selectedStagesData = unpaidStages.filter(s => invoiceSelectedStages.includes(s.id));
+          const currencies = [...new Set(selectedStagesData.map(s => s.currency ?? "NZD"))];
+          const invoiceCurrency = currencies.length === 1 ? currencies[0] : (currencies[0] ?? "NZD");
+          const currencyMismatch = currencies.length > 1;
+          const subtotal = selectedStagesData.reduce((sum, s) => sum + (s.service_fee_amount || 0) + (s.inz_fee_amount || 0) + (s.other_fee_amount || 0), 0);
+          const hasExcGst = selectedStagesData.some(s => s.gst_type === "Exclusive");
+          const gst = hasExcGst ? Math.round(subtotal * 0.15 * 100) / 100 : 0;
+          const invTotal = subtotal + gst;
+
+          const handleCreateInvoice = async () => {
+            if (invoiceSelectedStages.length === 0 || currencyMismatch) return;
+            setIsCreatingInvoice(true);
+            try {
+              const res = await fetch("/api/invoices", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  deal_id: id,
+                  currency: invoiceCurrency,
+                  payment_stage_ids: invoiceSelectedStages,
+                  notes: invoiceNotes.trim() || undefined,
+                  issue_date: invoiceIssueDate,
+                  due_date: invoiceDueDate || undefined,
+                  contact_id: deal?.contact_id || undefined,
+                  company_id: deal?.company_id || undefined,
+                  created_by: profile?.id,
+                }),
+              });
+              if (res.ok) {
+                setShowInvoiceModal(false);
+                await fetchInvoices();
+                setMessage({ type: "success", text: "Invoice created." });
+              } else {
+                const d = await res.json();
+                setMessage({ type: "error", text: d.error || "Failed to create invoice." });
+              }
+            } catch {
+              setMessage({ type: "error", text: "Network error creating invoice." });
+            }
+            setIsCreatingInvoice(false);
+          };
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
+                <h4 className="text-lg font-bold mb-4">Create Invoice</h4>
+
+                <p className={labelClass}>Select Payment Stages</p>
+                <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                  {unpaidStages.map(s => {
+                    const total = (s.service_fee_amount || 0) + (s.inz_fee_amount || 0) + (s.other_fee_amount || 0);
+                    const checked = invoiceSelectedStages.includes(s.id);
+                    return (
+                      <label key={s.id} className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${checked ? "border-blue-400 bg-blue-600/10" : "border-white/10 bg-white/5 hover:bg-white/10"}`}>
+                        <input type="checkbox" checked={checked} onChange={() => setInvoiceSelectedStages(prev => checked ? prev.filter(x => x !== s.id) : [...prev, s.id])} className="accent-blue-500" />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium">{s.stage_name}</span>
+                          {s.stage_details && <span className="text-xs text-white/50 ml-2">{s.stage_details}</span>}
+                          <span className="text-xs text-white/40 ml-2">({s.currency ?? "NZD"})</span>
+                        </div>
+                        <span className="text-sm font-semibold">${fmt(total)}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {currencyMismatch && (
+                  <div className="mb-4 rounded-lg bg-red-500/20 border border-red-500/30 px-3 py-2 text-sm text-red-300">
+                    Selected stages have different currencies. All stages in an invoice must use the same currency.
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <label className={labelClass}>Issue Date</label>
+                    <input type="date" value={invoiceIssueDate} onChange={e => setInvoiceIssueDate(e.target.value)} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Due Date (optional)</label>
+                    <input type="date" value={invoiceDueDate} onChange={e => setInvoiceDueDate(e.target.value)} className={inputClass} />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className={labelClass}>Notes</label>
+                  <textarea value={invoiceNotes} onChange={e => setInvoiceNotes(e.target.value)} rows={2} className={`${inputClass} resize-none`} placeholder="Optional notes..." />
+                </div>
+
+                {/* Preview */}
+                {invoiceSelectedStages.length > 0 && !currencyMismatch && (
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-3 mb-4">
+                    <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Preview</p>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-white/60">Currency</span><span>{invoiceCurrency}</span></div>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-white/60">Subtotal</span><span>${fmt(subtotal)}</span></div>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-white/60">GST (15%)</span><span>${fmt(gst)}</span></div>
+                    <div className="flex justify-between text-sm font-bold border-t border-white/10 pt-1 mt-1"><span>Total</span><span>${fmt(invTotal)}</span></div>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <button onClick={handleCreateInvoice} disabled={isCreatingInvoice || invoiceSelectedStages.length === 0 || currencyMismatch} className={`${btnPrimary} disabled:opacity-50`}>
+                    {isCreatingInvoice ? "Creating..." : "Create Invoice"}
+                  </button>
+                  <button onClick={() => setShowInvoiceModal(false)} className={btnSecondary}>Cancel</button>
                 </div>
               </div>
             </div>
