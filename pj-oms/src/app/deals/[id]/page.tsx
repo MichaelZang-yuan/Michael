@@ -275,6 +275,13 @@ export default function DealDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Auto-dismiss messages after 8 seconds
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(null), 8000);
+    return () => clearTimeout(timer);
+  }, [message]);
   const [salesUsers, setSalesUsers] = useState<SalesUser[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
 
@@ -1493,8 +1500,9 @@ export default function DealDetailPage() {
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
-            {message.text}
+          <div className={`mb-6 rounded-lg px-4 py-3 flex items-center justify-between ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+            <span>{message.text}</span>
+            <button type="button" onClick={() => setMessage(null)} className="ml-3 text-white/50 hover:text-white text-lg leading-none">&times;</button>
           </div>
         )}
 
@@ -1948,6 +1956,7 @@ export default function DealDetailPage() {
                           }`}>{inv.status === "partial" ? `Partial (${fmt(inv.paid_amount || 0)}/${fmt(inv.total)})` : inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</span>
                         </td>
                         <td className="py-2 px-2">
+                          {(() => { console.log(`[Invoice ${inv.invoice_number}] xero_invoice_id:`, inv.xero_invoice_id); return null; })()}
                           {inv.xero_invoice_id ? (
                             <div className="flex items-center gap-1.5">
                               <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>

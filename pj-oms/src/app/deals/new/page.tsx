@@ -555,18 +555,27 @@ function NewDealPage() {
               </div>
               <div>
                 <label className={labelClass}>Visa / Service Type *</label>
-                <input
-                  list="visa-type-options"
-                  name="visa_type"
-                  value={form.visa_type}
-                  onChange={handleChange}
-                  required
-                  placeholder="Search or select..."
-                  className={inputClass}
-                />
-                <datalist id="visa-type-options">
-                  {visaTypeOptions.map(v => <option key={v} value={v} />)}
-                </datalist>
+                {isCompanyDeal ? (
+                  <select name="visa_type" value={form.visa_type} onChange={handleChange} required className={selectClass}>
+                    <option value="" className="bg-blue-900">Select...</option>
+                    {COMPANY_VISA_OPTIONS.map(v => <option key={v} value={v} className="bg-blue-900">{v}</option>)}
+                  </select>
+                ) : (
+                  <>
+                    <input
+                      list="visa-type-options"
+                      name="visa_type"
+                      value={form.visa_type}
+                      onChange={handleChange}
+                      required
+                      placeholder="Search or select..."
+                      className={inputClass}
+                    />
+                    <datalist id="visa-type-options">
+                      {individualVisaOptions.map(v => <option key={v} value={v} />)}
+                    </datalist>
+                  </>
+                )}
               </div>
               <div className="sm:col-span-2">
                 <label className={labelClass}>Description</label>
