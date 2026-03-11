@@ -604,6 +604,24 @@ export default function StudentDetailPage() {
             console.error("[Claim] Email notification error:", e);
           }
         }
+
+        // Auto-create Xero commission invoice (PJ International Limited)
+        try {
+          const school = schools.find((s) => s.id === student.school_id);
+          await fetch("/api/xero/create-commission-invoice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              commission_id: commissionId,
+              student_name: student.full_name,
+              school_name: school?.name ?? "",
+              amount: commission.amount,
+              year: commission.year,
+            }),
+          });
+        } catch (e) {
+          console.error("[Claim] Xero commission invoice error:", e);
+        }
       } else {
         setMessage({ type: "success", text: "✅ Commission claimed." });
       }

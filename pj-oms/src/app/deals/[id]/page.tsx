@@ -315,6 +315,7 @@ export default function DealDetailPage() {
     id: string; invoice_number: string; currency: string; status: string;
     total: number; issue_date: string; due_date: string | null;
     pdf_url: string | null; payment_stage_ids: string[];
+    xero_invoice_id: string | null;
   };
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -1905,6 +1906,7 @@ export default function DealDetailPage() {
                     <th className="text-left py-2 px-2 text-white/50 font-medium">Ccy</th>
                     <th className="text-right py-2 px-2 text-white/50 font-medium">Amount</th>
                     <th className="text-left py-2 px-2 text-white/50 font-medium">Status</th>
+                    <th className="text-left py-2 px-2 text-white/50 font-medium">Xero</th>
                     <th className="py-2 px-2"></th>
                   </tr></thead>
                   <tbody>
@@ -1921,6 +1923,22 @@ export default function DealDetailPage() {
                             inv.status === "cancelled" ? "bg-red-500/20 text-red-400" :
                             "bg-gray-500/20 text-gray-400"
                           }`}>{inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</span>
+                        </td>
+                        <td className="py-2 px-2">
+                          {inv.xero_invoice_id ? (
+                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400">Synced</span>
+                          ) : inv.currency === "NZD" && (inv.status === "draft" || inv.status === "sent") ? (
+                            <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
+                              setInvoiceActionLoading(inv.id);
+                              try {
+                                const res = await fetch("/api/xero/create-invoice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ invoice_id: inv.id }) });
+                                const d = await res.json(); if (!res.ok) alert(d.error || "Failed");
+                              } catch {}
+                              await fetchInvoices(); setInvoiceActionLoading(null);
+                            }} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">Push to Xero</button>
+                          ) : (
+                            <span className="text-xs text-white/30">—</span>
+                          )}
                         </td>
                         <td className="py-2 px-2">
                           <div className="flex gap-2 text-xs">

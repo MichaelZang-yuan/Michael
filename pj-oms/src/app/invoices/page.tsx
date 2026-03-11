@@ -19,6 +19,7 @@ type InvoiceRow = {
   sent_at: string | null;
   sent_to_email: string | null;
   pdf_url: string | null;
+  xero_invoice_id: string | null;
   created_at: string;
   deals: {
     deal_number: string | null;
@@ -109,6 +110,23 @@ export default function InvoicesPage() {
     setActionLoading(null);
   };
 
+  const handlePushToXero = async (id: string) => {
+    setActionLoading(id);
+    try {
+      const res = await fetch("/api/xero/create-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_id: id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to push to Xero");
+      }
+    } catch {}
+    await fetchInvoices();
+    setActionLoading(null);
+  };
+
   const filtered = invoices.filter(inv => {
     if (filterStatus && inv.status !== filterStatus) return false;
     if (filterCurrency && inv.currency !== filterCurrency) return false;
@@ -180,6 +198,7 @@ export default function InvoicesPage() {
                     <th className="text-right py-3 px-4 text-white/50 font-medium">Amount</th>
                     <th className="text-left py-3 px-4 text-white/50 font-medium">Status</th>
                     <th className="text-left py-3 px-4 text-white/50 font-medium">Date</th>
+                    <th className="text-left py-3 px-4 text-white/50 font-medium">Xero</th>
                     <th className="py-3 px-4 text-white/50 font-medium">Actions</th>
                   </tr>
                 </thead>
@@ -205,6 +224,15 @@ export default function InvoicesPage() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-white/60 text-xs">{inv.issue_date}</td>
+                        <td className="py-3 px-4">
+                          {inv.xero_invoice_id ? (
+                            <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400">Synced</span>
+                          ) : inv.currency === "NZD" && (inv.status === "draft" || inv.status === "sent") ? (
+                            <button onClick={() => handlePushToXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">Push to Xero</button>
+                          ) : (
+                            <span className="text-xs text-white/30">—</span>
+                          )}
+                        </td>
                         <td className="py-3 px-4">
                           <div className="flex gap-2 text-xs">
                             {inv.pdf_url ? (

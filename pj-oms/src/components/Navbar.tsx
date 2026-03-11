@@ -51,6 +51,7 @@ const SETTINGS_LINKS = [
   { href: "/settings/contract-templates", label: "Contract Templates" },
   { href: "/settings/intake-templates", label: "Intake Form Templates" },
   { href: "/settings/price-list", label: "Price List" },
+  { href: "/settings/xero", label: "Xero Connection" },
   { href: "/logs", label: "Logs" },
   { href: "/users", label: "Users" },
 ];
