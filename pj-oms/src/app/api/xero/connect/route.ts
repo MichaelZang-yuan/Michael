@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set(
     "scope",
-    "openid profile email accounting.transactions accounting.contacts offline_access"
+    "openid profile email accounting.invoices accounting.payments accounting.contacts offline_access"
   );
 
   return NextResponse.redirect(authUrl.toString());
