@@ -605,22 +605,29 @@ export default function StudentDetailPage() {
           }
         }
 
-        // Auto-create Xero commission invoice (PJ International Limited)
+        // Auto-create commission invoice (local DB — push to Xero separately)
         try {
           const school = schools.find((s) => s.id === student.school_id);
-          await fetch("/api/xero/create-commission-invoice", {
+          await fetch("/api/commission-invoices", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               commission_id: commissionId,
+              student_id: id,
               student_name: student.full_name,
+              student_number: student.student_number ?? undefined,
+              school_id: student.school_id ?? "",
               school_name: school?.name ?? "",
+              course_name: commission.enrollment_date ? undefined : undefined,
+              enrollment_date: commission.enrollment_date ?? undefined,
+              tuition_fee: commission.tuition_fee ?? student.tuition_fee ?? undefined,
+              commission_rate: commission.commission_rate ?? undefined,
               amount: commission.amount,
-              year: commission.year,
+              created_by: session?.user.id,
             }),
           });
         } catch (e) {
-          console.error("[Claim] Xero commission invoice error:", e);
+          console.error("[Claim] Commission invoice creation error:", e);
         }
       } else {
         setMessage({ type: "success", text: "✅ Commission claimed." });

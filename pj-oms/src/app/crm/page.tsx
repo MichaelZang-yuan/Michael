@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { hasRole } from "@/lib/roles";
+import { hasRole, hasAnyRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
@@ -107,6 +107,11 @@ export default function CrmDashboardPage() {
   const [dealsByStatus, setDealsByStatus] = useState<{ name: string; value: number }[]>([]);
   const [dealsByDept, setDealsByDept] = useState<{ name: string; value: number }[]>([]);
   const [visaAlerts, setVisaAlerts] = useState<VisaAlert[]>([]);
+  const [overduePayments, setOverduePayments] = useState<{ id: string; invoice_number: string; type: "crm" | "commission"; client_name: string; outstanding: number; days_overdue: number }[]>([]);
+  const [pendingRefunds, setPendingRefunds] = useState<{ id: string; deal_number: string; client_name: string; calculated_refund: number; requested_at: string }[]>([]);
+  const [financeSummary, setFinanceSummary] = useState<{ revenue: number; outstanding: number; overdue: number } | null>(null);
+  const [reminderLoading, setReminderLoading] = useState<string | null>(null);
+  const [reminderMsg, setReminderMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -221,6 +226,101 @@ export default function CrmDashboardPage() {
         }
         alerts.sort((a, b) => a.days_remaining - b.days_remaining);
         setVisaAlerts(alerts);
+      }
+
+      // Overdue payments (30+ days overdue)
+      if (isAdmin) {
+        const overdue: typeof overduePayments = [];
+        const todayMs = new Date().getTime();
+
+        const { data: crmOverdue } = await supabase
+          .from("invoices")
+          .select("id, invoice_number, total, paid_amount, due_date, deal_id, deals(contacts(first_name, last_name), companies(company_name))")
+          .not("status", "in", '("paid","cancelled")')
+          .not("due_date", "is", null);
+
+        for (const inv of crmOverdue ?? []) {
+          const dueMs = new Date(inv.due_date).getTime();
+          const daysOverdue = Math.floor((todayMs - dueMs) / (1000 * 60 * 60 * 24));
+          if (daysOverdue >= 30) {
+            const deal = inv.deals as unknown as Record<string, unknown> | null;
+            const contact = deal?.contacts as unknown as Record<string, unknown> | null;
+            const company = deal?.companies as unknown as Record<string, unknown> | null;
+            const clientName = contact ? `${contact.first_name} ${contact.last_name}` : (company?.company_name as string) ?? "Unknown";
+            overdue.push({
+              id: inv.id,
+              invoice_number: inv.invoice_number,
+              type: "crm",
+              client_name: clientName,
+              outstanding: Number(inv.total) - Number(inv.paid_amount || 0),
+              days_overdue: daysOverdue,
+            });
+          }
+        }
+
+        const { data: commOverdue } = await supabase
+          .from("commission_invoices")
+          .select("id, invoice_number, total, paid_amount, due_date, school_name")
+          .not("status", "in", '("paid","cancelled")')
+          .not("due_date", "is", null);
+
+        for (const inv of commOverdue ?? []) {
+          const dueMs = new Date(inv.due_date).getTime();
+          const daysOverdue = Math.floor((todayMs - dueMs) / (1000 * 60 * 60 * 24));
+          if (daysOverdue >= 30) {
+            overdue.push({
+              id: inv.id,
+              invoice_number: inv.invoice_number,
+              type: "commission",
+              client_name: inv.school_name,
+              outstanding: Number(inv.total) - Number(inv.paid_amount || 0),
+              days_overdue: daysOverdue,
+            });
+          }
+        }
+
+        overdue.sort((a, b) => b.days_overdue - a.days_overdue);
+        setOverduePayments(overdue);
+      }
+
+      // Pending refunds (admin only)
+      if (isAdmin) {
+        const { data: refundsData } = await supabase
+          .from("refund_requests")
+          .select("id, deal_number, client_name, calculated_refund, requested_at")
+          .eq("status", "pending")
+          .order("requested_at", { ascending: false })
+          .limit(10);
+        if (refundsData) setPendingRefunds(refundsData);
+      }
+
+      // Financial summary (admin + accountant)
+      if (isAdmin || hasAnyRole(profileData, ["accountant"])) {
+        const now = new Date();
+        const monthFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+        const monthTo = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+        const today = new Date().toISOString().split("T")[0];
+
+        const [fCrm, fComm, fForeign, fOutCrm, fOutComm] = await Promise.all([
+          supabase.from("invoices").select("paid_amount, currency").not("status", "eq", "cancelled").gte("issue_date", monthFrom).lte("issue_date", monthTo),
+          supabase.from("commission_invoices").select("paid_amount").not("status", "eq", "cancelled").gte("issue_date", monthFrom).lte("issue_date", monthTo),
+          supabase.from("foreign_currency_payments").select("nzd_equivalent").gte("payment_date", monthFrom).lte("payment_date", monthTo),
+          supabase.from("invoices").select("total, paid_amount, due_date").not("status", "in", '("paid","cancelled")'),
+          supabase.from("commission_invoices").select("total, paid_amount, due_date").not("status", "in", '("paid","cancelled")'),
+        ]);
+
+        const revenue = (fCrm.data ?? []).filter(i => i.currency === "NZD").reduce((s, i) => s + Number(i.paid_amount || 0), 0)
+          + (fComm.data ?? []).reduce((s, i) => s + Number(i.paid_amount || 0), 0)
+          + (fForeign.data ?? []).reduce((s, i) => s + Number(i.nzd_equivalent || 0), 0);
+
+        let outstanding = 0, overdueAmt = 0;
+        for (const inv of [...(fOutCrm.data ?? []), ...(fOutComm.data ?? [])]) {
+          const out = Number(inv.total || 0) - Number(inv.paid_amount || 0);
+          outstanding += out;
+          if (inv.due_date && inv.due_date < today) overdueAmt += out;
+        }
+
+        setFinanceSummary({ revenue, outstanding, overdue: overdueAmt });
       }
 
       setIsLoading(false);
@@ -392,6 +492,146 @@ export default function CrmDashboardPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Pending Refunds */}
+        {pendingRefunds.length > 0 && (
+          <div className="mb-10 rounded-xl border border-red-500/30 bg-red-500/5 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Pending Refund Requests</h3>
+              <div className="flex items-center gap-3">
+                <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400">
+                  {pendingRefunds.length} pending
+                </span>
+                <Link href="/finance/refunds" className="text-sm text-blue-400 hover:underline">Manage Refunds →</Link>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px] border-collapse">
+                <thead>
+                  <tr className="border-b border-white/20">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Deal</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-white/70">Refund Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Requested</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingRefunds.map((r) => (
+                    <tr key={r.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                      <td className="px-4 py-3 text-sm font-medium">{r.deal_number}</td>
+                      <td className="px-4 py-3 text-sm">{r.client_name}</td>
+                      <td className="px-4 py-3 text-sm text-right font-bold text-red-400">${Number(r.calculated_refund).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm text-white/60">{new Date(r.requested_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Overdue Payments */}
+        {overduePayments.length > 0 && (
+          <div className="mb-10 rounded-xl border border-orange-500/30 bg-orange-500/5 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Overdue Payments (30+ days)</h3>
+              <div className="flex items-center gap-3">
+                <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-bold text-orange-400">
+                  {overduePayments.length} overdue
+                </span>
+                <Link href="/finance/ar" className="text-sm text-blue-400 hover:underline">View AR Dashboard →</Link>
+              </div>
+            </div>
+            {reminderMsg && (
+              <div className={`mb-3 rounded-lg px-3 py-2 text-sm ${reminderMsg.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                {reminderMsg.text}
+              </div>
+            )}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px] border-collapse">
+                <thead>
+                  <tr className="border-b border-white/20">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Invoice</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client / School</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-white/70">Outstanding</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-white/70">Days Overdue</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {overduePayments.slice(0, 10).map((inv) => (
+                    <tr key={inv.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                      <td className="px-4 py-3 text-sm font-medium">
+                        {inv.type === "crm" ? (
+                          <Link href="/invoices" className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                        ) : (
+                          <Link href="/commission/invoices" className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                        )}
+                        <span className={`ml-2 text-xs rounded-full px-2 py-0.5 ${inv.type === "crm" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>
+                          {inv.type === "crm" ? "CRM" : "Commission"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">{inv.client_name}</td>
+                      <td className="px-4 py-3 text-sm text-right font-medium">${inv.outstanding.toFixed(2)}</td>
+                      <td className={`px-4 py-3 text-sm text-right font-bold ${inv.days_overdue > 90 ? "text-red-500" : inv.days_overdue > 60 ? "text-red-400" : "text-orange-400"}`}>
+                        {inv.days_overdue}d
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={async () => {
+                            setReminderLoading(inv.id);
+                            setReminderMsg(null);
+                            try {
+                              const res = await fetch("/api/send-payment-reminder", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ invoice_id: inv.id, invoice_type: inv.type }),
+                              });
+                              const data = await res.json();
+                              setReminderMsg(data.ok
+                                ? { type: "success", text: `Reminder sent to ${data.sent_to}` }
+                                : { type: "error", text: data.error || "Failed" }
+                              );
+                            } catch { setReminderMsg({ type: "error", text: "Network error" }); }
+                            setReminderLoading(null);
+                          }}
+                          disabled={reminderLoading === inv.id}
+                          className="rounded-lg bg-orange-600 px-3 py-1.5 text-xs font-medium hover:bg-orange-500 disabled:opacity-50"
+                        >
+                          {reminderLoading === inv.id ? "..." : "Send Reminder"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Financial Summary (admin + accountant) */}
+        {financeSummary && (
+          <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Financial Summary (This Month)</h3>
+              <Link href="/finance" className="text-sm text-blue-400 hover:underline">View Financial Dashboard →</Link>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="rounded-lg bg-white/5 p-3">
+                <p className="text-white/50 text-xs mb-1">Revenue</p>
+                <p className="text-lg font-bold text-green-400">${financeSummary.revenue.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </div>
+              <div className="rounded-lg bg-white/5 p-3">
+                <p className="text-white/50 text-xs mb-1">Outstanding</p>
+                <p className="text-lg font-bold text-orange-400">${financeSummary.outstanding.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </div>
+              <div className="rounded-lg bg-white/5 p-3">
+                <p className="text-white/50 text-xs mb-1">Overdue</p>
+                <p className={`text-lg font-bold ${financeSummary.overdue > 0 ? "text-red-400" : "text-white"}`}>${financeSummary.overdue.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </div>
             </div>
           </div>
         )}

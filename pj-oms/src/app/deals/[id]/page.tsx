@@ -405,6 +405,27 @@ export default function DealDetailPage() {
   const [commissionPaidDate, setCommissionPaidDate] = useState(new Date().toISOString().split("T")[0]);
   const [agentName, setAgentName] = useState("");
 
+  // Refund state
+  type RefundRecord = { id: string; status: string; reason: string; total_paid: number; refund_percentage: number; calculated_refund: number; approved_refund: number | null; actual_refund: number | null; deduction_details: { description: string; amount: number }[]; total_deductions: number; requested_at: string; review_notes: string | null };
+  const [refunds, setRefunds] = useState<RefundRecord[]>([]);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundReason, setRefundReason] = useState("Client cancelled");
+  const [refundReasonOther, setRefundReasonOther] = useState("");
+  const [refundDeductions, setRefundDeductions] = useState<{ description: string; amount: string }[]>([]);
+  const [refundNotes, setRefundNotes] = useState("");
+  const [isSubmittingRefund, setIsSubmittingRefund] = useState(false);
+
+  // Foreign currency payment state
+  const [showForeignPayModal, setShowForeignPayModal] = useState<InvoiceRecord | null>(null);
+  const [foreignAmount, setForeignAmount] = useState("");
+  const [foreignRate, setForeignRate] = useState("");
+  const [foreignNzd, setForeignNzd] = useState("");
+  const [foreignDate, setForeignDate] = useState(new Date().toISOString().split("T")[0]);
+  const [foreignMethod, setForeignMethod] = useState("bank_transfer");
+  const [foreignRef, setForeignRef] = useState("");
+  const [foreignNotes, setForeignNotes] = useState("");
+  const [isRecordingForeign, setIsRecordingForeign] = useState(false);
+
   // School application state (Myanmar)
   const [schoolsList, setSchoolsList] = useState<{ id: string; name: string }[]>([]);
   const [schoolAppForm, setSchoolAppForm] = useState({
@@ -463,6 +484,11 @@ export default function DealDetailPage() {
   const fetchInvoices = useCallback(async () => {
     const { data } = await supabase.from("invoices").select("id, invoice_number, currency, status, total, paid_amount, issue_date, due_date, pdf_url, payment_stage_ids, xero_invoice_id").eq("deal_id", id).order("created_at", { ascending: false });
     setInvoices((data ?? []) as InvoiceRecord[]);
+  }, [id]);
+
+  const fetchRefunds = useCallback(async () => {
+    const { data } = await supabase.from("refund_requests").select("*").eq("deal_id", id).order("created_at", { ascending: false });
+    setRefunds((data ?? []) as RefundRecord[]);
   }, [id]);
 
   const fetchContract = useCallback(async () => {
@@ -661,7 +687,7 @@ export default function DealDetailPage() {
       await Promise.all([
         fetchPayments(), fetchContract(), fetchIntakeForm(), fetchChecklist(),
         fetchEmailLogs(), fetchApplicants(), fetchAttachments(), fetchLogs(),
-        fetchCoverLetter(), fetchAgentCommission(), fetchInvoices(),
+        fetchCoverLetter(), fetchAgentCommission(), fetchInvoices(), fetchRefunds(),
       ]);
       setIsLoading(false);
     }
@@ -2004,14 +2030,27 @@ export default function DealDetailPage() {
                               }} className="text-green-400 hover:text-green-300 disabled:opacity-50">Send</button>
                             )}
                             {inv.status !== "paid" && inv.status !== "cancelled" && (
-                              <button onClick={() => {
-                                setShowPaymentModal(inv);
-                                const remaining = inv.total - (inv.paid_amount || 0);
-                                setPaymentAmount(remaining > 0 ? String(remaining) : String(inv.total));
-                                setPaymentDate(new Date().toISOString().split("T")[0]);
-                                setPaymentMethod("bank_transfer");
-                                setPaymentNotes("");
-                              }} className="text-green-400 hover:text-green-300">Record Payment</button>
+                              (inv.currency === "CNY" || inv.currency === "THB") ? (
+                                <button onClick={() => {
+                                  setShowForeignPayModal(inv);
+                                  setForeignAmount("");
+                                  setForeignRate("");
+                                  setForeignNzd("");
+                                  setForeignMethod("bank_transfer");
+                                  setForeignRef("");
+                                  setForeignNotes("");
+                                  setForeignDate(new Date().toISOString().split("T")[0]);
+                                }} className="text-green-400 hover:text-green-300">Record {inv.currency} Payment</button>
+                              ) : (
+                                <button onClick={() => {
+                                  setShowPaymentModal(inv);
+                                  const remaining = inv.total - (inv.paid_amount || 0);
+                                  setPaymentAmount(remaining > 0 ? String(remaining) : String(inv.total));
+                                  setPaymentDate(new Date().toISOString().split("T")[0]);
+                                  setPaymentMethod("bank_transfer");
+                                  setPaymentNotes("");
+                                }} className="text-green-400 hover:text-green-300">Record Payment</button>
+                              )
                             )}
                             {inv.status !== "cancelled" && inv.status !== "paid" && (
                               <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
@@ -3206,6 +3245,262 @@ export default function DealDetailPage() {
                   <button onClick={() => setShowPaymentModal(null)} className="rounded-lg border border-white/20 px-4 py-2.5 text-sm font-bold hover:bg-white/10 transition-colors">
                     Cancel
                   </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Section: Refunds ──────────────────────────────────────────── */}
+        {(isAdmin || hasAnyRole(profile, ["accountant"])) && (
+          <div className={sectionClass}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Refunds</h3>
+              {totalPaidAmount > 0 && currentStatus !== "cancelled" && (
+                <button onClick={() => { setShowRefundModal(true); setRefundReason("Client cancelled"); setRefundReasonOther(""); setRefundDeductions([]); setRefundNotes(""); }}
+                  className={`${btnDanger} text-sm`}>
+                  Request Refund
+                </button>
+              )}
+            </div>
+            {refunds.length === 0 ? (
+              <p className="text-sm text-white/40 text-center py-4">No refund requests.</p>
+            ) : (
+              <div className="space-y-3">
+                {refunds.map((r) => {
+                  const displayAmt = r.actual_refund ?? r.approved_refund ?? r.calculated_refund;
+                  const statusColors: Record<string, string> = {
+                    pending: "bg-yellow-500/20 text-yellow-400", approved: "bg-blue-500/20 text-blue-400",
+                    rejected: "bg-red-500/20 text-red-400", processing: "bg-orange-500/20 text-orange-400",
+                    completed: "bg-green-500/20 text-green-400", cancelled: "bg-gray-500/20 text-gray-400",
+                  };
+                  return (
+                    <div key={r.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[r.status] ?? ""}`}>
+                            {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                          </span>
+                          <span className="text-sm text-white/60">{new Date(r.requested_at).toLocaleDateString()}</span>
+                        </div>
+                        <span className="text-red-400 font-bold">${Number(displayAmt).toFixed(2)}</span>
+                      </div>
+                      <div className="text-sm text-white/70">
+                        <span className="text-white/50">Reason:</span> {r.reason}
+                      </div>
+                      {r.deduction_details?.length > 0 && (
+                        <div className="text-sm text-white/50 mt-1">
+                          Deductions: {r.deduction_details.map(d => `${d.description} ($${d.amount})`).join(", ")}
+                        </div>
+                      )}
+                      {r.review_notes && <div className="text-sm text-white/50 mt-1">Review: {r.review_notes}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Refund Request Modal ─────────────────────────────────────────── */}
+        {showRefundModal && (() => {
+          const refundPct = Number(form.refund_percentage) || 50;
+          const calcRefund = Math.round(totalPaidAmount * refundPct / 100 * 100) / 100;
+          const totalDed = refundDeductions.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+          const finalRefund = Math.max(0, calcRefund - totalDed);
+          const reasonText = refundReason === "Other" ? refundReasonOther : refundReason;
+
+          const handleSubmitRefund = async () => {
+            if (!reasonText.trim()) return;
+            setIsSubmittingRefund(true);
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              const res = await fetch("/api/refunds", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  deal_id: id,
+                  deal_number: deal?.deal_number || "",
+                  client_name: clientName,
+                  total_paid: totalPaidAmount,
+                  refund_percentage: refundPct,
+                  calculated_refund: calcRefund,
+                  deduction_details: refundDeductions.filter(d => d.description && Number(d.amount) > 0).map(d => ({ description: d.description, amount: Number(d.amount) })),
+                  total_deductions: totalDed,
+                  reason: reasonText,
+                  notes: refundNotes || undefined,
+                  requested_by: session?.user.id,
+                }),
+              });
+              const data = await res.json();
+              if (data.ok) {
+                setMessage({ type: "success", text: "Refund request submitted" });
+                setShowRefundModal(false);
+                await fetchRefunds();
+              } else {
+                setMessage({ type: "error", text: data.error || "Failed" });
+              }
+            } catch { setMessage({ type: "error", text: "Network error" }); }
+            setIsSubmittingRefund(false);
+          };
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
+                <h4 className="text-lg font-bold mb-4">Request Refund</h4>
+
+                <div className="space-y-3 text-sm mb-4 rounded-lg bg-white/5 p-3">
+                  <div className="flex justify-between"><span className="text-white/50">Total Paid:</span><span>${totalPaidAmount.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-white/50">Refund %:</span><span>{refundPct}%</span></div>
+                  <div className="flex justify-between"><span className="text-white/50">Calculated Refund:</span><span>${calcRefund.toFixed(2)}</span></div>
+                  {totalDed > 0 && <div className="flex justify-between text-red-400"><span>Deductions:</span><span>-${totalDed.toFixed(2)}</span></div>}
+                  <div className="flex justify-between font-bold border-t border-white/10 pt-2"><span>Final Refund:</span><span className="text-red-400">${finalRefund.toFixed(2)}</span></div>
+                </div>
+
+                <div className="space-y-3 mb-4">
+                  <div>
+                    <label className={labelClass}>Reason *</label>
+                    <select value={refundReason} onChange={e => setRefundReason(e.target.value)} className={selectClass}>
+                      <option value="Client cancelled" className="bg-blue-900">Client cancelled</option>
+                      <option value="Service not provided" className="bg-blue-900">Service not provided</option>
+                      <option value="Dispute" className="bg-blue-900">Dispute</option>
+                      <option value="Other" className="bg-blue-900">Other</option>
+                    </select>
+                  </div>
+                  {refundReason === "Other" && (
+                    <div>
+                      <label className={labelClass}>Specify reason *</label>
+                      <input value={refundReasonOther} onChange={e => setRefundReasonOther(e.target.value)} className={inputClass} placeholder="Enter reason..." />
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className={labelClass + " mb-0"}>Deductions</label>
+                      <button onClick={() => setRefundDeductions([...refundDeductions, { description: "", amount: "" }])} className="text-xs text-blue-400 hover:underline">+ Add</button>
+                    </div>
+                    {refundDeductions.map((d, i) => (
+                      <div key={i} className="flex gap-2 mb-2">
+                        <input value={d.description} onChange={e => { const arr = [...refundDeductions]; arr[i].description = e.target.value; setRefundDeductions(arr); }} placeholder="e.g. INZ fee incurred" className={inputClass + " flex-1"} />
+                        <input type="number" step="0.01" value={d.amount} onChange={e => { const arr = [...refundDeductions]; arr[i].amount = e.target.value; setRefundDeductions(arr); }} placeholder="0.00" className={inputClass + " w-28"} />
+                        <button onClick={() => setRefundDeductions(refundDeductions.filter((_, j) => j !== i))} className="text-red-400 text-xs hover:text-red-300">Remove</button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Notes</label>
+                    <textarea value={refundNotes} onChange={e => setRefundNotes(e.target.value)} rows={2} className={`${inputClass} resize-none`} placeholder="Optional..." />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button onClick={handleSubmitRefund} disabled={isSubmittingRefund || !reasonText.trim()} className={`${btnDanger} disabled:opacity-50`}>
+                    {isSubmittingRefund ? "Submitting..." : "Submit Refund Request"}
+                  </button>
+                  <button onClick={() => setShowRefundModal(false)} className={btnSecondary}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Foreign Currency Payment Modal ─────────────────────────────── */}
+        {showForeignPayModal && (() => {
+          const inv = showForeignPayModal;
+          const curr = inv.currency;
+
+          const handleRecordForeignPayment = async () => {
+            setIsRecordingForeign(true);
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              const nzdEq = foreignNzd ? Number(foreignNzd) : (foreignRate ? Number(foreignAmount) / Number(foreignRate) : undefined);
+              const res = await fetch("/api/foreign-payments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  invoice_id: inv.id,
+                  deal_id: id,
+                  amount: Number(foreignAmount),
+                  currency: curr,
+                  exchange_rate: foreignRate ? Number(foreignRate) : undefined,
+                  nzd_equivalent: nzdEq ? Math.round(nzdEq * 100) / 100 : undefined,
+                  payment_date: foreignDate,
+                  payment_method: foreignMethod,
+                  payment_reference: foreignRef || undefined,
+                  notes: foreignNotes || undefined,
+                  recorded_by: session?.user.id,
+                }),
+              });
+              const data = await res.json();
+              if (data.ok) {
+                setMessage({ type: "success", text: `Foreign payment of ${curr} ${Number(foreignAmount).toFixed(2)} recorded` });
+                setShowForeignPayModal(null);
+                await fetchInvoices();
+              } else {
+                setMessage({ type: "error", text: data.error || "Failed" });
+              }
+            } catch { setMessage({ type: "error", text: "Network error" }); }
+            setIsRecordingForeign(false);
+          };
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+              <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+                <h4 className="text-lg font-bold mb-4">Record {curr} Payment</h4>
+                <p className="text-sm text-white/50 mb-4">Invoice: {inv.invoice_number} — Total: {curr === "CNY" ? "¥" : "฿"}{Number(inv.total).toFixed(2)}</p>
+
+                <div className="space-y-3 mb-4">
+                  <div>
+                    <label className={labelClass}>Amount ({curr}) *</label>
+                    <input type="number" step="0.01" value={foreignAmount} onChange={e => {
+                      setForeignAmount(e.target.value);
+                      if (foreignRate && e.target.value) setForeignNzd((Number(e.target.value) / Number(foreignRate)).toFixed(2));
+                    }} className={inputClass} placeholder="0.00" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Exchange Rate (1 NZD = ? {curr})</label>
+                      <input type="number" step="0.0001" value={foreignRate} onChange={e => {
+                        setForeignRate(e.target.value);
+                        if (foreignAmount && e.target.value) setForeignNzd((Number(foreignAmount) / Number(e.target.value)).toFixed(2));
+                      }} className={inputClass} placeholder="Optional" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>NZD Equivalent</label>
+                      <input type="number" step="0.01" value={foreignNzd} onChange={e => setForeignNzd(e.target.value)} className={inputClass} placeholder="Auto or manual" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Payment Date</label>
+                    <input type="date" value={foreignDate} onChange={e => setForeignDate(e.target.value)} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Payment Method</label>
+                    <select value={foreignMethod} onChange={e => setForeignMethod(e.target.value)} className={selectClass}>
+                      <option value="bank_transfer" className="bg-blue-900">Bank Transfer</option>
+                      <option value="wechat" className="bg-blue-900">WeChat Pay</option>
+                      <option value="alipay" className="bg-blue-900">Alipay</option>
+                      <option value="cash" className="bg-blue-900">Cash</option>
+                      <option value="other" className="bg-blue-900">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Payment Reference</label>
+                    <input value={foreignRef} onChange={e => setForeignRef(e.target.value)} className={inputClass} placeholder="Transaction number..." />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Notes</label>
+                    <input value={foreignNotes} onChange={e => setForeignNotes(e.target.value)} className={inputClass} placeholder="Optional..." />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button onClick={handleRecordForeignPayment} disabled={isRecordingForeign || !foreignAmount || Number(foreignAmount) <= 0}
+                    className={`${btnPrimary} disabled:opacity-50`}>
+                    {isRecordingForeign ? "Recording..." : "Record Payment"}
+                  </button>
+                  <button onClick={() => setShowForeignPayModal(null)} className={btnSecondary}>Cancel</button>
                 </div>
               </div>
             </div>

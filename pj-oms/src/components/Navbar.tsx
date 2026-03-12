@@ -32,6 +32,7 @@ const COMMISSION_LINKS = [
   { href: "/dashboard", label: "Commission Dashboard" },
   { href: "/students", label: "Students" },
   { href: "/schools", label: "Schools" },
+  { href: "/commission/invoices", label: "Commission Invoices" },
 ];
 
 // Reports sub-menu (admin only)
@@ -39,6 +40,15 @@ const REPORTS_LINKS = [
   { href: "/reports", label: "Commission Reports" },
   { href: "/reports/staff-commission", label: "Staff Commission" },
   { href: "/reports/agent-commissions", label: "Agent Commissions" },
+];
+
+// Finance sub-menu (admin + accountant)
+const FINANCE_LINKS = [
+  { href: "/finance", label: "Financial Dashboard" },
+  { href: "/finance/revenue", label: "Revenue Report" },
+  { href: "/finance/ar", label: "Accounts Receivable" },
+  { href: "/finance/refunds", label: "Refunds" },
+  { href: "/finance/foreign-payments", label: "Foreign Payments" },
 ];
 
 // Admin-only links
@@ -64,9 +74,11 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
   const [commissionOpen, setCommissionOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [financeOpen, setFinanceOpen] = useState(false);
   const commissionRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const reportsRef = useRef<HTMLDivElement>(null);
+  const financeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -87,6 +99,7 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
     if (commissionRef.current && !commissionRef.current.contains(e.target as Node)) setCommissionOpen(false);
     if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) setSettingsOpen(false);
     if (reportsRef.current && !reportsRef.current.contains(e.target as Node)) setReportsOpen(false);
+    if (financeRef.current && !financeRef.current.contains(e.target as Node)) setFinanceOpen(false);
   }, []);
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -103,6 +116,7 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
     setCommissionOpen(false);
     setSettingsOpen(false);
     setReportsOpen(false);
+    setFinanceOpen(false);
   };
 
   const handleSignOut = async () => {
@@ -117,8 +131,10 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
   // Show Commission if user has ANY non-lia role (admin/sales/accountant), even if also LIA
   const showCommission = hasAnyRole(profile, ["admin", "sales", "accountant", "copywriter"]);
 
+  const showFinance = hasAnyRole(profile, ["admin", "accountant"]);
   const isCommissionActive = COMMISSION_LINKS.some(l => pathname === l.href || pathname.startsWith(l.href + "/"));
   const isReportsActive = REPORTS_LINKS.some(l => pathname === l.href || pathname.startsWith(l.href + "/"));
+  const isFinanceActive = FINANCE_LINKS.some(l => pathname === l.href || pathname.startsWith(l.href + "/"));
 
   const linkClass = (href: string) =>
     `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
@@ -204,6 +220,43 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
             >
               LIA Dashboard
             </Link>
+          )}
+
+          {/* Finance dropdown (admin + accountant) */}
+          {showFinance && (
+            <div className="relative" ref={financeRef}>
+              <button
+                onClick={() => setFinanceOpen(!financeOpen)}
+                className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  isFinanceActive
+                    ? "bg-white/10 text-white"
+                    : "text-white/70 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                Finance
+                <svg className={`w-3 h-3 transition-transform ${financeOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {financeOpen && (
+                <div className="absolute top-full left-0 mt-1 w-52 rounded-lg border border-white/10 bg-blue-900 shadow-xl z-50">
+                  {FINANCE_LINKS.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link.href)}
+                      className={`block px-4 py-2.5 text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        pathname === link.href || pathname.startsWith(link.href + "/")
+                          ? "bg-white/10 text-white"
+                          : "text-white/70 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Reports dropdown (admin only) */}
@@ -393,6 +446,27 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
             <>
               <p className="mt-2 px-4 py-1 text-xs font-bold text-white/40 uppercase tracking-wider">Reports</p>
               {REPORTS_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                    pathname === link.href || pathname.startsWith(link.href + "/")
+                      ? "bg-white/10 text-white"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </>
+          )}
+
+          {/* Finance section (admin + accountant) */}
+          {showFinance && (
+            <>
+              <p className="mt-2 px-4 py-1 text-xs font-bold text-white/40 uppercase tracking-wider">Finance</p>
+              {FINANCE_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
