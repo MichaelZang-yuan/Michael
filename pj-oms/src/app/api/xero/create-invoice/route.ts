@@ -29,6 +29,8 @@ function getServiceAccountCode(department: string | null): string {
  * Creates DRAFT ACCREC invoice in Xero
  */
 export async function POST(request: Request) {
+  console.log("=== Push to Xero start ===");
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -91,17 +93,20 @@ export async function POST(request: Request) {
   console.log("[Xero create-invoice] visa_type:", visaType, "department:", department);
 
   // Get Xero access token and tenant
+  console.log("[Xero create-invoice] Fetching access token...");
   const accessToken = await getXeroAccessToken();
   if (!accessToken) {
-    console.error("[Xero create-invoice] No access token");
-    return NextResponse.json({ error: "Xero not connected or token refresh failed" }, { status: 401 });
+    console.error("[Xero create-invoice] No access token — token refresh likely failed. Check server logs above for [Xero getToken] details.");
+    return NextResponse.json({ error: "Xero not connected or token refresh failed. Please reconnect Xero at Settings > Xero Connection." }, { status: 401 });
   }
+  console.log("[Xero create-invoice] Token obtained:", accessToken.slice(0, 10) + "...");
 
   const tenants = await getXeroTenants();
   console.log("[Xero create-invoice] Tenants:", JSON.stringify(tenants));
   if (!tenants.immigration) {
     return NextResponse.json({ error: "PJ Immigration tenant not mapped in Xero" }, { status: 400 });
   }
+  console.log("[Xero create-invoice] Using tenant_id_immigration:", tenants.immigration);
 
   // Determine contact name and email
   const contact = deal?.contacts as { first_name: string; last_name: string; email?: string } | null;
@@ -210,6 +215,7 @@ export async function POST(request: Request) {
   }
 
   // Create draft invoice in Xero — Reference = visa_type
+  console.log("[Xero create-invoice] Calling createXeroInvoice with tenant:", tenants.immigration, "contact:", xeroContactId);
   const xeroInvoice = await createXeroInvoice(accessToken, tenants.immigration, {
     Type: "ACCREC",
     Contact: { ContactID: xeroContactId },

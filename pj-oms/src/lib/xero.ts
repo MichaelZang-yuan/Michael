@@ -13,24 +13,41 @@ function getSupabaseAdmin() {
 
 /** Get a valid Xero access token, refreshing if needed */
 export async function getXeroAccessToken(): Promise<string | null> {
+  console.log("[Xero getToken] Starting token retrieval...");
   const supabase = getSupabaseAdmin();
-  const { data: row } = await supabase
+  const { data: row, error: rowErr } = await supabase
     .from("xero_tokens")
     .select("refresh_token, access_token, expires_at")
     .limit(1)
     .single();
 
-  if (!row?.refresh_token) return null;
+  if (rowErr) {
+    console.error("[Xero getToken] DB query error:", rowErr.message);
+    return null;
+  }
+  if (!row?.refresh_token) {
+    console.error("[Xero getToken] No refresh_token in xero_tokens table");
+    return null;
+  }
 
   const expiresAt = new Date(row.expires_at);
   const now = new Date();
-  if (expiresAt.getTime() - now.getTime() > 60 * 1000) {
+  const remainingMs = expiresAt.getTime() - now.getTime();
+  console.log("[Xero getToken] Token expires_at:", row.expires_at, "remaining:", Math.round(remainingMs / 1000), "seconds");
+
+  if (remainingMs > 60 * 1000) {
+    console.log("[Xero getToken] Token still valid, returning existing token:", row.access_token?.slice(0, 10) + "...");
     return row.access_token;
   }
 
+  console.log("[Xero getToken] Token expired or expiring soon, refreshing...");
   const clientId = process.env.XERO_CLIENT_ID;
   const clientSecret = process.env.XERO_CLIENT_SECRET;
-  if (!clientId || !clientSecret) return null;
+  if (!clientId || !clientSecret) {
+    console.error("[Xero getToken] Missing env vars: XERO_CLIENT_ID=", !!clientId, "XERO_CLIENT_SECRET=", !!clientSecret);
+    return null;
+  }
+  console.log("[Xero getToken] Client ID:", clientId.slice(0, 8) + "...");
 
   const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
@@ -46,13 +63,24 @@ export async function getXeroAccessToken(): Promise<string | null> {
     }).toString(),
   });
 
-  const tokenData = await res.json().catch(() => ({}));
-  if (!res.ok || !tokenData.access_token) {
-    console.error("[Xero] Token refresh failed:", tokenData);
+  console.log("[Xero getToken] Refresh response status:", res.status, "content-type:", res.headers.get("content-type"));
+  const resText = await res.text();
+  let tokenData: Record<string, unknown> = {};
+  try {
+    tokenData = JSON.parse(resText);
+  } catch {
+    console.error("[Xero getToken] Refresh returned non-JSON:", resText.slice(0, 500));
     return null;
   }
 
-  const expiresIn = tokenData.expires_in ?? 1800;
+  if (!res.ok || !tokenData.access_token) {
+    console.error("[Xero getToken] Token refresh failed:", JSON.stringify(tokenData));
+    return null;
+  }
+
+  console.log("[Xero getToken] Refresh successful, new token:", (tokenData.access_token as string).slice(0, 10) + "...");
+
+  const expiresIn = (tokenData.expires_in as number) ?? 1800;
   const newExpiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
 
   const { data: existing } = await supabase
@@ -61,17 +89,22 @@ export async function getXeroAccessToken(): Promise<string | null> {
     .limit(1)
     .single();
   if (existing) {
-    await supabase
+    const { error: updateErr } = await supabase
       .from("xero_tokens")
       .update({
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token ?? row.refresh_token,
+        access_token: tokenData.access_token as string,
+        refresh_token: (tokenData.refresh_token as string) ?? row.refresh_token,
         expires_at: newExpiresAt,
       })
       .eq("id", existing.id);
+    if (updateErr) {
+      console.error("[Xero getToken] Failed to save refreshed token:", updateErr.message);
+    } else {
+      console.log("[Xero getToken] Token saved to DB, expires_at:", newExpiresAt);
+    }
   }
 
-  return tokenData.access_token;
+  return tokenData.access_token as string;
 }
 
 /** Get the stored tenant IDs */
@@ -80,11 +113,13 @@ export async function getXeroTenants(): Promise<{
   international: string | null;
 }> {
   const supabase = getSupabaseAdmin();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("xero_tokens")
     .select("tenant_id_immigration, tenant_id_international")
     .limit(1)
     .single();
+  if (error) console.error("[Xero getTenants] DB error:", error.message);
+  console.log("[Xero getTenants] immigration:", data?.tenant_id_immigration, "international:", data?.tenant_id_international);
   return {
     immigration: data?.tenant_id_immigration ?? null,
     international: data?.tenant_id_international ?? null,
@@ -210,6 +245,7 @@ export async function createXeroInvoice(
 ): Promise<{ InvoiceID: string; InvoiceNumber: string; error?: string } | null> {
   const reqBody = JSON.stringify({ Invoices: [invoice] });
   console.log("[Xero] Creating invoice, tenant:", tenantId, "payload:", reqBody);
+  console.log("[Xero] POST URL:", `${XERO_API_BASE}/Invoices`);
   const res = await fetch(`${XERO_API_BASE}/Invoices`, {
     method: "POST",
     headers: {
@@ -220,8 +256,9 @@ export async function createXeroInvoice(
     body: reqBody,
   });
   const resText = await res.text();
+  console.log("[Xero] Create invoice response — status:", res.status, "content-type:", res.headers.get("content-type"));
   if (!res.ok) {
-    console.error("[Xero] Create invoice failed:", res.status, resText);
+    console.error("[Xero] Create invoice failed:", res.status, "body:", resText);
     // Try to parse error message
     try {
       const errData = JSON.parse(resText);
