@@ -204,6 +204,7 @@ export async function createXeroContact(
       Authorization: `Bearer ${accessToken}`,
       "Xero-Tenant-Id": tenantId,
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: reqBody,
   });
@@ -252,6 +253,7 @@ export async function createXeroInvoice(
       Authorization: `Bearer ${accessToken}`,
       "Xero-Tenant-Id": tenantId,
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: reqBody,
   });
@@ -290,6 +292,7 @@ export async function updateXeroInvoice(
       Authorization: `Bearer ${accessToken}`,
       "Xero-Tenant-Id": tenantId,
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: JSON.stringify({ Invoices: [{ InvoiceID: invoiceId, ...updates }] }),
   });
