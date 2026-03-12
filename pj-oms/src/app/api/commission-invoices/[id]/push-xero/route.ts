@@ -59,20 +59,46 @@ export async function POST(
     return NextResponse.json({ error: "Failed to find/create school contact in Xero" }, { status: 500 });
   }
 
-  // Build line items
+  // Department-based Xero account codes for commission revenue
+  const COMMISSION_ACCOUNT_CODES: Record<string, string> = {
+    china: "213",       // 213 - School Commission - China
+    thailand: "214",    // 214 - School Commission - Thai
+    myanmar: "215",     // 215 - School Commission - Myanmar
+    korea_japan: "216", // 216 - School Commission - Korean
+  };
+
+  // Build line items with department-based account codes
   const items = (invoice.commission_invoice_items ?? []) as {
     description: string;
     amount: number;
     student_name: string;
+    student_id: string;
   }[];
 
-  const lineItems: XeroLineItem[] = items.map((item) => ({
-    Description: item.description || `Commission for ${item.student_name}`,
-    Quantity: 1,
-    UnitAmount: Number(item.amount),
-    AccountCode: "200",
-    TaxType: "OUTPUT2",
-  }));
+  // Fetch student departments for all line items
+  const studentIds = [...new Set(items.map(i => i.student_id).filter(Boolean))];
+  const studentDeptMap: Record<string, string> = {};
+  if (studentIds.length > 0) {
+    const { data: students } = await supabase
+      .from("students")
+      .select("id, department")
+      .in("id", studentIds);
+    for (const s of students ?? []) {
+      studentDeptMap[s.id] = s.department || "";
+    }
+  }
+
+  const lineItems: XeroLineItem[] = items.map((item) => {
+    const department = studentDeptMap[item.student_id] || "";
+    const accountCode = COMMISSION_ACCOUNT_CODES[department] || "213"; // Default to China
+    return {
+      Description: item.description || `Commission for ${item.student_name}`,
+      Quantity: 1,
+      UnitAmount: Number(item.amount),
+      AccountCode: accountCode,
+      TaxType: "OUTPUT2",
+    };
+  });
 
   if (lineItems.length === 0) {
     return NextResponse.json({ error: "No line items to push" }, { status: 400 });

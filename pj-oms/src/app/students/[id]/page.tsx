@@ -62,6 +62,8 @@ type Commission = {
   enrollment_date: string | null;
   claim_date: string | null;
   claimed_at: string | null;
+  commission_invoice_id: string | null;
+  commission_invoice_item_id: string | null;
 };
 
 type Profile = {
@@ -666,9 +668,39 @@ export default function StudentDetailPage() {
 
   // 仅 Admin 可以撤销 claim
   const handleUnclaim = async (commissionId: string) => {
+    const commission = commissions.find((c) => c.id === commissionId);
+    if (!commission) return;
+
+    // Check if this commission has been invoiced and pushed to Xero
+    if (commission.commission_invoice_id) {
+      // Check if the invoice has been pushed to Xero
+      const { data: invoice } = await supabase
+        .from("commission_invoices")
+        .select("xero_invoice_id")
+        .eq("id", commission.commission_invoice_id)
+        .single();
+
+      if (invoice?.xero_invoice_id) {
+        const confirmed = confirm(
+          "This commission has been invoiced and pushed to Xero. Undoing will remove it from the invoice but the Xero invoice needs to be manually updated.\n\nContinue?"
+        );
+        if (!confirmed) return;
+      }
+    }
+
     setIsClaiming(commissionId);
     const { data: { session } } = await supabase.auth.getSession();
-    const commission = commissions.find((c) => c.id === commissionId);
+
+    // Remove from commission invoice first
+    try {
+      await fetch("/api/commission-invoices/undo-claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commission_id: commissionId }),
+      });
+    } catch (e) {
+      console.error("[Unclaim] Failed to undo invoice:", e);
+    }
 
     const { error } = await supabase
       .from("commissions")
@@ -677,16 +709,18 @@ export default function StudentDetailPage() {
         claimed_by: null,
         claimed_at: null,
         claim_date: null,
+        commission_invoice_id: null,
+        commission_invoice_item_id: null,
       })
       .eq("id", commissionId);
 
     if (!error) {
       setCommissions(commissions.map(c =>
         c.id === commissionId
-          ? { ...c, status: "pending", claimed_at: null }
+          ? { ...c, status: "pending", claimed_at: null, commission_invoice_id: null, commission_invoice_item_id: null }
           : c
       ));
-      // Undo 后把学生 status 改回 pending（invoice 已发，只是撤回了 claim）
+      // Undo 后把学生 status 改回 pending
       await supabase.from("students").update({ status: "pending" }).eq("id", id);
       if (student) {
         setStudent({ ...student, status: "pending" });
@@ -699,6 +733,7 @@ export default function StudentDetailPage() {
         });
         await fetchActivityLogs();
       }
+      setMessage({ type: "success", text: "Commission claim undone and removed from invoice." });
     }
     setIsClaiming(null);
   };
