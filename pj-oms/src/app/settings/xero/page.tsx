@@ -24,6 +24,7 @@ function XeroSettingsInner() {
   const [immigrationId, setImmigrationId] = useState("");
   const [internationalId, setInternationalId] = useState("");
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [lastSync, setLastSync] = useState<{ time: string; details: Record<string, unknown> } | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -63,6 +64,16 @@ function XeroSettingsInner() {
           setInternationalId(tenantsData.mapping.international?.tenantId ?? "");
         }
       }
+
+      // Fetch last auto sync log
+      const { data: syncLog } = await supabase
+        .from("activity_logs")
+        .select("created_at, details")
+        .eq("action", "xero_auto_sync")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (syncLog) setLastSync({ time: syncLog.created_at, details: syncLog.details });
     } catch {}
   };
 
@@ -195,6 +206,28 @@ function XeroSettingsInner() {
                   <span className="text-white/50">Commission Invoices (International):</span>
                   <span className="font-medium">{mapping.international.tenantName || "Not mapped"}</span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {connected && (
+            <div className="border-t border-white/10 pt-6">
+              <h3 className="text-lg font-semibold mb-3">Auto Sync</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-white/50">Schedule:</span>
+                  <span>Daily at 18:00 NZST</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/50">Last auto sync:</span>
+                  <span>{lastSync ? new Date(lastSync.time).toLocaleString("en-NZ", { timeZone: "Pacific/Auckland" }) : "Never"}</span>
+                </div>
+                {lastSync?.details && (
+                  <div className="flex justify-between">
+                    <span className="text-white/50">Result:</span>
+                    <span>Checked {String(lastSync.details.total_checked ?? 0)} invoices, {String(lastSync.details.new_payments ?? 0)} payment(s) synced{Array.isArray(lastSync.details.errors) && lastSync.details.errors.length > 0 ? `, ${lastSync.details.errors.length} error(s)` : ""}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
