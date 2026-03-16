@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
 
 type Agent = { id: string; agent_name: string };
+type PendingFile = { file: File; category: "passport" | "visa" | "other" };
 
 const DEPT_LABELS: Record<string, string> = {
   china: "China",
@@ -24,6 +25,27 @@ export default function NewContactPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [isSales, setIsSales] = useState(false);
   const [userDept, setUserDept] = useState("");
+
+  // Passport extraction
+  const [isExtractingPassport, setIsExtractingPassport] = useState(false);
+  const [passportExtraction, setPassportExtraction] = useState<{
+    full_name: string | null; passport_number: string | null; nationality: string | null;
+    date_of_birth: string | null; expiry_date: string | null; gender: string | null;
+  } | null>(null);
+  const [showPassportConfirm, setShowPassportConfirm] = useState(false);
+
+  // Visa extraction
+  const [isExtractingVisa, setIsExtractingVisa] = useState(false);
+  const [visaExtraction, setVisaExtraction] = useState<{
+    visa_type: string | null; visa_expiry_date: string | null; visa_conditions: string | null;
+    visa_number: string | null; entry_permission: string | null;
+  } | null>(null);
+  const [showVisaConfirm, setShowVisaConfirm] = useState(false);
+
+  // Pending files (saved after contact creation)
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const otherFileRef = useRef<HTMLInputElement>(null);
+
   const [form, setForm] = useState({
     // Basic
     first_name: "", last_name: "", gender: "", email: "", secondary_email: "",
@@ -67,6 +89,144 @@ export default function NewContactPage() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
+  // ── Helpers ──
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(",")[1]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // ── Passport extraction ──
+  const handlePassportExtract = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsExtractingPassport(true);
+    try {
+      const base64Data = await readFileAsBase64(file);
+      const isPdf = file.type === "application/pdf";
+      const res = await fetch("/api/extract-passport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base64Data,
+          fileType: isPdf ? "pdf" : "image",
+          mediaType: file.type || (isPdf ? "application/pdf" : "image/jpeg"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Passport extraction failed" }); return; }
+      setPassportExtraction(data);
+      setShowPassportConfirm(true);
+      // Stage file for upload after contact creation
+      setPendingFiles(pf => [...pf.filter(f => f.category !== "passport"), { file, category: "passport" }]);
+    } catch (err) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Passport extraction failed" });
+    } finally {
+      setIsExtractingPassport(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleApplyPassportData = () => {
+    if (!passportExtraction) return;
+    setForm(f => {
+      const updates: Partial<typeof f> = {};
+      if (passportExtraction.passport_number) updates.passport_number = passportExtraction.passport_number;
+      if (passportExtraction.date_of_birth) updates.date_of_birth = passportExtraction.date_of_birth;
+      if (passportExtraction.nationality) updates.nationality = passportExtraction.nationality;
+      if (passportExtraction.expiry_date) updates.passport_expiry_date = passportExtraction.expiry_date;
+      if (passportExtraction.gender) updates.gender = passportExtraction.gender;
+      if (passportExtraction.full_name) {
+        const parts = passportExtraction.full_name.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          updates.last_name = parts[0];
+          updates.first_name = parts.slice(1).join(" ");
+        } else {
+          updates.first_name = passportExtraction.full_name;
+        }
+      }
+      return { ...f, ...updates };
+    });
+    setShowPassportConfirm(false);
+    setPassportExtraction(null);
+    setMessage({ type: "success", text: "Passport data applied to form." });
+  };
+
+  // ── Visa extraction ──
+  const handleVisaExtract = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsExtractingVisa(true);
+    try {
+      const base64Data = await readFileAsBase64(file);
+      const isPdf = file.type === "application/pdf";
+      const res = await fetch("/api/extract-visa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base64Data,
+          fileType: isPdf ? "pdf" : "image",
+          mediaType: file.type || (isPdf ? "application/pdf" : "image/jpeg"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMessage({ type: "error", text: data.error ?? "Visa extraction failed" }); return; }
+      setVisaExtraction(data);
+      setShowVisaConfirm(true);
+      // Stage file for upload after contact creation
+      setPendingFiles(pf => [...pf.filter(f => f.category !== "visa"), { file, category: "visa" }]);
+    } catch (err) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Visa extraction failed" });
+    } finally {
+      setIsExtractingVisa(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleApplyVisaData = () => {
+    if (!visaExtraction) return;
+    setForm(f => {
+      const updates: Partial<typeof f> = {};
+      if (visaExtraction.visa_type) updates.current_visa_type = visaExtraction.visa_type;
+      if (visaExtraction.visa_expiry_date) updates.visa_expiry_date = visaExtraction.visa_expiry_date;
+      return { ...f, ...updates };
+    });
+    setShowVisaConfirm(false);
+    setVisaExtraction(null);
+    setMessage({ type: "success", text: "Visa data applied to form." });
+  };
+
+  // ── Other files ──
+  const handleOtherFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const newFiles: PendingFile[] = Array.from(files).map(f => ({ file: f, category: "other" as const }));
+    setPendingFiles(pf => [...pf, ...newFiles]);
+    setMessage({ type: "success", text: `${files.length} file(s) queued. They will be uploaded when you save.` });
+    e.target.value = "";
+  };
+
+  const removePendingFile = (idx: number) => {
+    setPendingFiles(pf => pf.filter((_, i) => i !== idx));
+  };
+
+  // ── Upload pending files to storage ──
+  const uploadPendingFiles = async (contactId: string) => {
+    for (const pf of pendingFiles) {
+      const fd = new FormData();
+      fd.append("file", pf.file);
+      fd.append("type", "contacts");
+      fd.append("id", contactId);
+      await fetch("/api/upload", { method: "POST", body: fd }).catch(() => {});
+    }
+  };
+
+  // ── Submit ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.first_name.trim() || !form.last_name.trim()) {
@@ -129,6 +289,11 @@ export default function NewContactPage() {
       return;
     }
 
+    // Upload pending files
+    if (pendingFiles.length > 0) {
+      await uploadPendingFiles(data.id);
+    }
+
     await logActivity(supabase, session.user.id, "created_contact", "contacts", data.id, {
       name: `${form.first_name} ${form.last_name}`,
     });
@@ -146,7 +311,7 @@ export default function NewContactPage() {
       <Navbar hasUnsavedChanges />
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <Link href="/contacts" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">← Contacts</Link>
+          <Link href="/contacts" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">&larr; Contacts</Link>
           <h2 className="text-2xl font-bold sm:text-3xl">Add Contact</h2>
         </div>
 
@@ -157,6 +322,52 @@ export default function NewContactPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-0">
+
+          {/* ── Quick Import from Documents ── */}
+          <div className={`${sectionClass} border-dashed border-blue-400/40`}>
+            <div className="flex items-center gap-2 mb-4">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <h3 className="text-base font-bold text-white/90">Quick Import from Documents</h3>
+            </div>
+            <div className="flex flex-wrap gap-3 mb-3">
+              {/* Upload Passport */}
+              <label className={`cursor-pointer inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 transition ${isExtractingPassport ? "opacity-50 pointer-events-none" : ""}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0" /></svg>
+                {isExtractingPassport ? "Extracting..." : "Upload Passport"}
+                <input type="file" accept="image/*,.pdf" className="hidden" onChange={handlePassportExtract} disabled={isExtractingPassport} />
+              </label>
+              {/* Upload Visa */}
+              <label className={`cursor-pointer inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 transition ${isExtractingVisa ? "opacity-50 pointer-events-none" : ""}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                {isExtractingVisa ? "Extracting..." : "Upload Visa"}
+                <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleVisaExtract} disabled={isExtractingVisa} />
+              </label>
+              {/* Upload Other */}
+              <button type="button" onClick={() => otherFileRef.current?.click()} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2.5 text-sm font-bold text-white/70 hover:bg-white/10 transition">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                Upload Other
+              </button>
+              <input ref={otherFileRef} type="file" multiple className="hidden" onChange={handleOtherFiles} />
+            </div>
+            <p className="text-xs text-white/40">Upload passport or visa to auto-extract information. All files will be saved as attachments.</p>
+
+            {/* Pending files list */}
+            {pendingFiles.length > 0 && (
+              <div className="mt-3 space-y-1">
+                {pendingFiles.map((pf, idx) => (
+                  <div key={idx} className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-sm">
+                    <span className={`text-xs font-bold uppercase px-1.5 py-0.5 rounded ${
+                      pf.category === "passport" ? "bg-blue-500/20 text-blue-400" :
+                      pf.category === "visa" ? "bg-emerald-500/20 text-emerald-400" :
+                      "bg-gray-500/20 text-gray-400"
+                    }`}>{pf.category}</span>
+                    <span className="text-white/70 truncate flex-1">{pf.file.name}</span>
+                    <button type="button" onClick={() => removePendingFile(idx)} className="text-white/30 hover:text-red-400 text-xs">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Basic Information */}
           <div className={sectionClass}>
@@ -305,7 +516,19 @@ export default function NewContactPage() {
 
           {/* Visa & Passport */}
           <div className={sectionClass}>
-            <h3 className={sectionTitle}>Visa & Passport</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-white/90">Visa & Passport</h3>
+              <div className="flex gap-2">
+                <label className={`cursor-pointer rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 ${isExtractingPassport ? "opacity-50 pointer-events-none" : ""}`}>
+                  {isExtractingPassport ? "Extracting..." : "Extract from Passport"}
+                  <input type="file" accept="image/*,.pdf" className="hidden" onChange={handlePassportExtract} disabled={isExtractingPassport} />
+                </label>
+                <label className={`cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 ${isExtractingVisa ? "opacity-50 pointer-events-none" : ""}`}>
+                  {isExtractingVisa ? "Extracting..." : "Extract from Visa"}
+                  <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleVisaExtract} disabled={isExtractingVisa} />
+                </label>
+              </div>
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>Current Visa Type</label>
@@ -375,13 +598,90 @@ export default function NewContactPage() {
 
           <div className="flex gap-3">
             <button type="submit" disabled={isSaving} className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50">
-              {isSaving ? "Saving..." : "Save Contact"}
+              {isSaving ? (pendingFiles.length > 0 ? "Saving & Uploading..." : "Saving...") : "Save Contact"}
             </button>
             <button type="button" onClick={() => router.push("/contacts")} className="rounded-lg border border-white/20 px-6 py-3 font-bold hover:bg-white/10">
               Cancel
             </button>
           </div>
         </form>
+
+        {/* Passport Extraction Confirm Modal */}
+        {showPassportConfirm && passportExtraction && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6">
+              <h4 className="text-lg font-bold mb-4">Passport Data Extracted</h4>
+              <p className="text-sm text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
+              <div className="space-y-2 mb-5">
+                {([
+                  ["Full Name", passportExtraction.full_name, `${form.first_name} ${form.last_name}`.trim()],
+                  ["Passport Number", passportExtraction.passport_number, form.passport_number],
+                  ["Nationality", passportExtraction.nationality, form.nationality],
+                  ["Date of Birth", passportExtraction.date_of_birth, form.date_of_birth],
+                  ["Passport Expiry", passportExtraction.expiry_date, form.passport_expiry_date],
+                  ["Gender", passportExtraction.gender, form.gender],
+                ] as [string, string | null, string][]).map(([label, extracted, current]) => (
+                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm">
+                    <span className="text-white/50">{label}</span>
+                    <span className="text-green-400">{extracted ?? "\u2014"}</span>
+                    <span className="text-white/40">{current || "\u2014"}</span>
+                  </div>
+                ))}
+                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-white/30">
+                  <span>Field</span>
+                  <span>Extracted</span>
+                  <span>Current</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleApplyPassportData} className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700">
+                  Apply
+                </button>
+                <button onClick={() => { setShowPassportConfirm(false); setPassportExtraction(null); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Visa Extraction Confirm Modal */}
+        {showVisaConfirm && visaExtraction && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6">
+              <h4 className="text-lg font-bold mb-4">Visa Data Extracted</h4>
+              <p className="text-sm text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
+              <div className="space-y-2 mb-5">
+                {([
+                  ["Visa Type", visaExtraction.visa_type, form.current_visa_type],
+                  ["Visa Expiry", visaExtraction.visa_expiry_date, form.visa_expiry_date],
+                  ["Conditions", visaExtraction.visa_conditions, null],
+                  ["Visa Number", visaExtraction.visa_number, null],
+                  ["Entry Permission", visaExtraction.entry_permission, null],
+                ] as [string, string | null, string | null][]).map(([label, extracted, current]) => (
+                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm">
+                    <span className="text-white/50">{label}</span>
+                    <span className="text-green-400">{extracted ?? "\u2014"}</span>
+                    <span className="text-white/40">{current || "\u2014"}</span>
+                  </div>
+                ))}
+                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-white/30">
+                  <span>Field</span>
+                  <span>Extracted</span>
+                  <span>Current</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleApplyVisaData} className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-700">
+                  Apply
+                </button>
+                <button onClick={() => { setShowVisaConfirm(false); setVisaExtraction(null); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
