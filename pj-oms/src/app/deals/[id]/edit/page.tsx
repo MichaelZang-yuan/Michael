@@ -84,6 +84,8 @@ export default function EditDealPage() {
   const [agentResults, setAgentResults] = useState<AgentOption[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | null>(null);
 
+  const [copywriterUsers, setCopywriterUsers] = useState<SalesUser[]>([]);
+
   const [form, setForm] = useState({
     deal_type: "individual_visa",
     visa_type: "",
@@ -94,6 +96,7 @@ export default function EditDealPage() {
     refund_percentage: "50",
     assigned_sales_id: "",
     assigned_lia_id: "",
+    assigned_copywriter_id: "",
   });
 
   const [paymentStages, setPaymentStages] = useState<StageRow[]>([newStageRow()]);
@@ -167,6 +170,10 @@ export default function EditDealPage() {
 
       if (salesData) setSalesUsers(salesData as SalesUser[]);
 
+      // Fetch copywriter users
+      const { data: cwData } = await supabase.from("profiles").select("id, full_name").overlaps("roles", ["copywriter"]).order("full_name");
+      if (cwData) setCopywriterUsers(cwData as SalesUser[]);
+
       // Fetch price list service names for visa type options
       const { data: plData } = await supabase
         .from("service_price_list")
@@ -197,6 +204,7 @@ export default function EditDealPage() {
         refund_percentage: dealData.refund_percentage != null ? String(dealData.refund_percentage) : "50",
         assigned_sales_id: dealData.assigned_sales_id ?? "",
         assigned_lia_id: dealData.assigned_lia_id ?? "",
+        assigned_copywriter_id: dealData.assigned_copywriter_id ?? "",
       });
 
       // Load payment stages from DB
@@ -264,6 +272,7 @@ export default function EditDealPage() {
       department: form.department || null,
       assigned_sales_id: form.assigned_sales_id || null,
       assigned_lia_id: form.assigned_lia_id || null,
+      assigned_copywriter_id: form.assigned_copywriter_id || null,
       agent_id: selectedAgent?.id ?? null,
       preferred_language: form.preferred_language || "en",
       refund_percentage: form.refund_percentage ? parseInt(form.refund_percentage) : 50,
@@ -598,7 +607,7 @@ export default function EditDealPage() {
           {/* Assignment */}
           <div className={sectionClass}>
             <h3 className="text-base font-bold mb-4">Assignment</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className={labelClass}>Assigned Sales</label>
                 <select name="assigned_sales_id" value={form.assigned_sales_id} onChange={handleChange} className={selectClass}>
@@ -611,6 +620,13 @@ export default function EditDealPage() {
                 <select name="assigned_lia_id" value={form.assigned_lia_id} onChange={handleChange} className={selectClass}>
                   <option value="" className="bg-blue-900">— None —</option>
                   {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Assigned Copywriter</label>
+                <select name="assigned_copywriter_id" value={form.assigned_copywriter_id} onChange={handleChange} className={selectClass}>
+                  <option value="" className="bg-blue-900">— None —</option>
+                  {copywriterUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
                 </select>
               </div>
             </div>

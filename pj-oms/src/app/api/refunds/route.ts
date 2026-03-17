@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { notifyAllAdmins } from "@/lib/notifications";
 
 function getSupabase() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -51,6 +52,17 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Notify all admins about the new refund request
+  notifyAllAdmins({
+    supabase,
+    title: "New Refund Request",
+    message: `New refund request for ${deal_number || "deal"}: $${calculated_refund?.toLocaleString() ?? total_paid?.toLocaleString() ?? "0"}`,
+    type: "refund_request",
+    dealId: deal_id,
+    link: "/finance/refunds",
+  }).catch(e => console.warn("[notifications] refund_request:", e));
+
   return NextResponse.json({ ok: true, refund: data });
 }
 

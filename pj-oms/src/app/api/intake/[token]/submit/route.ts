@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { notifyDealTeam } from "@/lib/notifications";
 
 function getAdminClient() {
   return createClient(
@@ -108,6 +109,26 @@ export async function POST(
       }
     } catch {
       // Non-critical — don't fail the submission
+    }
+
+    // System notifications for Sales + Copywriter + LIA
+    try {
+      const { data: dealInfo } = await supabase
+        .from("deals")
+        .select("deal_number")
+        .eq("id", form.deal_id)
+        .single();
+
+      await notifyDealTeam({
+        supabase,
+        dealId: form.deal_id,
+        title: "Intake Form Completed",
+        message: `Intake form completed for ${dealInfo?.deal_number ?? "deal"}${clientName ? ` by ${clientName}` : ""}.`,
+        type: "intake_completed",
+        roles: ["sales", "lia", "copywriter"],
+      });
+    } catch {
+      // Non-critical
     }
   }
 

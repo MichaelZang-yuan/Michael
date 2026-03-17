@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { generateAndUploadContractPdf } from "@/lib/contractPdf";
+import { notifyDealTeam } from "@/lib/notifications";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -99,6 +100,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       contract.deal_id,
       `${dealNumber}-Contract-Fully-Signed.pdf`
     ).catch(e => console.error("[contractPdf] client-sign background:", e));
+
+    // Notify Sales + Copywriter that contract was signed
+    const { data: dealInfo } = await supabase
+      .from("deals")
+      .select("contacts(first_name, last_name), companies(company_name)")
+      .eq("id", contract.deal_id)
+      .single();
+    const contact = dealInfo?.contacts as unknown as { first_name: string; last_name: string } | null;
+    const company = dealInfo?.companies as unknown as { company_name: string } | null;
+    const clientName = contact ? `${contact.first_name} ${contact.last_name}` : company?.company_name ?? "Client";
+
+    notifyDealTeam({
+      supabase,
+      dealId: contract.deal_id,
+      title: "Contract Signed",
+      message: `Contract signed by ${clientName} for ${dealNumber}.`,
+      type: "contract_signed",
+      roles: ["sales", "copywriter"],
+    }).catch(e => console.warn("[notifications] contract_signed:", e));
 
     return NextResponse.json({ ok: true });
   } catch (e) {

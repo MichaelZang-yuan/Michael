@@ -19,10 +19,25 @@ type Deal = {
   created_at: string;
   contact_id: string | null;
   company_id: string | null;
+  visa_result_status: string | null;
   contacts: { first_name: string; last_name: string } | null;
   companies: { company_name: string } | null;
   sales: { full_name: string | null } | null;
   lia: { full_name: string | null } | null;
+};
+
+const VISA_RESULT_COLORS: Record<string, string> = {
+  approved: "bg-green-500/20 text-green-400",
+  declined: "bg-red-500/20 text-red-400",
+  aip: "bg-blue-500/20 text-blue-400",
+  rfi_ppi: "bg-orange-500/20 text-orange-400",
+};
+
+const VISA_RESULT_LABELS: Record<string, string> = {
+  approved: "Approved",
+  declined: "Declined",
+  aip: "AIP",
+  rfi_ppi: "RFI/PPI",
 };
 
 const DEPT_LABELS: Record<string, string> = {
@@ -83,7 +98,7 @@ export default function DealsPage() {
 
       let query = supabase
         .from("deals")
-        .select("id, deal_number, deal_type, visa_type, status, total_amount, payment_status, department, created_at, contact_id, company_id, contacts(first_name, last_name), companies(company_name), sales:profiles!deals_assigned_sales_id_fkey(full_name), lia:profiles!deals_assigned_lia_id_fkey(full_name)")
+        .select("id, deal_number, deal_type, visa_type, status, total_amount, payment_status, department, created_at, contact_id, company_id, visa_result_status, contacts(first_name, last_name), companies(company_name), sales:profiles!deals_assigned_sales_id_fkey(full_name), lia:profiles!deals_assigned_lia_id_fkey(full_name)")
         .order("created_at", { ascending: false });
 
       if (!admin && profileData?.department) query = query.eq("department", profileData.department);
@@ -216,6 +231,7 @@ export default function DealsPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Payment</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Visa</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Sales</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">LIA</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Created</th>
@@ -254,6 +270,17 @@ export default function DealsPage() {
                           <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${PAYMENT_STATUS_COLORS[d.payment_status] ?? "bg-gray-500/20 text-gray-400"}`}>
                             {d.payment_status}
                           </span>
+                        </Link>
+                      </td>
+                      <td className="p-0">
+                        <Link href={href} className="block px-4 py-3">
+                          {d.visa_result_status ? (
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${VISA_RESULT_COLORS[d.visa_result_status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                              {VISA_RESULT_LABELS[d.visa_result_status] ?? d.visa_result_status}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-white/30">—</span>
+                          )}
                         </Link>
                       </td>
                       <td className="p-0">

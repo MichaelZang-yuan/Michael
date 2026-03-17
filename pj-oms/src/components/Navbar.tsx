@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { hasRole, hasAnyRole, formatRoles } from "@/lib/roles";
+import { Bell } from "lucide-react";
 
 const DEPT_LABELS: Record<string, string> = {
   china: "China",
@@ -66,6 +67,21 @@ const SETTINGS_LINKS = [
   { href: "/users", label: "Users" },
 ];
 
+function formatTimeAgo(dateStr: string): string {
+  const now = Date.now();
+  const d = new Date(dateStr).getTime();
+  const diffMs = now - d;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
 export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -75,24 +91,61 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [financeOpen, setFinanceOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
+  const [notifications, setNotifications] = useState<{
+    id: string; title: string; message: string; type: string;
+    link: string | null; is_read: boolean; created_at: string;
+  }[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const commissionRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const reportsRef = useRef<HTMLDivElement>(null);
   const financeRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const fetchNotifCount = useCallback(async (uid: string) => {
+    try {
+      const res = await fetch(`/api/notifications/count?user_id=${uid}`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotifCount(data.count ?? 0);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const fetchNotifications = useCallback(async (uid: string) => {
+    try {
+      const res = await fetch(`/api/notifications?user_id=${uid}&limit=10`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications ?? []);
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     async function loadProfile() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+      setUserId(session.user.id);
       const { data } = await supabase
         .from("profiles")
         .select("full_name, role, roles, department")
         .eq("id", session.user.id)
         .single();
       if (data) setProfile(data);
+      fetchNotifCount(session.user.id);
     }
     loadProfile();
-  }, []);
+  }, [fetchNotifCount]);
+
+  // Poll unread count every 30s
+  useEffect(() => {
+    if (!userId) return;
+    const interval = setInterval(() => fetchNotifCount(userId), 30000);
+    return () => clearInterval(interval);
+  }, [userId, fetchNotifCount]);
 
   // Close dropdowns when clicking outside
   const handleClickOutside = useCallback((e: MouseEvent) => {
@@ -100,6 +153,7 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
     if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) setSettingsOpen(false);
     if (reportsRef.current && !reportsRef.current.contains(e.target as Node)) setReportsOpen(false);
     if (financeRef.current && !financeRef.current.contains(e.target as Node)) setFinanceOpen(false);
+    if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
   }, []);
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -117,6 +171,7 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
     setSettingsOpen(false);
     setReportsOpen(false);
     setFinanceOpen(false);
+    setNotifOpen(false);
   };
 
   const handleSignOut = async () => {
@@ -354,6 +409,99 @@ export default function Navbar({ hasUnsavedChanges = false }: NavbarProps) {
               {profile.department && ` · ${DEPT_LABELS[profile.department] ?? profile.department}`}
             </span>
           )}
+
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => {
+                const opening = !notifOpen;
+                setNotifOpen(opening);
+                if (opening && userId) fetchNotifications(userId);
+              }}
+              className="relative rounded-lg p-2 hover:bg-white/10 transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5 text-white/70" />
+              {notifCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {notifCount > 99 ? "99+" : notifCount}
+                </span>
+              )}
+            </button>
+
+            {notifOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-xl border border-white/10 bg-blue-900 shadow-2xl z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                  <h4 className="text-sm font-bold text-white">Notifications</h4>
+                  {notifCount > 0 && (
+                    <button
+                      onClick={async () => {
+                        if (!userId) return;
+                        await fetch("/api/notifications/read-all", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ user_id: userId }),
+                        });
+                        setNotifCount(0);
+                        setNotifications(n => n.map(x => ({ ...x, is_read: true })));
+                      }}
+                      className="text-xs text-blue-400 hover:text-blue-300"
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-[400px] overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <p className="px-4 py-8 text-center text-sm text-white/40">No notifications</p>
+                  ) : (
+                    notifications.map(n => (
+                      <button
+                        key={n.id}
+                        onClick={async () => {
+                          if (!n.is_read) {
+                            await fetch(`/api/notifications/${n.id}/read`, { method: "PUT" });
+                            setNotifCount(c => Math.max(0, c - 1));
+                            setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
+                          }
+                          setNotifOpen(false);
+                          if (n.link) router.push(n.link);
+                        }}
+                        className={`w-full text-left px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors flex gap-3 ${
+                          !n.is_read ? "border-l-2 border-l-blue-400" : "border-l-2 border-l-transparent"
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-semibold truncate ${!n.is_read ? "text-white" : "text-white/70"}`}>
+                            {n.title}
+                          </p>
+                          <p className="text-xs text-white/50 mt-0.5 line-clamp-2">
+                            {n.message}
+                          </p>
+                          <p className="text-xs text-white/30 mt-1">
+                            {formatTimeAgo(n.created_at)}
+                          </p>
+                        </div>
+                        {!n.is_read && (
+                          <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-1.5" />
+                        )}
+                      </button>
+                    ))
+                  )}
+                </div>
+                <div className="px-4 py-2.5 border-t border-white/10">
+                  <Link
+                    href="/notifications"
+                    onClick={(e) => { handleNavClick(e, "/notifications"); setNotifOpen(false); }}
+                    className="block text-center text-xs text-blue-400 hover:text-blue-300 font-medium"
+                  >
+                    View All Notifications
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Link
             href="/profile"
             onClick={(e) => handleNavClick(e, "/profile")}

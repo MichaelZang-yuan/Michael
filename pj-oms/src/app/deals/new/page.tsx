@@ -106,6 +106,8 @@ function NewDealPage() {
   // Assignment
   const [liaUsers, setLiaUsers] = useState<SalesUser[]>([]);
   const [assignedLiaId, setAssignedLiaId] = useState("");
+  const [copywriterUsers, setCopywriterUsers] = useState<SalesUser[]>([]);
+  const [assignedCopywriterId, setAssignedCopywriterId] = useState("");
 
   const [form, setForm] = useState({
     deal_type: "individual_visa",
@@ -207,6 +209,10 @@ function NewDealPage() {
       // Fetch LIA-eligible users
       const { data: liaData } = await supabase.from("profiles").select("id, full_name").overlaps("roles", ["admin", "sales", "lia"]).order("full_name");
       if (liaData) setLiaUsers(liaData as SalesUser[]);
+
+      // Fetch copywriter-eligible users
+      const { data: cwData } = await supabase.from("profiles").select("id, full_name").overlaps("roles", ["copywriter"]).order("full_name");
+      if (cwData) setCopywriterUsers(cwData as SalesUser[]);
 
       // Fetch price list service names for visa type options
       const { data: plData } = await supabase
@@ -320,6 +326,7 @@ function NewDealPage() {
       payment_status: "unpaid",
       assigned_sales_id: userId,
       assigned_lia_id: assignedLiaId || null,
+      assigned_copywriter_id: assignedCopywriterId || null,
       department: dept,
       notes: form.notes.trim() || null,
       created_by: userId,
@@ -385,6 +392,27 @@ function NewDealPage() {
       deal_number: dealNumber,
       deal_type: form.deal_type,
     });
+
+    // If LIA is assigned, auto-send approval request
+    if (assignedLiaId) {
+      try {
+        await fetch("/api/deal-approvals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            deal_id: dealData.id,
+            requested_by: userId,
+            assigned_to: assignedLiaId,
+          }),
+        });
+        const liaName = liaUsers.find(u => u.id === assignedLiaId)?.full_name ?? "LIA";
+        setMessage({ type: "success", text: `Deal created. Approval request sent to ${liaName}.` });
+        // Brief delay so user sees the success message
+        await new Promise(r => setTimeout(r, 1500));
+      } catch {
+        // Non-blocking: deal was created, approval just failed to send
+      }
+    }
 
     router.push(`/deals/${dealData.id}`);
   };
@@ -720,12 +748,24 @@ function NewDealPage() {
           {/* Assignment */}
           <div className={sectionClass}>
             <h3 className="text-base font-bold mb-4">Assignment</h3>
-            <div>
-              <label className={labelClass}>Assigned LIA</label>
-              <select value={assignedLiaId} onChange={e => setAssignedLiaId(e.target.value)} className={`${selectClass} max-w-xs`}>
-                <option value="" className="bg-blue-900">— None —</option>
-                {liaUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
-              </select>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={labelClass}>Assigned LIA</label>
+                <select value={assignedLiaId} onChange={e => setAssignedLiaId(e.target.value)} className={`${selectClass} max-w-xs`}>
+                  <option value="" className="bg-blue-900">— None —</option>
+                  {liaUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                </select>
+                {assignedLiaId && (
+                  <p className="mt-1 text-xs text-blue-400">An approval request will be sent to this LIA after deal creation.</p>
+                )}
+              </div>
+              <div>
+                <label className={labelClass}>Assigned Copywriter (Optional)</label>
+                <select value={assignedCopywriterId} onChange={e => setAssignedCopywriterId(e.target.value)} className={`${selectClass} max-w-xs`}>
+                  <option value="" className="bg-blue-900">— None —</option>
+                  {copywriterUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 

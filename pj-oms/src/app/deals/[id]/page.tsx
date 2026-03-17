@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { hasRole, hasAnyRole } from "@/lib/roles";
 import Navbar from "@/components/Navbar";
 import { logActivity } from "@/lib/activityLog";
+import confetti from "canvas-confetti";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -426,6 +427,39 @@ export default function DealDetailPage() {
   const [foreignNotes, setForeignNotes] = useState("");
   const [isRecordingForeign, setIsRecordingForeign] = useState(false);
 
+  // Deal approval state
+  type DealApproval = {
+    id: string;
+    status: string;
+    requested_by: string;
+    assigned_to: string;
+    decline_reason: string | null;
+    lia_notes: string | null;
+    requested_at: string;
+    reviewed_at: string | null;
+  };
+  const [dealApproval, setDealApproval] = useState<DealApproval | null>(null);
+  const [approvalStatus, setApprovalStatus] = useState<string>("none");
+  const [isApproving, setIsApproving] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
+  const [declineReason, setDeclineReasonInput] = useState("");
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [autoSendResults, setAutoSendResults] = useState<{ step: string; success: boolean; error?: string }[] | null>(null);
+  const [isResubmitting, setIsResubmitting] = useState(false);
+  const [copywriterName, setCopywriterName] = useState("");
+
+  // Visa submission state
+  const [showVisaSubmitConfirm, setShowVisaSubmitConfirm] = useState(false);
+  const [isSubmittingVisa, setIsSubmittingVisa] = useState(false);
+  const [visaSubmittedAt, setVisaSubmittedAt] = useState<string | null>(null);
+
+  // Visa result state
+  const [visaResultStatus, setVisaResultStatus] = useState<string>("");
+  const [visaResultNotes, setVisaResultNotes] = useState("");
+  const [visaResultFiles, setVisaResultFiles] = useState<File[]>([]);
+  const [isSavingVisaResult, setIsSavingVisaResult] = useState(false);
+  const [isUploadingVisaFiles, setIsUploadingVisaFiles] = useState(false);
+
   // School application state (Myanmar)
   const [schoolsList, setSchoolsList] = useState<{ id: string; name: string }[]>([]);
   const [schoolAppForm, setSchoolAppForm] = useState({
@@ -462,7 +496,15 @@ export default function DealDetailPage() {
   const activeWorkflowSteps = isMyanmar ? MYANMAR_WORKFLOW_STEPS : WORKFLOW_STEPS;
   const isTerminal = ["approved", "declined", "completed", "cancelled", "education_only"].includes(currentStatus);
   const isAdmin = hasRole(profile, "admin");
-  const canChangeStatus = isAdmin || (deal?.assigned_lia_id === profile?.id);
+  const isLia = hasRole(profile, "lia") || (deal?.assigned_lia_id === profile?.id);
+  const canChangeStatus = isAdmin || isLia;
+  const isAssignedLia = deal?.assigned_lia_id === profile?.id;
+  const isPendingApproval = approvalStatus === "pending_approval";
+  const isDeclinedApproval = approvalStatus === "declined";
+  const canApprove = (isAssignedLia || isAdmin) && isPendingApproval;
+  const canVisaSubmit = (isLia || isAdmin) && currentStatus === "in_progress" && !visaSubmittedAt;
+  const showVisaResult = ["submitted", "approved", "declined", "completed"].includes(currentStatus);
+  const canEditVisaResult = isLia || isAdmin;
 
   const clientName = deal?.contacts
     ? `${deal.contacts.first_name} ${deal.contacts.last_name}`
@@ -662,6 +704,28 @@ export default function DealDetailPage() {
       };
       setForm(lf);
 
+      // Set approval and visa state from deal
+      setApprovalStatus(dealData.approval_status ?? "none");
+      setVisaSubmittedAt(dealData.visa_submitted_at ?? null);
+      setVisaResultStatus(dealData.visa_result_status ?? "");
+      setVisaResultNotes(dealData.visa_result_notes ?? "");
+
+      // Fetch deal approval (latest pending or most recent)
+      const { data: approvalData } = await supabase
+        .from("deal_approvals")
+        .select("id, status, requested_by, assigned_to, decline_reason, lia_notes, requested_at, reviewed_at")
+        .eq("deal_id", id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (approvalData) setDealApproval(approvalData as DealApproval);
+
+      // Fetch copywriter name
+      if (dealData.assigned_copywriter_id) {
+        const { data: cwProfile } = await supabase.from("profiles").select("full_name").eq("id", dealData.assigned_copywriter_id).single();
+        if (cwProfile) setCopywriterName(cwProfile.full_name ?? "");
+      }
+
       // Fetch agent name if deal has an agent
       if (dealData.agent_id) {
         const { data: agentData } = await supabase.from("agents").select("agent_name").eq("id", dealData.agent_id).single();
@@ -714,6 +778,232 @@ export default function DealDetailPage() {
   };
 
   const requestEmailConfirm = (config: EmailConfirm) => setEmailConfirm(config);
+
+  // ─── Confetti helper ───────────────────────────────────────────────────────
+
+  const triggerConfetti = () => {
+    confetti({ particleCount: 200, spread: 160, origin: { y: 0.3 }, colors: ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff"] });
+    const duration = 3000;
+    const end = Date.now() + duration;
+    const interval = setInterval(() => {
+      if (Date.now() > end) return clearInterval(interval);
+      confetti({ particleCount: 50, spread: 120, origin: { x: Math.random(), y: Math.random() * 0.5 } });
+    }, 200);
+  };
+
+  // ─── Deal Approval handlers ────────────────────────────────────────────────
+
+  const handleApprove = async () => {
+    if (!dealApproval || !profile) return;
+    setIsApproving(true);
+    try {
+      const res = await fetch(`/api/deal-approvals/${dealApproval.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve", reviewed_by: profile.id }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setApprovalStatus("approved");
+        setDealApproval(a => a ? { ...a, status: "approved" } : a);
+        setAutoSendResults(data.auto_send ?? null);
+        setMessage({ type: "success", text: "Deal approved! Auto-sending invoice and contract..." });
+        await fetchLogs();
+        await fetchContract();
+        await fetchInvoices();
+      } else {
+        const err = await res.json().catch(() => ({ error: "Failed" }));
+        setMessage({ type: "error", text: err.error ?? "Failed to approve" });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Network error approving deal" });
+    }
+    setIsApproving(false);
+  };
+
+  const handleDecline = async () => {
+    if (!dealApproval || !profile || !declineReason.trim()) return;
+    setIsDeclining(true);
+    try {
+      const res = await fetch(`/api/deal-approvals/${dealApproval.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "decline", reviewed_by: profile.id, decline_reason: declineReason.trim() }),
+      });
+      if (res.ok) {
+        setApprovalStatus("declined");
+        setDealApproval(a => a ? { ...a, status: "declined", decline_reason: declineReason.trim() } : a);
+        setShowDeclineModal(false);
+        setDeclineReasonInput("");
+        setMessage({ type: "success", text: "Deal declined." });
+        await fetchLogs();
+      } else {
+        const err = await res.json().catch(() => ({ error: "Failed" }));
+        setMessage({ type: "error", text: err.error ?? "Failed to decline" });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Network error declining deal" });
+    }
+    setIsDeclining(false);
+  };
+
+  const handleResubmit = async () => {
+    if (!dealApproval || !profile) return;
+    setIsResubmitting(true);
+    try {
+      const res = await fetch(`/api/deal-approvals/${dealApproval.id}/resubmit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requested_by: profile.id }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setApprovalStatus("pending_approval");
+        setDealApproval(data.approval as DealApproval);
+        setMessage({ type: "success", text: "Deal resubmitted for approval." });
+        await fetchLogs();
+      } else {
+        const err = await res.json().catch(() => ({ error: "Failed" }));
+        setMessage({ type: "error", text: err.error ?? "Failed to resubmit" });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Network error resubmitting" });
+    }
+    setIsResubmitting(false);
+  };
+
+  // ─── Visa Submission handler ───────────────────────────────────────────────
+
+  const handleVisaSubmit = async () => {
+    if (!profile) return;
+    setIsSubmittingVisa(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("deals").update({
+      status: "submitted",
+      submitted_date: now.split("T")[0],
+      visa_submitted_at: now,
+      visa_submitted_by: session.user.id,
+    }).eq("id", id);
+
+    if (error) {
+      setMessage({ type: "error", text: error.message });
+    } else {
+      setDeal(d => d ? { ...d, status: "submitted" } : d);
+      setVisaSubmittedAt(now);
+      setForm(f => ({ ...f, submitted_date: now.split("T")[0] }));
+      setMessage({ type: "success", text: "Visa marked as submitted!" });
+      triggerConfetti();
+
+      // Notify Sales and Copywriter
+      const { data: dealData } = await supabase.from("deals").select("assigned_sales_id, assigned_copywriter_id, deal_number").eq("id", id).single();
+      const notifyUsers = [dealData?.assigned_sales_id, dealData?.assigned_copywriter_id].filter(Boolean);
+      for (const uid of notifyUsers) {
+        if (uid && uid !== session.user.id) {
+          await supabase.from("notifications").insert({
+            user_id: uid,
+            title: "Visa Submitted!",
+            message: `Visa for ${clientName} (${dealData?.deal_number ?? ""}) has been submitted! 🎉`,
+            type: "visa_submitted",
+            deal_id: id,
+            link: `/deals/${id}`,
+          });
+        }
+      }
+
+      await logActivity(supabase, session.user.id, "visa_submitted", "deals", id, { deal_number: deal?.deal_number, client_name: clientName });
+      await fetchLogs();
+    }
+    setIsSubmittingVisa(false);
+    setShowVisaSubmitConfirm(false);
+  };
+
+  // ─── Visa Result handler ───────────────────────────────────────────────────
+
+  const handleSaveVisaResult = async () => {
+    if (!profile || !visaResultStatus) return;
+    setIsSavingVisaResult(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    // Upload files if any
+    if (visaResultFiles.length > 0) {
+      setIsUploadingVisaFiles(true);
+      for (const file of visaResultFiles) {
+        const ts = Date.now();
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `deals/${id}/visa-result/${ts}-${safeName}`;
+        await supabase.storage.from("attachments").upload(path, file);
+      }
+      setIsUploadingVisaFiles(false);
+      setVisaResultFiles([]);
+    }
+
+    const now = new Date().toISOString();
+    const updates: Record<string, unknown> = {
+      visa_result_status: visaResultStatus,
+      visa_result_notes: visaResultNotes.trim() || null,
+      visa_result_updated_at: now,
+      visa_result_updated_by: session.user.id,
+    };
+
+    // Advance workflow based on result
+    if (visaResultStatus === "approved") {
+      updates.status = "approved";
+      updates.approved_date = now.split("T")[0];
+    } else if (visaResultStatus === "declined") {
+      updates.status = "declined";
+      updates.declined_date = now.split("T")[0];
+    }
+
+    const { error } = await supabase.from("deals").update(updates).eq("id", id);
+
+    if (error) {
+      setMessage({ type: "error", text: error.message });
+    } else {
+      if (visaResultStatus === "approved" || visaResultStatus === "declined") {
+        setDeal(d => d ? { ...d, status: updates.status as string } : d);
+      }
+
+      setMessage({ type: "success", text: `Visa result saved: ${visaResultStatus.toUpperCase()}` });
+
+      if (visaResultStatus === "approved") {
+        triggerConfetti();
+      }
+
+      // Notify Sales and Copywriter
+      const { data: dealData } = await supabase.from("deals").select("assigned_sales_id, assigned_copywriter_id, deal_number").eq("id", id).single();
+      const notifyUsers = [dealData?.assigned_sales_id, dealData?.assigned_copywriter_id].filter(Boolean);
+      const statusLabels: Record<string, string> = {
+        approved: "APPROVED! 🎉",
+        declined: "declined.",
+        aip: "Approved in Principle (AIP).",
+        rfi_ppi: "received RFI/PPI.",
+      };
+      for (const uid of notifyUsers) {
+        if (uid && uid !== session.user.id) {
+          await supabase.from("notifications").insert({
+            user_id: uid,
+            title: `Visa Result: ${visaResultStatus.toUpperCase()}`,
+            message: `Visa for ${clientName} (${dealData?.deal_number ?? ""}) has been ${statusLabels[visaResultStatus] ?? visaResultStatus}`,
+            type: "visa_result",
+            deal_id: id,
+            link: `/deals/${id}`,
+          });
+        }
+      }
+
+      await logActivity(supabase, session.user.id, "visa_result_updated", "deals", id, {
+        deal_number: deal?.deal_number,
+        visa_result_status: visaResultStatus,
+      });
+      await fetchLogs();
+      await fetchAttachments();
+    }
+    setIsSavingVisaResult(false);
+  };
 
   // ─── Placeholder helpers ──────────────────────────────────────────────────
 
@@ -1511,6 +1801,16 @@ export default function DealDetailPage() {
             <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-white/50">
               {form.assigned_sales_id && <span>Sales: {salesUsers.find(s => s.id === form.assigned_sales_id)?.full_name ?? "—"}</span>}
               {form.assigned_lia_id && <span>LIA: {salesUsers.find(s => s.id === form.assigned_lia_id)?.full_name ?? "—"}</span>}
+              {copywriterName && <span>Copywriter: {copywriterName}</span>}
+              {approvalStatus !== "none" && (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                  approvalStatus === "approved" ? "bg-green-500/20 text-green-400" :
+                  approvalStatus === "declined" ? "bg-red-500/20 text-red-400" :
+                  "bg-yellow-500/20 text-yellow-400"
+                }`}>
+                  {approvalStatus === "pending_approval" ? "Pending Approval" : approvalStatus.charAt(0).toUpperCase() + approvalStatus.slice(1)}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
@@ -1529,6 +1829,98 @@ export default function DealDetailPage() {
           <div className={`mb-6 rounded-lg px-4 py-3 flex items-center justify-between ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
             <span>{message.text}</span>
             <button type="button" onClick={() => setMessage(null)} className="ml-3 text-white/50 hover:text-white text-lg leading-none">&times;</button>
+          </div>
+        )}
+
+        {/* ── Approval Banner ─────────────────────────────────────────────── */}
+        {canApprove && (
+          <div className="mb-6 rounded-xl border border-blue-400/30 bg-blue-600/10 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-blue-300">This deal is pending your approval</h3>
+              <div className="flex gap-2">
+                <button onClick={handleApprove} disabled={isApproving} className="rounded-lg bg-green-600 px-5 py-2.5 font-bold text-white hover:bg-green-700 disabled:opacity-50 text-sm">
+                  {isApproving ? "Approving..." : "Approve"}
+                </button>
+                <button onClick={() => setShowDeclineModal(true)} className="rounded-lg bg-red-600 px-5 py-2.5 font-bold text-white hover:bg-red-700 text-sm">
+                  Decline
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-white/60 mb-3">Review the following information before approving:</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div className="flex items-center gap-2 text-sm">
+                <span>{(deal?.contacts || deal?.companies) ? "✅" : "❌"}</span>
+                <span className="text-white/70">Contact/Company</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span>{form.visa_type ? "✅" : "❌"}</span>
+                <span className="text-white/70">Visa/Service Type</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span>{payments.length > 0 ? "✅" : "❌"}</span>
+                <span className="text-white/70">Payment Stages</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span>{form.preferred_language ? "✅" : "❌"}</span>
+                <span className="text-white/70">Preferred Language</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span>{form.assigned_lia_id ? "✅" : "❌"}</span>
+                <span className="text-white/70">Assigned LIA</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isDeclinedApproval && !canApprove && (deal?.assigned_sales_id === profile?.id || isAdmin) && (
+          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-600/10 p-6">
+            <h3 className="text-lg font-bold text-red-300 mb-2">This deal was declined</h3>
+            {dealApproval?.decline_reason && (
+              <p className="text-sm text-white/70 mb-3">Reason: {dealApproval.decline_reason}</p>
+            )}
+            <button onClick={handleResubmit} disabled={isResubmitting} className="rounded-lg bg-blue-600 px-5 py-2.5 font-bold text-white hover:bg-blue-700 disabled:opacity-50 text-sm">
+              {isResubmitting ? "Resubmitting..." : "Resubmit for Approval"}
+            </button>
+          </div>
+        )}
+
+        {approvalStatus === "approved" && autoSendResults && (
+          <div className="mb-6 rounded-xl border border-green-500/30 bg-green-600/10 p-4">
+            <h4 className="text-sm font-bold text-green-300 mb-2">Auto-send Results</h4>
+            <div className="space-y-1">
+              {autoSendResults.map((r, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <span>{r.success ? "✅" : "❌"}</span>
+                  <span className="text-white/70">{r.step.replace(/_/g, " ")}</span>
+                  {r.error && <span className="text-red-400 text-xs">({r.error})</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Decline Modal */}
+        {showDeclineModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+              <h4 className="text-lg font-bold mb-4">Decline Deal</h4>
+              <label className="block text-sm font-medium text-white/70 mb-1">Reason for declining *</label>
+              <textarea
+                value={declineReason}
+                onChange={e => setDeclineReasonInput(e.target.value)}
+                rows={3}
+                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none resize-none"
+                placeholder="Please explain why this deal is being declined..."
+              />
+              <div className="flex gap-2 mt-4">
+                <button onClick={handleDecline} disabled={isDeclining || !declineReason.trim()} className="rounded-lg bg-red-600 px-5 py-2.5 font-bold text-white hover:bg-red-700 disabled:opacity-50 text-sm">
+                  {isDeclining ? "Declining..." : "Confirm Decline"}
+                </button>
+                <button onClick={() => { setShowDeclineModal(false); setDeclineReasonInput(""); }} className="rounded-lg border border-white/20 px-5 py-2.5 font-bold hover:bg-white/10 text-sm">
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1647,6 +2039,139 @@ export default function DealDetailPage() {
               <button onClick={() => handleStatusChange(STATUS_PREV[currentStatus])} disabled={isStatusChanging} className={`${btnSecondary} text-sm`}>
                 ↩ Undo to {DEAL_STATUS_LABELS[STATUS_PREV[currentStatus]] ?? "Previous"}
               </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Visa Submit Button ───────────────────────────────────────────── */}
+        {canVisaSubmit && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowVisaSubmitConfirm(true)}
+              className="w-full rounded-xl border-2 border-dashed border-green-400/50 bg-green-600/10 px-6 py-5 text-center hover:bg-green-600/20 transition-colors"
+            >
+              <span className="text-2xl font-bold text-green-300">🎉 Mark Visa as Submitted</span>
+              <p className="text-sm text-white/50 mt-1">Click to record visa application submission to INZ</p>
+            </button>
+          </div>
+        )}
+
+        {/* Visa Submit Confirm Modal */}
+        {showVisaSubmitConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+              <h4 className="text-lg font-bold mb-4">Confirm Visa Submission</h4>
+              <p className="text-sm text-white/70 mb-4">
+                Confirm that the visa application for <strong className="text-white">{clientName}</strong> has been submitted to INZ?
+              </p>
+              <div className="flex gap-2">
+                <button onClick={handleVisaSubmit} disabled={isSubmittingVisa} className="rounded-lg bg-green-600 px-5 py-2.5 font-bold text-white hover:bg-green-700 disabled:opacity-50 text-sm">
+                  {isSubmittingVisa ? "Submitting..." : "Confirm Submission"}
+                </button>
+                <button onClick={() => setShowVisaSubmitConfirm(false)} className="rounded-lg border border-white/20 px-5 py-2.5 font-bold hover:bg-white/10 text-sm">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Visa Result Section ─────────────────────────────────────────── */}
+        {showVisaResult && (
+          <div className={sectionClass}>
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <span>📋</span> Visa Result
+            </h3>
+            {canEditVisaResult ? (
+              <div className="space-y-4">
+                <div>
+                  <label className={labelClass}>Status</label>
+                  <select
+                    value={visaResultStatus}
+                    onChange={e => setVisaResultStatus(e.target.value)}
+                    className={selectClass + " max-w-xs"}
+                  >
+                    <option value="" className="bg-blue-900">— Select result —</option>
+                    <option value="approved" className="bg-blue-900">Approved</option>
+                    <option value="declined" className="bg-blue-900">Declined</option>
+                    <option value="aip" className="bg-blue-900">AIP (Approved in Principle)</option>
+                    <option value="rfi_ppi" className="bg-blue-900">RFI/PPI</option>
+                  </select>
+                  {visaResultStatus && (
+                    <span className={`ml-3 inline-block rounded-full px-3 py-0.5 text-xs font-bold ${
+                      visaResultStatus === "approved" ? "bg-green-500/20 text-green-400" :
+                      visaResultStatus === "declined" ? "bg-red-500/20 text-red-400" :
+                      visaResultStatus === "aip" ? "bg-blue-500/20 text-blue-400" :
+                      "bg-orange-500/20 text-orange-400"
+                    }`}>
+                      {visaResultStatus === "approved" ? "Approved" :
+                       visaResultStatus === "declined" ? "Declined" :
+                       visaResultStatus === "aip" ? "AIP" : "RFI/PPI"}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label className={labelClass}>Upload Result Documents</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.png,.jpg,.jpeg"
+                    onChange={e => setVisaResultFiles(Array.from(e.target.files ?? []))}
+                    className="block w-full text-sm text-white/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                  />
+                  {visaResultFiles.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {visaResultFiles.map((f, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-white/60">
+                          <span>📎 {f.name}</span>
+                          <button onClick={() => setVisaResultFiles(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 text-xs">×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className={labelClass}>Notes</label>
+                  <textarea
+                    value={visaResultNotes}
+                    onChange={e => setVisaResultNotes(e.target.value)}
+                    rows={3}
+                    className={inputClass + " resize-none"}
+                    placeholder="Notes about the visa result..."
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveVisaResult}
+                  disabled={isSavingVisaResult || !visaResultStatus}
+                  className="rounded-lg bg-blue-600 px-5 py-2.5 font-bold text-white hover:bg-blue-700 disabled:opacity-50 text-sm"
+                >
+                  {isSavingVisaResult ? (isUploadingVisaFiles ? "Uploading files..." : "Saving...") : "Save Result"}
+                </button>
+              </div>
+            ) : (
+              <div>
+                {visaResultStatus ? (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-white/70">Status:</span>
+                    <span className={`rounded-full px-3 py-0.5 text-xs font-bold ${
+                      visaResultStatus === "approved" ? "bg-green-500/20 text-green-400" :
+                      visaResultStatus === "declined" ? "bg-red-500/20 text-red-400" :
+                      visaResultStatus === "aip" ? "bg-blue-500/20 text-blue-400" :
+                      "bg-orange-500/20 text-orange-400"
+                    }`}>
+                      {visaResultStatus === "approved" ? "Approved" :
+                       visaResultStatus === "declined" ? "Declined" :
+                       visaResultStatus === "aip" ? "AIP" : "RFI/PPI"}
+                    </span>
+                    {visaResultNotes && <p className="text-sm text-white/60 mt-2">{visaResultNotes}</p>}
+                  </div>
+                ) : (
+                  <p className="text-sm text-white/50">No visa result recorded yet.</p>
+                )}
+              </div>
             )}
           </div>
         )}
