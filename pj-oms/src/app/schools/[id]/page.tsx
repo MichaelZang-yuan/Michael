@@ -155,23 +155,23 @@ export default function SchoolDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   if (!school) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-blue-950">
-        <p className="text-white/60 mb-4">School not found.</p>
-        <Link href="/schools" className="text-blue-400 hover:underline">← Back to Schools</Link>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60 mb-4">School not found.</p>
+        <Link href="/schools" className="text-blue-700 dark:text-blue-400 hover:underline">← Back to Schools</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
@@ -179,48 +179,48 @@ export default function SchoolDetailPage() {
           <h2 className="text-3xl font-bold">{school.name}</h2>
           <Link
             href={`/schools/${id}/edit`}
-            className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10"
+            className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10"
           >
             Edit School
           </Link>
         </div>
 
         {/* School Info */}
-        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+        <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
           <h3 className="text-lg font-bold mb-4">School Information</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <p className="text-sm text-white/50 mb-1">Course Type A</p>
+              <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Course Type A</p>
               <p className="font-semibold">{school.course_type_a_name ?? "—"}</p>
-              <p className="text-white/70 text-sm">{formatRate(school.course_type_a_rate)}</p>
+              <p className="text-gray-600 dark:text-white/70 text-sm">{formatRate(school.course_type_a_rate)}</p>
             </div>
             <div>
-              <p className="text-sm text-white/50 mb-1">Course Type B</p>
+              <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Course Type B</p>
               <p className="font-semibold">{school.course_type_b_name ?? "—"}</p>
-              <p className="text-white/70 text-sm">{formatRate(school.course_type_b_rate)}</p>
+              <p className="text-gray-600 dark:text-white/70 text-sm">{formatRate(school.course_type_b_rate)}</p>
             </div>
             <div>
-              <p className="text-sm text-white/50 mb-1">Contact Email</p>
+              <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Contact Email</p>
               <p className="font-semibold">{school.contact_email ?? "—"}</p>
             </div>
             {school.notes && (
               <div className="md:col-span-2">
-                <p className="text-sm text-white/50 mb-1">Notes</p>
-                <p className="text-white/70 whitespace-pre-wrap">{school.notes}</p>
+                <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Notes</p>
+                <p className="text-gray-600 dark:text-white/70 whitespace-pre-wrap">{school.notes}</p>
               </div>
             )}
             <div className="md:col-span-2">
-              <p className="text-sm text-white/50 mb-2">Attachments</p>
+              <p className="text-sm text-gray-500 dark:text-white/50 mb-2">Attachments</p>
               <div className="flex flex-col gap-2">
                 {attachments.length === 0 ? (
-                  <p className="text-white/50 text-sm">No attachments yet.</p>
+                  <p className="text-gray-500 dark:text-white/50 text-sm">No attachments yet.</p>
                 ) : (
                   <ul className="space-y-2">
                     {attachments.map((f) => (
-                      <li key={f.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                        <span className="text-sm text-white/80 truncate flex-1 min-w-0">{displayFileName(f.name)}</span>
+                      <li key={f.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-3 py-2">
+                        <span className="text-sm text-gray-700 dark:text-white/80 truncate flex-1 min-w-0">{displayFileName(f.name)}</span>
                         {f.createdAt && (
-                          <span className="text-xs text-white/50">
+                          <span className="text-xs text-gray-500 dark:text-white/50">
                             {new Date(f.createdAt).toLocaleDateString()}
                           </span>
                         )}
@@ -228,7 +228,7 @@ export default function SchoolDetailPage() {
                           href={f.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10"
+                          className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10"
                         >
                           View / Download
                         </a>
@@ -254,59 +254,59 @@ export default function SchoolDetailPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-10">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-2 text-sm font-semibold text-white/70">Total Students</div>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
+            <div className="mb-2 text-sm font-semibold text-gray-600 dark:text-white/70">Total Students</div>
             <p className="text-3xl font-bold">{students.length}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-2 text-sm font-semibold text-white/70">Pending Commissions</div>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
+            <div className="mb-2 text-sm font-semibold text-gray-600 dark:text-white/70">Pending Commissions</div>
             <p className="text-3xl font-bold">{pendingCount}</p>
-            <p className="text-white/60 text-sm">${pendingTotal.toLocaleString()} NZD total</p>
+            <p className="text-gray-500 dark:text-white/60 text-sm">${pendingTotal.toLocaleString()} NZD total</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-2 text-sm font-semibold text-white/70">Claimed Commissions</div>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
+            <div className="mb-2 text-sm font-semibold text-gray-600 dark:text-white/70">Claimed Commissions</div>
             <p className="text-3xl font-bold">{claimedCount}</p>
-            <p className="text-white/60 text-sm">${claimedTotal.toLocaleString()} NZD total</p>
+            <p className="text-gray-500 dark:text-white/60 text-sm">${claimedTotal.toLocaleString()} NZD total</p>
           </div>
         </div>
 
         {/* Students List */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
           <h3 className="text-lg font-bold mb-4">Students</h3>
           {students.length === 0 ? (
-            <p className="text-white/50 py-8 text-center">No students at this school yet.</p>
+            <p className="text-gray-500 dark:text-white/50 py-8 text-center">No students at this school yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Name</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Department</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Enrollment Date</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Tuition Fee</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-white/70">Status</th>
+                  <tr className="border-b border-gray-300 dark:border-white/20">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Name</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Department</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Enrollment Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Tuition Fee</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((s) => (
-                    <tr key={s.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                    <tr key={s.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                       <td className="px-4 py-3">
-                        <Link href={`/students/${s.id}`} className="font-semibold text-blue-400 hover:underline">
+                        <Link href={`/students/${s.id}`} className="font-semibold text-blue-700 dark:text-blue-400 hover:underline">
                           {s.full_name}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-white/70">{DEPT_LABELS[s.department] ?? s.department}</td>
-                      <td className="px-4 py-3 text-white/70">{s.enrollment_date ?? "—"}</td>
-                      <td className="px-4 py-3 text-white/70">
+                      <td className="px-4 py-3 text-gray-600 dark:text-white/70">{DEPT_LABELS[s.department] ?? s.department}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-white/70">{s.enrollment_date ?? "—"}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-white/70">
                         {s.tuition_fee ? `$${s.tuition_fee.toLocaleString()}` : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-                          s.status === "active" ? "bg-blue-500/20 text-blue-400"
-                          : s.status === "enrolled" ? "bg-yellow-500/20 text-yellow-400"
-                          : s.status === "pending" ? "bg-orange-500/20 text-orange-400"
-                          : s.status === "claimed" ? "bg-green-500/20 text-green-400"
-                          : "bg-red-500/20 text-red-400"
+                          s.status === "active" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400"
+                          : s.status === "enrolled" ? "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
+                          : s.status === "pending" ? "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400"
+                          : s.status === "claimed" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400"
+                          : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"
                         }`}>
                           {s.status}
                         </span>

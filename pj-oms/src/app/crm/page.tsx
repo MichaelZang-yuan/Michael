@@ -32,19 +32,19 @@ const DEAL_STATUS_LABELS: Record<string, string> = {
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400",
-  quoted: "bg-blue-500/20 text-blue-400",
-  contracted: "bg-purple-500/20 text-purple-400",
-  in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-orange-500/20 text-orange-400",
-  approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400",
-  completed: "bg-green-600/20 text-green-300",
-  cancelled: "bg-red-600/20 text-red-300",
-  education_consultation: "bg-teal-500/20 text-teal-400",
-  school_application: "bg-indigo-500/20 text-indigo-400",
-  offer_received: "bg-cyan-500/20 text-cyan-400",
-  education_only: "bg-teal-600/20 text-teal-300",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400",
+  quoted: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contracted: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  completed: "bg-green-100 dark:bg-green-600/20 text-green-700 dark:text-green-300",
+  cancelled: "bg-red-100 dark:bg-red-600/20 text-red-700 dark:text-red-300",
+  education_consultation: "bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-400",
+  school_application: "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400",
+  offer_received: "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400",
+  education_only: "bg-teal-100 dark:bg-teal-600/20 text-teal-700 dark:text-teal-300",
 };
 
 const PIE_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#f97316", "#84cc16", "#ec4899"];
@@ -76,11 +76,11 @@ type VisaAlert = {
 };
 
 const URGENCY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  expired: { bg: "bg-red-900/30 border-red-700", text: "text-red-300", label: "Expired" },
-  "14_days": { bg: "bg-red-500/20 border-red-500", text: "text-red-400", label: "< 14 days" },
-  "30_days": { bg: "bg-orange-500/20 border-orange-500", text: "text-orange-400", label: "< 30 days" },
-  "60_days": { bg: "bg-yellow-500/20 border-yellow-500", text: "text-yellow-400", label: "< 60 days" },
-  "90_days": { bg: "bg-green-500/20 border-green-500", text: "text-green-400", label: "< 90 days" },
+  expired: { bg: "bg-red-900/30 border-red-700", text: "text-red-700 dark:text-red-300", label: "Expired" },
+  "14_days": { bg: "bg-red-100 dark:bg-red-500/20 border-red-500", text: "text-red-700 dark:text-red-400", label: "< 14 days" },
+  "30_days": { bg: "bg-orange-100 dark:bg-orange-500/20 border-orange-500", text: "text-orange-700 dark:text-orange-400", label: "< 30 days" },
+  "60_days": { bg: "bg-yellow-100 dark:bg-yellow-500/20 border-yellow-500", text: "text-yellow-700 dark:text-yellow-400", label: "< 60 days" },
+  "90_days": { bg: "bg-green-100 dark:bg-green-500/20 border-green-500", text: "text-green-700 dark:text-green-400", label: "< 90 days" },
 };
 
 function getUrgency(daysRemaining: number): VisaAlert["urgency"] {
@@ -330,14 +330,14 @@ export default function CrmDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 
@@ -345,7 +345,7 @@ export default function CrmDashboardPage() {
         <div className="flex flex-col gap-4 mb-10 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-1 sm:text-3xl">CRM Dashboard</h2>
-            <p className="text-sm text-white/50 sm:text-base">Welcome back, {profile?.full_name}!</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 sm:text-base">Welcome back, {profile?.full_name}!</p>
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link href="/contacts/new" className="rounded-lg bg-blue-600 px-5 py-2.5 font-bold text-white hover:bg-blue-700 text-sm">
@@ -356,7 +356,7 @@ export default function CrmDashboardPage() {
             </Link>
             <Link
               href="/dashboard"
-              className="rounded-lg border border-white/20 bg-white/5 px-5 py-2.5 font-bold text-white/80 hover:bg-white/10 text-sm"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-5 py-2.5 font-bold text-gray-700 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/10 text-sm"
             >
               Commission Dashboard →
             </Link>
@@ -365,31 +365,31 @@ export default function CrmDashboardPage() {
 
         {/* Stats cards */}
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4 mb-10">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 inline-block rounded-lg bg-blue-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
               Total Contacts
             </div>
             <p className="text-3xl font-bold sm:text-4xl">{stats.totalContacts}</p>
-            <p className="mt-1 text-xs text-white/50">
+            <p className="mt-1 text-xs text-gray-500 dark:text-white/50">
               {stats.totalLeads} Leads · {stats.totalClients} Clients
             </p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 inline-block rounded-lg bg-green-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
               Companies
             </div>
             <p className="text-3xl font-bold sm:text-4xl">{stats.totalCompanies}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 inline-block rounded-lg bg-purple-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
               Total Deals
             </div>
             <p className="text-3xl font-bold sm:text-4xl">{stats.totalDeals}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 inline-block rounded-lg bg-orange-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
               Agents
             </div>
@@ -399,11 +399,11 @@ export default function CrmDashboardPage() {
 
         {/* Charts */}
         <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <h3 className="mb-4 text-lg font-bold">Deals by Status</h3>
             <div className="h-[260px]">
               {dealsByStatus.length === 0 ? (
-                <p className="flex h-full items-center justify-center text-white/50">No deals data</p>
+                <p className="flex h-full items-center justify-center text-gray-500 dark:text-white/50">No deals data</p>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -421,11 +421,11 @@ export default function CrmDashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <h3 className="mb-4 text-lg font-bold">Deals by Department</h3>
             <div className="h-[260px]">
               {dealsByDept.length === 0 ? (
-                <p className="flex h-full items-center justify-center text-white/50">No deals data</p>
+                <p className="flex h-full items-center justify-center text-gray-500 dark:text-white/50">No deals data</p>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={dealsByDept}>
@@ -443,43 +443,43 @@ export default function CrmDashboardPage() {
 
         {/* Visa Expiry Alerts */}
         {visaAlerts.length > 0 && (
-          <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">Visa Expiry Alerts</h3>
-              <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400">
+              <span className="rounded-full bg-red-100 dark:bg-red-500/20 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400">
                 {visaAlerts.length} alert{visaAlerts.length !== 1 ? "s" : ""}
               </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Visa Expiry</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Days Left</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Assigned Sales</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Dept</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Urgency</th>
+                  <tr className="border-b border-gray-300 dark:border-white/20">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Visa Expiry</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Days Left</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Assigned Sales</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Dept</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Urgency</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visaAlerts.map((alert) => {
                     const style = URGENCY_STYLES[alert.urgency];
                     return (
-                      <tr key={alert.id} className={`border-b border-white/10 last:border-b-0 hover:bg-white/5 ${alert.urgency === "expired" ? "bg-red-900/10" : ""}`}>
+                      <tr key={alert.id} className={`border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5 ${alert.urgency === "expired" ? "bg-red-900/10" : ""}`}>
                         <td className="px-4 py-3 text-sm">
-                          <Link href={`/contacts/${alert.id}`} className="text-blue-400 hover:underline font-medium">
+                          <Link href={`/contacts/${alert.id}`} className="text-blue-700 dark:text-blue-400 hover:underline font-medium">
                             {alert.first_name} {alert.last_name}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-sm text-white/90">
+                        <td className="px-4 py-3 text-sm text-gray-800 dark:text-white/90">
                           {new Date(alert.visa_expiry_date).toLocaleDateString("en-NZ")}
                         </td>
                         <td className={`px-4 py-3 text-sm font-bold ${style.text}`}>
                           {alert.days_remaining <= 0 ? `${Math.abs(alert.days_remaining)} days ago` : `${alert.days_remaining} days`}
                         </td>
-                        <td className="px-4 py-3 text-sm text-white/70">{alert.assigned_sales_name ?? "—"}</td>
-                        <td className="px-4 py-3 text-xs text-white/60">
+                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">{alert.assigned_sales_name ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-white/60">
                           {alert.department ? DEPT_LABELS[alert.department] ?? alert.department : "—"}
                         </td>
                         <td className="px-4 py-3">
@@ -502,29 +502,29 @@ export default function CrmDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">Pending Refund Requests</h3>
               <div className="flex items-center gap-3">
-                <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400">
+                <span className="rounded-full bg-red-100 dark:bg-red-500/20 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400">
                   {pendingRefunds.length} pending
                 </span>
-                <Link href="/finance/refunds" className="text-sm text-blue-400 hover:underline">Manage Refunds →</Link>
+                <Link href="/finance/refunds" className="text-sm text-blue-700 dark:text-blue-400 hover:underline">Manage Refunds →</Link>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[500px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Deal</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-white/70">Refund Amount</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Requested</th>
+                  <tr className="border-b border-gray-300 dark:border-white/20">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Deal</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Client</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-white/70">Refund Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Requested</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pendingRefunds.map((r) => (
-                    <tr key={r.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                    <tr key={r.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                       <td className="px-4 py-3 text-sm font-medium">{r.deal_number}</td>
                       <td className="px-4 py-3 text-sm">{r.client_name}</td>
-                      <td className="px-4 py-3 text-sm text-right font-bold text-red-400">${Number(r.calculated_refund).toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm text-white/60">{new Date(r.requested_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-sm text-right font-bold text-red-700 dark:text-red-400">${Number(r.calculated_refund).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-white/60">{new Date(r.requested_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -539,44 +539,44 @@ export default function CrmDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">Overdue Payments (30+ days)</h3>
               <div className="flex items-center gap-3">
-                <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-bold text-orange-400">
+                <span className="rounded-full bg-orange-100 dark:bg-orange-500/20 px-3 py-1 text-xs font-bold text-orange-700 dark:text-orange-400">
                   {overduePayments.length} overdue
                 </span>
-                <Link href="/finance/ar" className="text-sm text-blue-400 hover:underline">View AR Dashboard →</Link>
+                <Link href="/finance/ar" className="text-sm text-blue-700 dark:text-blue-400 hover:underline">View AR Dashboard →</Link>
               </div>
             </div>
             {reminderMsg && (
-              <div className={`mb-3 rounded-lg px-3 py-2 text-sm ${reminderMsg.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+              <div className={`mb-3 rounded-lg px-3 py-2 text-sm ${reminderMsg.type === "success" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"}`}>
                 {reminderMsg.text}
               </div>
             )}
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Invoice</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client / School</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-white/70">Outstanding</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-white/70">Days Overdue</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Action</th>
+                  <tr className="border-b border-gray-300 dark:border-white/20">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Invoice</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Client / School</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-white/70">Outstanding</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-white/70">Days Overdue</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {overduePayments.slice(0, 10).map((inv) => (
-                    <tr key={inv.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                    <tr key={inv.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                       <td className="px-4 py-3 text-sm font-medium">
                         {inv.type === "crm" ? (
-                          <Link href="/invoices" className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                          <Link href="/invoices" className="text-blue-700 dark:text-blue-400 hover:underline">{inv.invoice_number}</Link>
                         ) : (
-                          <Link href="/commission/invoices" className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                          <Link href="/commission/invoices" className="text-blue-700 dark:text-blue-400 hover:underline">{inv.invoice_number}</Link>
                         )}
-                        <span className={`ml-2 text-xs rounded-full px-2 py-0.5 ${inv.type === "crm" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>
+                        <span className={`ml-2 text-xs rounded-full px-2 py-0.5 ${inv.type === "crm" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" : "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400"}`}>
                           {inv.type === "crm" ? "CRM" : "Commission"}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">{inv.client_name}</td>
                       <td className="px-4 py-3 text-sm text-right font-medium">${inv.outstanding.toFixed(2)}</td>
-                      <td className={`px-4 py-3 text-sm text-right font-bold ${inv.days_overdue > 90 ? "text-red-500" : inv.days_overdue > 60 ? "text-red-400" : "text-orange-400"}`}>
+                      <td className={`px-4 py-3 text-sm text-right font-bold ${inv.days_overdue > 90 ? "text-red-500" : inv.days_overdue > 60 ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"}`}>
                         {inv.days_overdue}d
                       </td>
                       <td className="px-4 py-3">
@@ -614,47 +614,47 @@ export default function CrmDashboardPage() {
 
         {/* Financial Summary (admin + accountant) */}
         {financeSummary && (
-          <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">Financial Summary (This Month)</h3>
-              <Link href="/finance" className="text-sm text-blue-400 hover:underline">View Financial Dashboard →</Link>
+              <Link href="/finance" className="text-sm text-blue-700 dark:text-blue-400 hover:underline">View Financial Dashboard →</Link>
             </div>
             <div className="grid grid-cols-3 gap-4">
-              <div className="rounded-lg bg-white/5 p-3">
-                <p className="text-white/50 text-xs mb-1">Revenue</p>
-                <p className="text-lg font-bold text-green-400">${financeSummary.revenue.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3">
+                <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Revenue</p>
+                <p className="text-lg font-bold text-green-700 dark:text-green-400">${financeSummary.revenue.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </div>
-              <div className="rounded-lg bg-white/5 p-3">
-                <p className="text-white/50 text-xs mb-1">Outstanding</p>
-                <p className="text-lg font-bold text-orange-400">${financeSummary.outstanding.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3">
+                <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Outstanding</p>
+                <p className="text-lg font-bold text-orange-700 dark:text-orange-400">${financeSummary.outstanding.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </div>
-              <div className="rounded-lg bg-white/5 p-3">
-                <p className="text-white/50 text-xs mb-1">Overdue</p>
-                <p className={`text-lg font-bold ${financeSummary.overdue > 0 ? "text-red-400" : "text-white"}`}>${financeSummary.overdue.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3">
+                <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Overdue</p>
+                <p className={`text-lg font-bold ${financeSummary.overdue > 0 ? "text-red-700 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>${financeSummary.overdue.toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Recent Deals */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Recent Deals</h3>
-            <Link href="/deals" className="text-sm text-blue-400 hover:underline">View all →</Link>
+            <Link href="/deals" className="text-sm text-blue-700 dark:text-blue-400 hover:underline">View all →</Link>
           </div>
           {recentDeals.length === 0 ? (
-            <p className="py-8 text-center text-white/50">No deals yet. <Link href="/deals/new" className="text-blue-400 hover:underline">Create a deal →</Link></p>
+            <p className="py-8 text-center text-gray-500 dark:text-white/50">No deals yet. <Link href="/deals/new" className="text-blue-700 dark:text-blue-400 hover:underline">Create a deal →</Link></p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Deal #</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Amount</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Dept</th>
+                  <tr className="border-b border-gray-300 dark:border-white/20">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Deal #</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Type</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Dept</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -663,23 +663,23 @@ export default function CrmDashboardPage() {
                       ? `${deal.contacts.first_name} ${deal.contacts.last_name}`
                       : deal.companies?.company_name ?? "—";
                     return (
-                      <tr key={deal.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                      <tr key={deal.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                         <td className="px-4 py-3 text-sm">
-                          <Link href={`/deals/${deal.id}`} className="text-blue-400 hover:underline font-medium">
+                          <Link href={`/deals/${deal.id}`} className="text-blue-700 dark:text-blue-400 hover:underline font-medium">
                             {deal.deal_number ?? "—"}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-sm text-white/90">{clientName}</td>
-                        <td className="px-4 py-3 text-sm text-white/70">{deal.deal_type?.replace("_", " ") ?? "—"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-800 dark:text-white/90">{clientName}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">{deal.deal_type?.replace("_", " ") ?? "—"}</td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[deal.status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[deal.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                             {DEAL_STATUS_LABELS[deal.status] ?? deal.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-white/90">
+                        <td className="px-4 py-3 text-sm text-gray-800 dark:text-white/90">
                           {deal.total_amount != null ? `$${deal.total_amount.toLocaleString()}` : "—"}
                         </td>
-                        <td className="px-4 py-3 text-xs text-white/60">
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-white/60">
                           {deal.department ? DEPT_LABELS[deal.department] ?? deal.department : "—"}
                         </td>
                       </tr>

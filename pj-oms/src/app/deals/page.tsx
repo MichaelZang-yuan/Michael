@@ -27,10 +27,10 @@ type Deal = {
 };
 
 const VISA_RESULT_COLORS: Record<string, string> = {
-  approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400",
-  aip: "bg-blue-500/20 text-blue-400",
-  rfi_ppi: "bg-orange-500/20 text-orange-400",
+  approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  aip: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  rfi_ppi: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
 };
 
 const VISA_RESULT_LABELS: Record<string, string> = {
@@ -53,19 +53,19 @@ const DEAL_STATUS_LABELS: Record<string, string> = {
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400", quoted: "bg-blue-500/20 text-blue-400",
-  contracted: "bg-purple-500/20 text-purple-400", in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-orange-500/20 text-orange-400", approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400", completed: "bg-green-600/20 text-green-300",
-  cancelled: "bg-red-600/20 text-red-300",
-  education_consultation: "bg-teal-500/20 text-teal-400", school_application: "bg-indigo-500/20 text-indigo-400",
-  offer_received: "bg-cyan-500/20 text-cyan-400", education_only: "bg-teal-600/20 text-teal-300",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400", quoted: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contracted: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400", in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400", approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400", completed: "bg-green-100 dark:bg-green-600/20 text-green-700 dark:text-green-300",
+  cancelled: "bg-red-100 dark:bg-red-600/20 text-red-700 dark:text-red-300",
+  education_consultation: "bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-400", school_application: "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400",
+  offer_received: "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400", education_only: "bg-teal-100 dark:bg-teal-600/20 text-teal-700 dark:text-teal-300",
 };
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
-  unpaid: "bg-red-500/20 text-red-400",
-  partial: "bg-yellow-500/20 text-yellow-400",
-  paid: "bg-green-500/20 text-green-400",
+  unpaid: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  partial: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  paid: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
 };
 
 function escapeCsvValue(val: string): string {
@@ -149,19 +149,19 @@ export default function DealsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const filterSelectClass = "rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none";
+  const filterSelectClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold sm:text-3xl">Deals</h2>
-            <p className="text-sm text-white/50 mt-1">{filtered.length} total</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 mt-1">{filtered.length} total</p>
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3">
-            <button onClick={handleExportCsv} disabled={filtered.length === 0} className="rounded-lg border border-white/20 px-5 py-2.5 font-bold hover:bg-white/10 disabled:opacity-50 text-sm">
+            <button onClick={handleExportCsv} disabled={filtered.length === 0} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2.5 font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 text-sm">
               Export CSV
             </button>
             <Link href="/deals/new" className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700">
@@ -171,70 +171,70 @@ export default function DealsPage() {
         </div>
 
         {!isLoading && deals.length > 0 && (
-          <div className="mb-6 flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="mb-6 flex flex-col gap-3 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:flex-row sm:flex-wrap sm:items-center">
             <select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))} className={filterSelectClass}>
-              <option value="all" className="bg-blue-900">All Status</option>
-              {Object.entries(DEAL_STATUS_LABELS).map(([v, l]) => <option key={v} value={v} className="bg-blue-900">{l}</option>)}
+              <option value="all" className="bg-white dark:bg-blue-900">All Status</option>
+              {Object.entries(DEAL_STATUS_LABELS).map(([v, l]) => <option key={v} value={v} className="bg-white dark:bg-blue-900">{l}</option>)}
             </select>
             <select value={filters.deal_type} onChange={e => setFilters(f => ({ ...f, deal_type: e.target.value }))} className={filterSelectClass}>
-              <option value="all" className="bg-blue-900">All Types</option>
-              <option value="individual_visa" className="bg-blue-900">Individual Visa</option>
-              <option value="accreditation" className="bg-blue-900">Accreditation</option>
-              <option value="job_check" className="bg-blue-900">Job Check</option>
-              <option value="school_application" className="bg-blue-900">School Application</option>
+              <option value="all" className="bg-white dark:bg-blue-900">All Types</option>
+              <option value="individual_visa" className="bg-white dark:bg-blue-900">Individual Visa</option>
+              <option value="accreditation" className="bg-white dark:bg-blue-900">Accreditation</option>
+              <option value="job_check" className="bg-white dark:bg-blue-900">Job Check</option>
+              <option value="school_application" className="bg-white dark:bg-blue-900">School Application</option>
             </select>
             {isAdmin && (
               <select value={filters.department} onChange={e => setFilters(f => ({ ...f, department: e.target.value }))} className={filterSelectClass}>
-                <option value="all" className="bg-blue-900">All Departments</option>
-                <option value="china" className="bg-blue-900">China</option>
-                <option value="thailand" className="bg-blue-900">Thailand</option>
-                <option value="myanmar" className="bg-blue-900">Myanmar</option>
-                <option value="korea_japan" className="bg-blue-900">Korea & Japan</option>
+                <option value="all" className="bg-white dark:bg-blue-900">All Departments</option>
+                <option value="china" className="bg-white dark:bg-blue-900">China</option>
+                <option value="thailand" className="bg-white dark:bg-blue-900">Thailand</option>
+                <option value="myanmar" className="bg-white dark:bg-blue-900">Myanmar</option>
+                <option value="korea_japan" className="bg-white dark:bg-blue-900">Korea & Japan</option>
               </select>
             )}
             <select value={filters.payment_status} onChange={e => setFilters(f => ({ ...f, payment_status: e.target.value }))} className={filterSelectClass}>
-              <option value="all" className="bg-blue-900">All Payment</option>
-              <option value="unpaid" className="bg-blue-900">Unpaid</option>
-              <option value="partial" className="bg-blue-900">Partial</option>
-              <option value="paid" className="bg-blue-900">Paid</option>
+              <option value="all" className="bg-white dark:bg-blue-900">All Payment</option>
+              <option value="unpaid" className="bg-white dark:bg-blue-900">Unpaid</option>
+              <option value="partial" className="bg-white dark:bg-blue-900">Partial</option>
+              <option value="paid" className="bg-white dark:bg-blue-900">Paid</option>
             </select>
             <input
               type="text" value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
               placeholder="Search deal # or client..."
-              className="flex-1 min-w-[180px] rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+              className="flex-1 min-w-[180px] rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
             />
-            <button onClick={() => setFilters({ status: "all", deal_type: "all", department: "all", payment_status: "all", search: "" })} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10">
+            <button onClick={() => setFilters({ status: "all", deal_type: "all", department: "all", payment_status: "all", search: "" })} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Clear
             </button>
           </div>
         )}
 
         {isLoading ? (
-          <p className="text-white/50 text-center py-20">Loading...</p>
+          <p className="text-gray-500 dark:text-white/50 text-center py-20">Loading...</p>
         ) : deals.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-12 text-center">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-12 text-center">
             <p className="text-xl font-bold mb-2">No deals yet</p>
-            <p className="text-white/50 mb-6">Create your first deal.</p>
+            <p className="text-gray-500 dark:text-white/50 mb-6">Create your first deal.</p>
             <Link href="/deals/new" className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700">+ New Deal</Link>
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-8 text-center text-white/50">No deals match the current filters.</p>
+          <p className="py-8 text-center text-gray-500 dark:text-white/50">No deals match the current filters.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
             <table className="w-full min-w-[800px] border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Deal #</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Client / Company</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Visa Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Payment</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Visa</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Sales</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">LIA</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Created</th>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Deal #</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Client / Company</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Visa Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Amount</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Payment</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Visa</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Sales</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">LIA</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Created</th>
                 </tr>
               </thead>
               <tbody>
@@ -242,32 +242,32 @@ export default function DealsPage() {
                   const clientName = d.contacts ? `${d.contacts.first_name} ${d.contacts.last_name}` : d.companies?.company_name ?? "—";
                   const href = `/deals/${d.id}`;
                   return (
-                    <tr key={d.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                    <tr key={d.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                       <td className="p-0 text-sm font-semibold">
-                        <Link href={href} className="block px-4 py-3 text-blue-400 hover:underline">{d.deal_number ?? "—"}</Link>
+                        <Link href={href} className="block px-4 py-3 text-blue-700 dark:text-blue-400 hover:underline">{d.deal_number ?? "—"}</Link>
                       </td>
                       <td className="p-0">
-                        <Link href={href} className="block px-4 py-3 text-sm text-white/90">{clientName}</Link>
+                        <Link href={href} className="block px-4 py-3 text-sm text-gray-800 dark:text-white/90">{clientName}</Link>
                       </td>
                       <td className="p-0">
-                        <Link href={href} className="block px-4 py-3 text-xs text-white/70">{d.deal_type?.replace(/_/g, " ") ?? "—"}</Link>
+                        <Link href={href} className="block px-4 py-3 text-xs text-gray-600 dark:text-white/70">{d.deal_type?.replace(/_/g, " ") ?? "—"}</Link>
                       </td>
                       <td className="p-0">
-                        <Link href={href} className="block px-4 py-3 text-xs text-white/70">{d.visa_type ?? "—"}</Link>
+                        <Link href={href} className="block px-4 py-3 text-xs text-gray-600 dark:text-white/70">{d.visa_type ?? "—"}</Link>
                       </td>
                       <td className="p-0">
                         <Link href={href} className="block px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                             {DEAL_STATUS_LABELS[d.status] ?? d.status}
                           </span>
                         </Link>
                       </td>
                       <td className="p-0">
-                        <Link href={href} className="block px-4 py-3 text-sm text-white/90">{d.total_amount != null ? `$${d.total_amount.toLocaleString()}` : "—"}</Link>
+                        <Link href={href} className="block px-4 py-3 text-sm text-gray-800 dark:text-white/90">{d.total_amount != null ? `$${d.total_amount.toLocaleString()}` : "—"}</Link>
                       </td>
                       <td className="p-0">
                         <Link href={href} className="block px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${PAYMENT_STATUS_COLORS[d.payment_status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${PAYMENT_STATUS_COLORS[d.payment_status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                             {d.payment_status}
                           </span>
                         </Link>
@@ -275,22 +275,22 @@ export default function DealsPage() {
                       <td className="p-0">
                         <Link href={href} className="block px-4 py-3">
                           {d.visa_result_status ? (
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${VISA_RESULT_COLORS[d.visa_result_status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${VISA_RESULT_COLORS[d.visa_result_status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                               {VISA_RESULT_LABELS[d.visa_result_status] ?? d.visa_result_status}
                             </span>
                           ) : (
-                            <span className="text-xs text-white/30">—</span>
+                            <span className="text-xs text-gray-500 dark:text-white/30">—</span>
                           )}
                         </Link>
                       </td>
                       <td className="p-0">
-                        <Link href={href} className="block px-4 py-3 text-xs text-white/70">{d.sales?.full_name ?? "—"}</Link>
+                        <Link href={href} className="block px-4 py-3 text-xs text-gray-600 dark:text-white/70">{d.sales?.full_name ?? "—"}</Link>
                       </td>
                       <td className="p-0">
-                        <Link href={href} className="block px-4 py-3 text-xs text-white/70">{d.lia?.full_name ?? "—"}</Link>
+                        <Link href={href} className="block px-4 py-3 text-xs text-gray-600 dark:text-white/70">{d.lia?.full_name ?? "—"}</Link>
                       </td>
                       <td className="p-0">
-                        <Link href={href} className="block px-4 py-3 text-xs text-white/60">{new Date(d.created_at).toLocaleDateString()}</Link>
+                        <Link href={href} className="block px-4 py-3 text-xs text-gray-500 dark:text-white/60">{new Date(d.created_at).toLocaleDateString()}</Link>
                       </td>
                     </tr>
                   );

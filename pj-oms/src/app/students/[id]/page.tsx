@@ -86,15 +86,15 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "bg-blue-500/20 text-blue-400",
-  enrolled: "bg-yellow-500/20 text-yellow-400",
-  pending: "bg-orange-500/20 text-orange-400",
-  claimed: "bg-green-500/20 text-green-400",
-  cancelled: "bg-red-500/20 text-red-400",
+  active: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  enrolled: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  pending: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  claimed: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  cancelled: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
 };
 
 function getStatusBadgeClass(status: string): string {
-  return STATUS_COLORS[status] ?? "bg-gray-500/20 text-gray-400";
+  return STATUS_COLORS[status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400";
 }
 
 export default function StudentDetailPage() {
@@ -740,16 +740,16 @@ export default function StudentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   if (!student) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Student not found.</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Student not found.</p>
       </div>
     );
   }
@@ -761,14 +761,14 @@ export default function StudentDetailPage() {
   const isDirty = initialForm !== "" && JSON.stringify(form) !== initialForm;
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges={isDirty} />
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-3 mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-bold sm:text-3xl">{student.full_name}</h2>
-            <p className="text-white/50 mt-1">{DEPT_LABELS[student.department]}</p>
+            <p className="text-gray-500 dark:text-white/50 mt-1">{DEPT_LABELS[student.department]}</p>
           </div>
           <span className={`rounded-full px-4 py-1.5 text-sm font-bold uppercase ${getStatusBadgeClass(student.status)}`}>
             {STATUS_LABELS[student.status] ?? student.status}
@@ -776,66 +776,66 @@ export default function StudentDetailPage() {
         </div>
 
         {/* Commission Section */}
-        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <h3 className="text-lg font-bold mb-4 sm:text-xl">Commission Tracking</h3>
 
           {commissions.length === 0 ? (
-            <p className="text-white/50 mb-4">No commissions added yet.</p>
+            <p className="text-gray-500 dark:text-white/50 mb-4">No commissions added yet.</p>
           ) : (
             <div className="flex flex-col gap-3 mb-4">
               {commissions.map((c) => (
-                <div key={c.id} className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+                <div key={c.id} className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-3">
                   {editingCommissionId === c.id ? (
                     <div className="flex flex-col gap-3">
                       <p className="font-semibold">Year {c.year} Commission (editing)</p>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                         <div>
-                          <label className="text-xs text-white/60">Enrollment Date</label>
+                          <label className="text-xs text-gray-500 dark:text-white/60">Enrollment Date</label>
                           <input
                             type="date"
                             value={editCommissionForm.enrollment_date}
                             onChange={(e) => handleEditCommissionChange("enrollment_date", e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+                            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-white/60">Tuition Fee</label>
+                          <label className="text-xs text-gray-500 dark:text-white/60">Tuition Fee</label>
                           <input
                             type="number"
                             value={editCommissionForm.tuition_fee}
                             onChange={(e) => handleEditCommissionChange("tuition_fee", e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+                            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-white/60">Rate (%)</label>
+                          <label className="text-xs text-gray-500 dark:text-white/60">Rate (%)</label>
                           <input
                             type="number"
                             value={editCommissionForm.commission_rate}
                             onChange={(e) => handleEditCommissionChange("commission_rate", e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+                            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-white/60">Amount</label>
+                          <label className="text-xs text-gray-500 dark:text-white/60">Amount</label>
                           <input
                             type="number"
                             value={editCommissionForm.amount}
                             onChange={(e) => handleEditCommissionChange("amount", e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+                            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                           />
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <button onClick={handleSaveEditCommission} className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-green-700">Save</button>
-                        <button onClick={() => setEditingCommissionId(null)} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10">Cancel</button>
+                        <button onClick={() => setEditingCommissionId(null)} className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">Cancel</button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                       <div className="min-w-0">
                         <p className="font-semibold text-sm sm:text-base">Year {c.year} Commission</p>
-                        <p className="text-white/60 text-xs sm:text-sm break-words">
+                        <p className="text-gray-500 dark:text-white/60 text-xs sm:text-sm break-words">
                           Tuition: ${(c.tuition_fee ?? 0).toLocaleString()} | Rate: {((c.commission_rate ?? 0) * 100).toFixed(0)}% | Amount: ${c.amount.toLocaleString()} NZD{c.enrollment_date ? ` | Enrollment: ${c.enrollment_date}` : ""}
                         </p>
                       </div>
@@ -845,29 +845,29 @@ export default function StudentDetailPage() {
                             {canEditDeleteCommission && (
                               <>
                                 <button onClick={() => startEditCommission(c)}
-                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                  className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">Edit</button>
                                 <button onClick={() => handleDeleteCommission(c.id)}
-                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20">Delete</button>
                               </>
                             )}
                             {!canEditDeleteCommission && (
-                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-500 dark:text-gray-400">Pending</span>
                             )}
                           </>
                         ) : ((student?.status ?? form.status) === "cancelled") ? (
                           <>
                             {c.status === "claimed" && (
-                              <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm font-bold text-green-400">✅ Claimed</span>
+                              <span className="rounded-full bg-green-100 dark:bg-green-500/20 px-3 py-1 text-sm font-bold text-green-700 dark:text-green-400">✅ Claimed</span>
                             )}
                             {c.status === "pending" && (
-                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-500 dark:text-gray-400">Pending</span>
                             )}
                             {canEditDeleteCommission && (
                               <>
                                 <button onClick={() => startEditCommission(c)}
-                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                  className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">Edit</button>
                                 <button onClick={() => handleDeleteCommission(c.id)}
-                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20">Delete</button>
                               </>
                             )}
                           </>
@@ -882,13 +882,13 @@ export default function StudentDetailPage() {
                             {canEditDeleteCommission && (
                               <>
                                 <button onClick={() => startEditCommission(c)}
-                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                  className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">Edit</button>
                                 <button onClick={() => handleDeleteCommission(c.id)}
-                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20">Delete</button>
                               </>
                             )}
                             {!isAdmin && !canEditDeleteCommission && (
-                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-500 dark:text-gray-400">Pending</span>
                             )}
                           </>
                         ) : ((student?.status ?? form.status) === "pending" && c.status === "pending") ? (
@@ -908,18 +908,18 @@ export default function StudentDetailPage() {
                             {canEditDeleteCommission && (
                               <>
                                 <button onClick={() => startEditCommission(c)}
-                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                  className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">Edit</button>
                                 <button onClick={() => handleDeleteCommission(c.id)}
-                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20">Delete</button>
                               </>
                             )}
                             {!isAdmin && !canEditDeleteCommission && (
-                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-500 dark:text-gray-400">Pending</span>
                             )}
                           </>
                         ) : c.status === "claimed" ? (
                           <>
-                            <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm font-bold text-green-400">✅ Claimed</span>
+                            <span className="rounded-full bg-green-100 dark:bg-green-500/20 px-3 py-1 text-sm font-bold text-green-700 dark:text-green-400">✅ Claimed</span>
                             {isAdmin && (
                               <button onClick={() => handleUnclaim(c.id)} disabled={isClaiming === c.id}
                                 className="rounded-lg bg-green-600 px-3 py-2 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50">
@@ -929,9 +929,9 @@ export default function StudentDetailPage() {
                             {canEditDeleteCommission && (
                               <>
                                 <button onClick={() => startEditCommission(c)}
-                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                  className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">Edit</button>
                                 <button onClick={() => handleDeleteCommission(c.id)}
-                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20">Delete</button>
                               </>
                             )}
                           </>
@@ -940,13 +940,13 @@ export default function StudentDetailPage() {
                             {canEditDeleteCommission && (
                               <>
                                 <button onClick={() => startEditCommission(c)}
-                                  className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">Edit</button>
+                                  className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">Edit</button>
                                 <button onClick={() => handleDeleteCommission(c.id)}
-                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                                  className="rounded-lg border border-red-500/50 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20">Delete</button>
                               </>
                             )}
                             {!canEditDeleteCommission && (
-                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-400">Pending</span>
+                              <span className="rounded-full bg-gray-500/30 px-3 py-1 text-sm font-bold text-gray-500 dark:text-gray-400">Pending</span>
                             )}
                           </>
                         )}
@@ -960,53 +960,53 @@ export default function StudentDetailPage() {
 
           {/* Add Commission Form */}
           {addForm.show && (
-            <div className="mb-4 rounded-lg border border-white/20 bg-white/5 p-4">
+            <div className="mb-4 rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 p-4">
               <h4 className="mb-3 font-semibold">Add Year {addForm.year} Commission</h4>
               <div className="flex flex-col gap-3">
                 <div className="max-w-xs">
-                  <label className="text-xs text-white/60">Enrollment Date</label>
+                  <label className="text-xs text-gray-500 dark:text-white/60">Enrollment Date</label>
                   <input
                     type="date"
                     value={addForm.enrollment_date}
                     onChange={(e) => handleAddFormChange("enrollment_date", e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+                    className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                 <div>
-                  <label className="text-xs text-white/60">Tuition Fee for this year</label>
+                  <label className="text-xs text-gray-500 dark:text-white/60">Tuition Fee for this year</label>
                   <input
                     type="number"
                     value={addForm.tuition_fee}
                     onChange={(e) => handleAddFormChange("tuition_fee", e.target.value)}
                     placeholder="e.g. 20000"
-                    className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+                    className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-white/60">Commission Rate (%)</label>
+                  <label className="text-xs text-gray-500 dark:text-white/60">Commission Rate (%)</label>
                   <input
                     type="number"
                     value={addForm.commission_rate}
                     onChange={(e) => handleAddFormChange("commission_rate", e.target.value)}
                     placeholder="e.g. 15"
                     step="0.1"
-                    className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+                    className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-white/60">Amount</label>
+                  <label className="text-xs text-gray-500 dark:text-white/60">Amount</label>
                   <input
                     type="number"
                     value={addForm.amount}
                     onChange={(e) => handleAddFormChange("amount", e.target.value)}
                     placeholder="Auto"
-                    className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+                    className="mt-1 w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
                   />
                 </div>
                       <div className="flex flex-wrap items-end gap-2">
                   <button onClick={handleAddCommission} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">Add</button>
-                  <button onClick={() => setAddForm({ show: false, year: 0, enrollment_date: "", tuition_fee: "", commission_rate: "", amount: "", defaultRate: 0.1 })} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10">Cancel</button>
+                  <button onClick={() => setAddForm({ show: false, year: 0, enrollment_date: "", tuition_fee: "", commission_rate: "", amount: "", defaultRate: 0.1 })} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">Cancel</button>
                 </div>
                 </div>
               </div>
@@ -1019,7 +1019,7 @@ export default function StudentDetailPage() {
                 <button
                   key={year}
                   onClick={() => handleAddCommissionClick(year)}
-                  className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10"
                 >
                   + Add Year {year}
                 </button>
@@ -1033,50 +1033,50 @@ export default function StudentDetailPage() {
         <form onSubmit={handleSave} className="flex flex-col gap-5 w-full">
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Full Name *</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Full Name *</label>
             <input name="full_name" value={form.full_name} onChange={handleChange} required
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full" />
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full" />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Student Number</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Student Number</label>
             <input name="student_number" value={form.student_number} onChange={handleChange} placeholder="e.g. ST123456"
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full" />
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full" />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">School</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">School</label>
             <select name="school_id" value={form.school_id} onChange={handleChange}
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full">
-              <option value="" className="bg-blue-900 text-white">Select a school...</option>
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full">
+              <option value="" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Select a school...</option>
               {schools.map((s) => (
-                <option key={s.id} value={s.id} className="bg-blue-900 text-white">{s.name}</option>
+                <option key={s.id} value={s.id} className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">{s.name}</option>
               ))}
             </select>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Department *</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Department *</label>
             <select name="department" value={form.department} onChange={handleChange} required disabled={!isAdmin}
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full disabled:opacity-70 disabled:cursor-not-allowed">
-              <option value="" className="bg-blue-900 text-white">Select a department...</option>
-              <option value="china" className="bg-blue-900 text-white">China</option>
-              <option value="thailand" className="bg-blue-900 text-white">Thailand</option>
-              <option value="myanmar" className="bg-blue-900 text-white">Myanmar</option>
-              <option value="korea_japan" className="bg-blue-900 text-white">Korea & Japan</option>
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full disabled:opacity-70 disabled:cursor-not-allowed">
+              <option value="" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Select a department...</option>
+              <option value="china" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">China</option>
+              <option value="thailand" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Thailand</option>
+              <option value="myanmar" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Myanmar</option>
+              <option value="korea_japan" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Korea & Japan</option>
             </select>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Status</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Status</label>
             {isAdmin ? (
               <select name="status" value={form.status} onChange={handleChange}
-                className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full">
-                <option value="active" className="bg-blue-900 text-white">Active</option>
-                <option value="enrolled" className="bg-blue-900 text-white">Enrolled</option>
-                <option value="pending" className="bg-blue-900 text-white">Pending</option>
-                <option value="claimed" className="bg-blue-900 text-white">Claimed</option>
-                <option value="cancelled" className="bg-blue-900 text-white">Cancelled</option>
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full">
+                <option value="active" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Active</option>
+                <option value="enrolled" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Enrolled</option>
+                <option value="pending" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Pending</option>
+                <option value="claimed" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Claimed</option>
+                <option value="cancelled" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Cancelled</option>
               </select>
             ) : (
               <span className={`inline-block rounded-full px-4 py-2 text-sm font-bold uppercase ${getStatusBadgeClass(form.status)}`}>
@@ -1086,36 +1086,36 @@ export default function StudentDetailPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Assigned Sales</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Assigned Sales</label>
             {isAdmin ? (
               <select
                 name="assigned_sales_id"
                 value={form.assigned_sales_id}
                 onChange={handleChange}
-                className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
               >
-                <option value="" className="bg-blue-900 text-white">— Not assigned —</option>
+                <option value="" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">— Not assigned —</option>
                 {salesUsers.map((u) => (
-                  <option key={u.id} value={u.id} className="bg-blue-900 text-white">
+                  <option key={u.id} value={u.id} className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">
                     {u.full_name ?? u.id}
                   </option>
                 ))}
               </select>
             ) : (
-              <div className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white/70">
+              <div className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-600 dark:text-white/70">
                 {salesUsers.find((u) => u.id === form.assigned_sales_id)?.full_name ?? "— Not assigned —"}
               </div>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Notes</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Notes</label>
             <textarea name="notes" value={form.notes} onChange={handleChange} placeholder="Any additional notes..." rows={3}
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full" />
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full" />
           </div>
 
           {message && (
-            <p className={message.type === "success" ? "text-green-400" : "text-red-400"}>
+            <p className={message.type === "success" ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}>
               {message.text}
             </p>
           )}
@@ -1126,25 +1126,25 @@ export default function StudentDetailPage() {
               {isSaving ? "Saving..." : "Save Changes"}
             </button>
             <Link href="/students"
-              className="rounded-lg border border-white/20 px-8 py-3 font-bold text-white hover:bg-white/10">
+              className="rounded-lg border border-gray-300 dark:border-white/20 px-8 py-3 font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
               Cancel
             </Link>
           </div>
         </form>
 
         {/* Attachments */}
-        <div className="mt-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="mt-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <h3 className="text-lg font-bold mb-4 sm:text-xl">Attachments</h3>
           <div className="flex flex-col gap-3">
             {attachments.length === 0 ? (
-              <p className="text-white/50 text-sm">No attachments yet.</p>
+              <p className="text-gray-500 dark:text-white/50 text-sm">No attachments yet.</p>
             ) : (
               <ul className="space-y-2">
                 {attachments.map((f) => (
-                  <li key={f.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                    <span className="text-sm text-white/80 truncate flex-1 min-w-0">{displayFileName(f.name)}</span>
+                  <li key={f.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-3 py-2">
+                    <span className="text-sm text-gray-700 dark:text-white/80 truncate flex-1 min-w-0">{displayFileName(f.name)}</span>
                     {f.createdAt && (
-                      <span className="text-xs text-white/50">
+                      <span className="text-xs text-gray-500 dark:text-white/50">
                         {new Date(f.createdAt).toLocaleDateString()}
                       </span>
                     )}
@@ -1152,7 +1152,7 @@ export default function StudentDetailPage() {
                       href={f.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-lg border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10"
+                      className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10"
                     >
                       View / Download
                     </a>
@@ -1175,22 +1175,22 @@ export default function StudentDetailPage() {
         </div>
 
         {/* Activity Timeline */}
-        <div className="mt-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="mt-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <h3 className="text-lg font-bold mb-4 sm:text-xl">Activity Timeline</h3>
           {activityLogs.length === 0 ? (
-            <p className="text-white/50 text-sm">No activity yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No activity yet.</p>
           ) : (
-            <div className="relative pl-4 border-l-2 border-white/20">
+            <div className="relative pl-4 border-l-2 border-gray-300 dark:border-white/20">
               {activityLogs.map((log) => (
                 <div key={log.id} className="relative pb-6 last:pb-0">
                   <div className="absolute -left-[21px] top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-blue-950" />
                   <div className="flex flex-col gap-0.5">
-                    <p className="text-sm text-white/90">
-                      <span className="font-semibold text-white">{userNamesByUserId[log.user_id] ?? "Unknown"}</span>
+                    <p className="text-sm text-gray-800 dark:text-white/90">
+                      <span className="font-semibold text-gray-900 dark:text-white">{userNamesByUserId[log.user_id] ?? "Unknown"}</span>
                       {" "}
                       {ACTION_LABELS[log.action]?.(log.details) ?? log.action}
                     </p>
-                    <p className="text-xs text-white/50">
+                    <p className="text-xs text-gray-500 dark:text-white/50">
                       {new Date(log.created_at).toLocaleString()}
                     </p>
                   </div>
@@ -1201,7 +1201,7 @@ export default function StudentDetailPage() {
         </div>
 
         {isAdmin && (
-          <div className="mt-10 pt-8 border-t border-white/10">
+          <div className="mt-10 pt-8 border-t border-gray-200 dark:border-white/10">
             <button
               type="button"
               onClick={handleDeleteStudent}

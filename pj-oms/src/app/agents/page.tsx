@@ -51,13 +51,13 @@ export default function AgentsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold sm:text-3xl">Agents</h2>
-            <p className="text-sm text-white/50 mt-1">{filtered.length} total</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 mt-1">{filtered.length} total</p>
           </div>
           <Link href="/agents/new" className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700">
             + Add Agent
@@ -65,59 +65,59 @@ export default function AgentsPage() {
         </div>
 
         {/* Search */}
-        <div className="mb-6 flex gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="mb-6 flex gap-3 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email or phone..."
-            className="flex-1 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+            className="flex-1 rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10">
+            <button onClick={() => setSearch("")} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Clear
             </button>
           )}
         </div>
 
         {isLoading ? (
-          <p className="text-white/50 text-center py-20">Loading...</p>
+          <p className="text-gray-500 dark:text-white/50 text-center py-20">Loading...</p>
         ) : agents.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-12 text-center">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-12 text-center">
             <p className="text-xl font-bold mb-2">No agents yet</p>
-            <p className="text-white/50 mb-6">Add your first agent/referrer.</p>
+            <p className="text-gray-500 dark:text-white/50 mb-6">Add your first agent/referrer.</p>
             <Link href="/agents/new" className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700">
               + Add Agent
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
             <table className="w-full min-w-[500px] border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Agent Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Phone</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Commission %</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Sales</th>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Agent Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Phone</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Commission %</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Sales</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((agent) => (
-                  <tr key={agent.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                  <tr key={agent.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                     <td className="px-4 py-3 text-sm font-semibold">
-                      <Link href={`/agents/${agent.id}`} className="hover:text-blue-400 hover:underline">
+                      <Link href={`/agents/${agent.id}`} className="hover:text-blue-700 dark:text-blue-400 hover:underline">
                         {agent.agent_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-sm text-white/70 capitalize">{agent.agent_type ?? "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/70">{agent.email ?? "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/70">{agent.phone ?? "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/70">
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70 capitalize">{agent.agent_type ?? "—"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">{agent.email ?? "—"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">{agent.phone ?? "—"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">
                       {agent.commission_rate != null ? `${agent.commission_rate}%` : "—"}
                     </td>
-                    <td className="px-4 py-3 text-sm text-white/70">{agent.profiles?.full_name ?? "—"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">{agent.profiles?.full_name ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>

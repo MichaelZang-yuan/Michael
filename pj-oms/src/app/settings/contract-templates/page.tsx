@@ -146,23 +146,23 @@ export default function ContractTemplatesPage() {
     setForm(f => ({ ...f, content: f.content + key }));
   };
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
   const btnPrimary = "rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50";
-  const btnSecondary = "rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10";
+  const btnSecondary = "rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10";
 
   const previewHtml = form.content ? fillPlaceholders(form.content, SAMPLE_DATA) : "";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <p className="text-sm text-white/50 mb-1">Settings</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Settings</p>
             <h1 className="text-2xl font-bold">Contract Templates</h1>
           </div>
           {editingId === null && (
@@ -171,34 +171,34 @@ export default function ContractTemplatesPage() {
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
 
         {/* Editor */}
         {editingId !== null && (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6 mb-8">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-8">
             <h3 className="text-lg font-bold mb-5">{editingId === "new" ? "New Template" : "Edit Template"}</h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               <div>
-                <label className={labelClass}>Name <span className="text-red-400">*</span></label>
+                <label className={labelClass}>Name <span className="text-red-700 dark:text-red-400">*</span></label>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputClass} placeholder="e.g. Individual AEWV Contract EN" />
               </div>
               <div>
                 <label className={labelClass}>Language</label>
                 <select value={form.language} onChange={e => setForm(f => ({ ...f, language: e.target.value }))} className={selectClass}>
-                  <option value="english" className="bg-blue-900">English</option>
-                  <option value="chinese" className="bg-blue-900">Chinese</option>
-                  <option value="thai" className="bg-blue-900">Thai</option>
+                  <option value="english" className="bg-white dark:bg-blue-900">English</option>
+                  <option value="chinese" className="bg-white dark:bg-blue-900">Chinese</option>
+                  <option value="thai" className="bg-white dark:bg-blue-900">Thai</option>
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Target Type</label>
                 <select value={form.target_type} onChange={e => setForm(f => ({ ...f, target_type: e.target.value }))} className={selectClass}>
-                  <option value="individual" className="bg-blue-900">Individual</option>
-                  <option value="company" className="bg-blue-900">Company</option>
+                  <option value="individual" className="bg-white dark:bg-blue-900">Individual</option>
+                  <option value="company" className="bg-white dark:bg-blue-900">Company</option>
                 </select>
               </div>
             </div>
@@ -209,18 +209,18 @@ export default function ContractTemplatesPage() {
                 <div className="flex items-center justify-between mb-1">
                   <label className={labelClass}>Contract Content (HTML)</label>
                   <div className="flex gap-2">
-                    <button onClick={() => setShowPreview(false)} className={`text-xs px-3 py-1 rounded ${!showPreview ? "bg-blue-600 text-white" : "border border-white/20 text-white/60 hover:text-white"}`}>Edit</button>
-                    <button onClick={() => setShowPreview(true)} className={`text-xs px-3 py-1 rounded ${showPreview ? "bg-blue-600 text-white" : "border border-white/20 text-white/60 hover:text-white"}`}>Preview</button>
+                    <button onClick={() => setShowPreview(false)} className={`text-xs px-3 py-1 rounded ${!showPreview ? "bg-blue-600 text-white" : "border border-gray-300 dark:border-white/20 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white"}`}>Edit</button>
+                    <button onClick={() => setShowPreview(true)} className={`text-xs px-3 py-1 rounded ${showPreview ? "bg-blue-600 text-white" : "border border-gray-300 dark:border-white/20 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white"}`}>Preview</button>
                   </div>
                 </div>
                 {showPreview ? (
-                  <div className="rounded-lg border border-white/20 bg-white p-6 min-h-64 prose max-w-none" style={{ color: "#111" }}>
+                  <div className="rounded-lg border border-gray-300 dark:border-white/20 bg-white p-6 min-h-64 prose max-w-none" style={{ color: "#111" }}>
                     {previewHtml ? (
                       <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
                     ) : (
-                      <p className="text-gray-400 italic">No content to preview.</p>
+                      <p className="text-gray-500 dark:text-gray-400 italic">No content to preview.</p>
                     )}
-                    <p className="text-xs text-gray-400 mt-4 border-t pt-2">Preview uses sample data.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 border-t pt-2">Preview uses sample data.</p>
                   </div>
                 ) : (
                   <textarea
@@ -236,20 +236,20 @@ export default function ContractTemplatesPage() {
               {/* Placeholders sidebar */}
               <div>
                 <label className={labelClass}>Available Placeholders</label>
-                <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
+                <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
                   {PLACEHOLDERS.map(p => (
                     <button
                       key={p.key}
                       type="button"
                       onClick={() => insertPlaceholder(p.key)}
-                      className="w-full text-left px-3 py-2 hover:bg-white/10 border-b border-white/5 last:border-0 group"
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-white/10 border-b border-gray-100 dark:border-white/5 last:border-0 group"
                     >
-                      <p className="text-xs font-mono text-blue-300 group-hover:text-blue-200">{p.key}</p>
-                      <p className="text-xs text-white/40">{p.desc}</p>
+                      <p className="text-xs font-mono text-blue-700 dark:text-blue-300 group-hover:text-blue-200">{p.key}</p>
+                      <p className="text-xs text-gray-500 dark:text-white/40">{p.desc}</p>
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-white/30 mt-2">Click to insert at cursor position.</p>
+                <p className="text-xs text-gray-500 dark:text-white/30 mt-2">Click to insert at cursor position.</p>
               </div>
             </div>
 
@@ -258,7 +258,7 @@ export default function ContractTemplatesPage() {
               <button onClick={() => { setEditingId(null); setMessage(null); }} className={btnSecondary}>Cancel</button>
               <label className="flex items-center gap-2 ml-auto cursor-pointer">
                 <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} className="rounded" />
-                <span className="text-sm text-white/70">Active</span>
+                <span className="text-sm text-gray-600 dark:text-white/70">Active</span>
               </label>
             </div>
           </div>
@@ -266,37 +266,37 @@ export default function ContractTemplatesPage() {
 
         {/* Template list */}
         {templates.length === 0 && editingId === null ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-            <p className="text-white/50 mb-4">No contract templates yet.</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-10 text-center">
+            <p className="text-gray-500 dark:text-white/50 mb-4">No contract templates yet.</p>
             <button onClick={openNew} className={btnPrimary}>Create your first template</button>
           </div>
         ) : templates.length > 0 && (
-          <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Name</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Language</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Type</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Status</th>
+                <tr className="border-b border-gray-200 dark:border-white/10">
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Name</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Language</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Type</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Status</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {templates.map(t => (
-                  <tr key={t.id} className="border-b border-white/5 hover:bg-white/5">
+                  <tr key={t.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
                     <td className="px-4 py-3 font-medium">{t.name}</td>
-                    <td className="px-4 py-3 text-white/70 capitalize">{t.language ?? "—"}</td>
-                    <td className="px-4 py-3 text-white/70 capitalize">{t.target_type ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-white/70 capitalize">{t.language ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-white/70 capitalize">{t.target_type ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${t.is_active ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${t.is_active ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                         {t.is_active ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3 justify-end">
-                        <button onClick={() => openEdit(t)} className="text-xs text-blue-400 hover:underline">Edit</button>
-                        <button onClick={() => handleDelete(t.id, t.name)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                        <button onClick={() => openEdit(t)} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">Edit</button>
+                        <button onClick={() => handleDelete(t.id, t.name)} className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300">Delete</button>
                       </div>
                     </td>
                   </tr>

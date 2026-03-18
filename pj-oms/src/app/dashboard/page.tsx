@@ -269,18 +269,18 @@ export default function DashboardPage() {
     return { overdue: overdueList, dueSoon: dueSoonList };
   })();
 
-  const pendingClaimsColor = overdue.length > 0 ? "text-red-400" : dueSoon.length > 0 ? "text-yellow-400" : "";
+  const pendingClaimsColor = overdue.length > 0 ? "text-red-700 dark:text-red-400" : dueSoon.length > 0 ? "text-yellow-700 dark:text-yellow-400" : "";
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       {/* Main content */}
@@ -290,12 +290,12 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4 mb-10 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-1 sm:text-3xl">Dashboard</h2>
-            <p className="text-sm text-white/50 sm:text-base">Welcome back, {profile?.full_name}!</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 sm:text-base">Welcome back, {profile?.full_name}!</p>
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link
               href="/students"
-              className="rounded-lg border border-white/20 bg-white/10 px-6 py-3 font-bold text-white hover:bg-white/20"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-6 py-3 font-bold text-gray-900 dark:text-white hover:bg-white/20"
             >
               📋 View Students
             </Link>
@@ -303,13 +303,13 @@ export default function DashboardPage() {
               <>
                 <Link
                   href="/schools"
-                  className="rounded-lg border border-white/20 bg-white/10 px-6 py-3 font-bold text-white hover:bg-white/20"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-6 py-3 font-bold text-gray-900 dark:text-white hover:bg-white/20"
                 >
                   🏫 Manage Schools
                 </Link>
                 <Link
                   href="/users"
-                  className="rounded-lg border border-white/20 bg-white/10 px-6 py-3 font-bold text-white hover:bg-white/20"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-6 py-3 font-bold text-gray-900 dark:text-white hover:bg-white/20"
                 >
                   👥 Manage Users
                 </Link>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
             )}
             <Link
               href="/crm"
-              className="rounded-lg border border-white/20 bg-white/5 px-6 py-3 font-bold text-white/70 hover:bg-white/10"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-6 py-3 font-bold text-gray-600 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-white/10"
             >
               ← CRM Dashboard
             </Link>
@@ -333,13 +333,13 @@ export default function DashboardPage() {
         {hasRole(profile, "admin") && zohoConnected !== null && (
           <div className="mb-6">
             {zohoConnected ? (
-              <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">
+              <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-700 dark:text-green-400">
                 ✅ Zoho CRM connected
               </p>
             ) : (
               <a
                 href="/api/zoho/connect"
-                className="block rounded-lg border border-orange-500/50 bg-orange-500/20 px-4 py-3 text-orange-400 hover:bg-orange-500/30"
+                className="block rounded-lg border border-orange-500/50 bg-orange-100 dark:bg-orange-500/20 px-4 py-3 text-orange-700 dark:text-orange-400 hover:bg-orange-500/30"
               >
                 ⚠️ Zoho CRM not connected. Click here to connect.
               </a>
@@ -349,28 +349,28 @@ export default function DashboardPage() {
 
         {/* Stats cards - 2x2 on mobile, 4 cols on lg */}
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4 mb-10">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-blue-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Total Students
             </div>
             <p className="text-3xl font-bold sm:text-5xl">{stats.totalStudents}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-green-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Active
             </div>
             <p className="text-3xl font-bold sm:text-5xl">{stats.activeStudents}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-red-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Cancelled
             </div>
             <p className="text-3xl font-bold sm:text-5xl">{stats.cancelledStudents}</p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <div className="mb-2 sm:mb-3 inline-block rounded-lg bg-yellow-600 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
               Pending Claims
             </div>
@@ -381,17 +381,17 @@ export default function DashboardPage() {
         {/* Overdue & Due Soon reminders */}
         {overdue.length > 0 && (
           <div className="mb-6 rounded-xl border border-red-500/50 bg-red-500/10 p-6">
-            <h3 className="mb-4 text-lg font-bold text-red-400">⚠️ Overdue Claims</h3>
+            <h3 className="mb-4 text-lg font-bold text-red-700 dark:text-red-400">⚠️ Overdue Claims</h3>
             <div className="flex flex-col gap-2">
               {overdue.map((item) => (
                 <div key={item.student_id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3">
                   <div className="flex flex-wrap items-center gap-4">
-                    <Link href={`/students/${item.student_id}`} className="font-semibold text-red-300 hover:underline">
+                    <Link href={`/students/${item.student_id}`} className="font-semibold text-red-700 dark:text-red-300 hover:underline">
                       {item.full_name}
                     </Link>
-                    <span className="text-white/70">{item.school_name}</span>
-                    <span className="text-white/60 text-sm">Due: {new Date(item.claim_due_date).toLocaleDateString()}</span>
-                    <span className="text-sm font-bold text-red-400">{item.days_overdue} days overdue</span>
+                    <span className="text-gray-600 dark:text-white/70">{item.school_name}</span>
+                    <span className="text-gray-500 dark:text-white/60 text-sm">Due: {new Date(item.claim_due_date).toLocaleDateString()}</span>
+                    <span className="text-sm font-bold text-red-700 dark:text-red-400">{item.days_overdue} days overdue</span>
                   </div>
                   <Link
                     href={`/students/${item.student_id}`}
@@ -407,17 +407,17 @@ export default function DashboardPage() {
 
         {dueSoon.length > 0 && (
           <div className="mb-6 rounded-xl border border-yellow-500/50 bg-yellow-500/10 p-6">
-            <h3 className="mb-4 text-lg font-bold text-yellow-400">⏰ Due Soon</h3>
+            <h3 className="mb-4 text-lg font-bold text-yellow-700 dark:text-yellow-400">⏰ Due Soon</h3>
             <div className="flex flex-col gap-2">
               {dueSoon.map((item) => (
                 <div key={item.student_id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/5 px-4 py-3">
                   <div className="flex flex-wrap items-center gap-4">
-                    <Link href={`/students/${item.student_id}`} className="font-semibold text-yellow-300 hover:underline">
+                    <Link href={`/students/${item.student_id}`} className="font-semibold text-yellow-700 dark:text-yellow-300 hover:underline">
                       {item.full_name}
                     </Link>
-                    <span className="text-white/70">{item.school_name}</span>
-                    <span className="text-white/60 text-sm">Due: {new Date(item.claim_due_date).toLocaleDateString()}</span>
-                    <span className="text-sm font-bold text-yellow-400">in {-item.days_overdue} days</span>
+                    <span className="text-gray-600 dark:text-white/70">{item.school_name}</span>
+                    <span className="text-gray-500 dark:text-white/60 text-sm">Due: {new Date(item.claim_due_date).toLocaleDateString()}</span>
+                    <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">in {-item.days_overdue} days</span>
                   </div>
                   <Link
                     href={`/students/${item.student_id}`}
@@ -433,7 +433,7 @@ export default function DashboardPage() {
 
         {/* Charts */}
         <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <h3 className="mb-4 text-lg font-bold sm:text-xl">Monthly Commissions</h3>
             <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -452,11 +452,11 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
             <h3 className="mb-4 text-lg font-bold sm:text-xl">Students by Department</h3>
             <div className="h-[280px] w-full">
               {studentsByDept.length === 0 ? (
-                <p className="flex h-full items-center justify-center text-white/50">No students data</p>
+                <p className="flex h-full items-center justify-center text-gray-500 dark:text-white/50">No students data</p>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -486,40 +486,40 @@ export default function DashboardPage() {
         </div>
 
         {/* Pending Claims table */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <h3 className="mb-4 text-lg font-bold sm:text-xl">Pending Claims</h3>
           {pendingClaims.length === 0 ? (
-            <p className="py-8 text-center text-sm text-white/60 sm:text-base">🎉 All commissions have been claimed!</p>
+            <p className="py-8 text-center text-sm text-gray-500 dark:text-white/60 sm:text-base">🎉 All commissions have been claimed!</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[500px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Student</th>
-                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Department</th>
-                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Year</th>
-                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Amount</th>
-                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm">Enrollment Date</th>
-                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/80 sm:text-sm"></th>
+                  <tr className="border-b border-gray-300 dark:border-white/20">
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-700 dark:text-white/80 sm:text-sm">Student</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-700 dark:text-white/80 sm:text-sm">Department</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-700 dark:text-white/80 sm:text-sm">Year</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-700 dark:text-white/80 sm:text-sm">Amount</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-700 dark:text-white/80 sm:text-sm">Enrollment Date</th>
+                    <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-700 dark:text-white/80 sm:text-sm"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {pendingClaims.map((claim) => (
-                    <tr key={claim.id} className="border-b border-white/10 last:border-b-0">
+                    <tr key={claim.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0">
                       <td className="px-3 py-2 sm:px-4 sm:py-3">
                         <Link
                           href={`/students/${claim.student_id}`}
-                          className="font-medium text-blue-400 hover:underline"
+                          className="font-medium text-blue-700 dark:text-blue-400 hover:underline"
                         >
                           {claim.students?.full_name ?? "—"}
                         </Link>
                       </td>
-                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">
+                      <td className="px-3 py-2 text-gray-800 dark:text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">
                         {claim.students?.department ? DEPT_LABELS[claim.students.department] ?? claim.students.department : "—"}
                       </td>
-                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">{claim.year}</td>
-                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">{claim.amount}</td>
-                      <td className="px-3 py-2 text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">
+                      <td className="px-3 py-2 text-gray-800 dark:text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">{claim.year}</td>
+                      <td className="px-3 py-2 text-gray-800 dark:text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">{claim.amount}</td>
+                      <td className="px-3 py-2 text-gray-800 dark:text-white/90 text-xs sm:px-4 sm:py-3 sm:text-base">
                         {claim.students?.enrollment_date
                           ? new Date(claim.students.enrollment_date).toLocaleDateString()
                           : "—"}

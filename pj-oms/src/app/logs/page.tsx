@@ -153,99 +153,99 @@ export default function LogsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   if (!hasRole(profile, "admin")) {
     return (
-      <div className="min-h-screen bg-blue-950 text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
         <Navbar />
         <main className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-          <p className="text-2xl font-bold text-red-400">Access Denied</p>
-          <p className="text-white/50 mt-2">You do not have permission to view this page.</p>
-          <Link href="/dashboard" className="mt-6 inline-block text-blue-400 hover:underline">← Back to Dashboard</Link>
+          <p className="text-2xl font-bold text-red-700 dark:text-red-400">Access Denied</p>
+          <p className="text-gray-500 dark:text-white/50 mt-2">You do not have permission to view this page.</p>
+          <Link href="/dashboard" className="mt-6 inline-block text-blue-700 dark:text-blue-400 hover:underline">← Back to Dashboard</Link>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <h2 className="text-2xl font-bold mb-8 sm:text-3xl">Activity Logs</h2>
 
         {/* Filters */}
-        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <select
             value={filters.userId}
             onChange={(e) => { setFilters((f) => ({ ...f, userId: e.target.value })); setPage(1); }}
-            className="rounded-lg border border-white/20 bg-blue-900 px-4 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+            className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
           >
-            <option value="all" className="bg-blue-900">All Users</option>
+            <option value="all" className="bg-white dark:bg-blue-900">All Users</option>
             {users.map((u) => (
-              <option key={u.id} value={u.id} className="bg-blue-900">{u.full_name ?? u.id}</option>
+              <option key={u.id} value={u.id} className="bg-white dark:bg-blue-900">{u.full_name ?? u.id}</option>
             ))}
           </select>
           <select
             value={filters.entityType}
             onChange={(e) => { setFilters((f) => ({ ...f, entityType: e.target.value })); setPage(1); }}
-            className="rounded-lg border border-white/20 bg-blue-900 px-4 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+            className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
           >
-            <option value="all" className="bg-blue-900">All</option>
-            <option value="student" className="bg-blue-900">Student</option>
-            <option value="commission" className="bg-blue-900">Commission</option>
+            <option value="all" className="bg-white dark:bg-blue-900">All</option>
+            <option value="student" className="bg-white dark:bg-blue-900">Student</option>
+            <option value="commission" className="bg-white dark:bg-blue-900">Commission</option>
           </select>
           <input
             type="date"
             value={filters.dateFrom}
             onChange={(e) => { setFilters((f) => ({ ...f, dateFrom: e.target.value })); setPage(1); }}
-            className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+            className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
             placeholder="From"
           />
           <input
             type="date"
             value={filters.dateTo}
             onChange={(e) => { setFilters((f) => ({ ...f, dateTo: e.target.value })); setPage(1); }}
-            className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+            className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
             placeholder="To"
           />
           <button
             onClick={handleClearFilters}
-            className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10"
+            className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10"
           >
             Clear Filters
           </button>
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
-                <tr className="border-b border-white/20 bg-white/5">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Time</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">User</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Action</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/80">Details</th>
+                <tr className="border-b border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-white/80">Time</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-white/80">User</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-white/80">Action</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-white/80">Details</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-12 text-center text-white/50">No logs found.</td>
+                    <td colSpan={4} className="px-4 py-12 text-center text-gray-500 dark:text-white/50">No logs found.</td>
                   </tr>
                 ) : (
                   logs.map((log) => (
-                    <tr key={log.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
-                      <td className="px-4 py-3 text-sm text-white/90">{formatTime(log.created_at)}</td>
-                      <td className="px-4 py-3 text-sm text-white/90">{userNames[log.user_id] ?? "Unknown"}</td>
-                      <td className="px-4 py-3 text-sm text-white/90">{ACTION_LABELS[log.action] ?? log.action}</td>
-                      <td className="px-4 py-3 text-sm text-white/80">{formatDetails(log.action, log.details)}</td>
+                    <tr key={log.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
+                      <td className="px-4 py-3 text-sm text-gray-800 dark:text-white/90">{formatTime(log.created_at)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-800 dark:text-white/90">{userNames[log.user_id] ?? "Unknown"}</td>
+                      <td className="px-4 py-3 text-sm text-gray-800 dark:text-white/90">{ACTION_LABELS[log.action] ?? log.action}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-white/80">{formatDetails(log.action, log.details)}</td>
                     </tr>
                   ))
                 )}
@@ -255,22 +255,22 @@ export default function LogsPage() {
 
           {/* Pagination */}
           {totalCount > PAGE_SIZE && (
-            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 px-4 py-3">
-              <p className="text-sm text-white/60">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 dark:border-white/10 px-4 py-3">
+              <p className="text-sm text-gray-500 dark:text-white/60">
                 Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, totalCount)} of {totalCount}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
-                  className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>

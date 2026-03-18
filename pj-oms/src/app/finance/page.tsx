@@ -215,10 +215,10 @@ export default function FinanceDashboardPage() {
     setPendingRefunds((refundsData ?? []) as RefundRow[]);
   };
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -226,7 +226,7 @@ export default function FinanceDashboardPage() {
           <div className="flex gap-2">
             {PERIODS.map(p => (
               <button key={p.value} onClick={() => setPeriod(p.value)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${period === p.value ? "bg-blue-600 text-white" : "bg-white/5 text-white/60 hover:bg-white/10"}`}>
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${period === p.value ? "bg-blue-600 text-white" : "bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
                 {p.label}
               </button>
             ))}
@@ -235,28 +235,28 @@ export default function FinanceDashboardPage() {
 
         {/* ── Row 1: Core Metrics ─────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-            <p className="text-white/50 text-xs mb-1">Total Revenue</p>
-            <p className="text-2xl font-bold text-green-400">{fmtMoney(totalRevenue)}</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-5">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Total Revenue</p>
+            <p className="text-2xl font-bold text-green-700 dark:text-green-400">{fmtMoney(totalRevenue)}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-            <p className="text-white/50 text-xs mb-1">Outstanding</p>
-            <p className="text-2xl font-bold text-orange-400">{fmtMoney(outstanding)}</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-5">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Outstanding</p>
+            <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">{fmtMoney(outstanding)}</p>
           </div>
-          <div className={`rounded-xl border p-5 ${overdue > 0 ? "border-red-500/30 bg-red-500/5" : "border-white/10 bg-white/5"}`}>
-            <p className="text-white/50 text-xs mb-1">Overdue</p>
-            <p className={`text-2xl font-bold ${overdue > 0 ? "text-red-400" : "text-white"}`}>{fmtMoney(overdue)}</p>
+          <div className={`rounded-xl border p-5 ${overdue > 0 ? "border-red-500/30 bg-red-500/5" : "border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5"}`}>
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Overdue</p>
+            <p className={`text-2xl font-bold ${overdue > 0 ? "text-red-700 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>{fmtMoney(overdue)}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-            <p className="text-white/50 text-xs mb-1">Commission Pending</p>
-            <p className="text-2xl font-bold text-purple-400">{fmtMoney(commPending)}</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-5">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Commission Pending</p>
+            <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">{fmtMoney(commPending)}</p>
           </div>
         </div>
 
         {/* ── Row 2: Charts ───────────────────────────────────────────── */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Monthly Cash Flow */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
             <h3 className="text-lg font-semibold mb-4">Monthly Cash Flow (Last 6 Months)</h3>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={cashFlowData}>
@@ -271,10 +271,10 @@ export default function FinanceDashboardPage() {
           </div>
 
           {/* Revenue Mix */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
             <h3 className="text-lg font-semibold mb-4">Revenue Mix</h3>
             {revenueMix.length === 0 ? (
-              <p className="text-white/40 text-sm text-center py-24">No revenue data for this period</p>
+              <p className="text-gray-500 dark:text-white/40 text-sm text-center py-24">No revenue data for this period</p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -293,18 +293,18 @@ export default function FinanceDashboardPage() {
         {/* ── Row 3: Lists ────────────────────────────────────────────── */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Overdue Invoices */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Overdue Invoices</h3>
-              <Link href="/finance/ar" className="text-xs text-blue-400 hover:underline">View All →</Link>
+              <Link href="/finance/ar" className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View All →</Link>
             </div>
             {overdueInvoices.length === 0 ? (
-              <p className="text-white/40 text-sm text-center py-8">No overdue invoices</p>
+              <p className="text-gray-500 dark:text-white/40 text-sm text-center py-8">No overdue invoices</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/10 text-left text-white/50">
+                    <tr className="border-b border-gray-200 dark:border-white/10 text-left text-gray-500 dark:text-white/50">
                       <th className="px-3 py-2 font-medium">Invoice</th>
                       <th className="px-3 py-2 font-medium">Client</th>
                       <th className="px-3 py-2 font-medium text-right">Due</th>
@@ -313,14 +313,14 @@ export default function FinanceDashboardPage() {
                   </thead>
                   <tbody>
                     {overdueInvoices.map(inv => (
-                      <tr key={inv.id} className="border-b border-white/5 hover:bg-white/5">
+                      <tr key={inv.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
                         <td className="px-3 py-2 font-medium">
                           {inv.invoice_number}
-                          <span className={`ml-1.5 text-xs rounded-full px-1.5 py-0.5 ${inv.type === "CRM" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>{inv.type}</span>
+                          <span className={`ml-1.5 text-xs rounded-full px-1.5 py-0.5 ${inv.type === "CRM" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" : "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400"}`}>{inv.type}</span>
                         </td>
-                        <td className="px-3 py-2 text-white/70 max-w-[120px] truncate">{inv.client}</td>
-                        <td className="px-3 py-2 text-right text-orange-400 font-medium">{fmtMoney(inv.outstanding)}</td>
-                        <td className={`px-3 py-2 text-right font-bold ${inv.days_overdue > 90 ? "text-red-500" : inv.days_overdue > 60 ? "text-red-400" : "text-orange-400"}`}>
+                        <td className="px-3 py-2 text-gray-600 dark:text-white/70 max-w-[120px] truncate">{inv.client}</td>
+                        <td className="px-3 py-2 text-right text-orange-700 dark:text-orange-400 font-medium">{fmtMoney(inv.outstanding)}</td>
+                        <td className={`px-3 py-2 text-right font-bold ${inv.days_overdue > 90 ? "text-red-500" : inv.days_overdue > 60 ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"}`}>
                           {inv.days_overdue}d
                         </td>
                       </tr>
@@ -332,18 +332,18 @@ export default function FinanceDashboardPage() {
           </div>
 
           {/* Pending Refunds */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Pending Refunds</h3>
-              <Link href="/finance/refunds" className="text-xs text-blue-400 hover:underline">View All →</Link>
+              <Link href="/finance/refunds" className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View All →</Link>
             </div>
             {pendingRefunds.length === 0 ? (
-              <p className="text-white/40 text-sm text-center py-8">No pending refund requests</p>
+              <p className="text-gray-500 dark:text-white/40 text-sm text-center py-8">No pending refund requests</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/10 text-left text-white/50">
+                    <tr className="border-b border-gray-200 dark:border-white/10 text-left text-gray-500 dark:text-white/50">
                       <th className="px-3 py-2 font-medium">Deal</th>
                       <th className="px-3 py-2 font-medium">Client</th>
                       <th className="px-3 py-2 font-medium text-right">Amount</th>
@@ -352,11 +352,11 @@ export default function FinanceDashboardPage() {
                   </thead>
                   <tbody>
                     {pendingRefunds.map(r => (
-                      <tr key={r.id} className="border-b border-white/5 hover:bg-white/5">
+                      <tr key={r.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
                         <td className="px-3 py-2 font-medium">{r.deal_number}</td>
-                        <td className="px-3 py-2 text-white/70 max-w-[120px] truncate">{r.client_name}</td>
-                        <td className="px-3 py-2 text-right text-red-400 font-bold">{fmtMoney(Number(r.calculated_refund))}</td>
-                        <td className="px-3 py-2 text-white/60">{new Date(r.requested_at).toLocaleDateString()}</td>
+                        <td className="px-3 py-2 text-gray-600 dark:text-white/70 max-w-[120px] truncate">{r.client_name}</td>
+                        <td className="px-3 py-2 text-right text-red-700 dark:text-red-400 font-bold">{fmtMoney(Number(r.calculated_refund))}</td>
+                        <td className="px-3 py-2 text-gray-500 dark:text-white/60">{new Date(r.requested_at).toLocaleDateString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -367,7 +367,7 @@ export default function FinanceDashboardPage() {
         </div>
 
         {/* ── Row 4: Quick Actions ────────────────────────────────────── */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="flex flex-wrap gap-3">
             {[
@@ -378,7 +378,7 @@ export default function FinanceDashboardPage() {
               { href: "/commission/invoices", label: "View Commission Invoices" },
             ].map(link => (
               <Link key={link.href} href={link.href}
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium hover:bg-white/10 transition-colors">
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-4 py-2.5 text-sm font-medium hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                 {link.label}
               </Link>
             ))}

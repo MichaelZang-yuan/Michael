@@ -194,20 +194,20 @@ export default function SignaturePad({
   const tabBase = "px-4 py-2 rounded-lg text-sm font-semibold border transition-colors";
   const tabActive = "bg-blue-700 text-white border-blue-700";
   const tabInactive = isDark
-    ? "bg-transparent text-white/60 border-white/20 hover:bg-white/10"
+    ? "bg-transparent text-gray-500 dark:text-white/60 border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10"
     : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50";
   const labelClass = isDark
-    ? "block text-sm font-medium text-white/70 mb-2"
+    ? "block text-sm font-medium text-gray-600 dark:text-white/70 mb-2"
     : "block text-sm font-medium text-gray-700 mb-2";
 
   return (
     <div>
       {/* Saved signature option */}
       {savedSignatureUrl && onUseSaved && (
-        <div className={`mb-4 rounded-lg border p-4 ${isDark ? "border-white/20 bg-white/5" : "border-blue-200 bg-blue-50"}`}>
+        <div className={`mb-4 rounded-lg border p-4 ${isDark ? "border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5" : "border-blue-200 bg-blue-50"}`}>
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <p className={`text-sm font-semibold ${isDark ? "text-white/80" : "text-gray-700"}`}>Saved Signature</p>
+              <p className={`text-sm font-semibold ${isDark ? "text-gray-700 dark:text-white/80" : "text-gray-700"}`}>Saved Signature</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={savedSignatureUrl} alt="Saved signature" className="max-h-16 mt-2 object-contain" />
             </div>
@@ -258,9 +258,9 @@ export default function SignaturePad({
               onTouchMove={draw}
               onTouchEnd={endDraw}
             />
-            <p className="absolute bottom-2 right-3 text-xs text-gray-300 pointer-events-none select-none">Sign here</p>
+            <p className="absolute bottom-2 right-3 text-xs text-gray-500 dark:text-gray-300 pointer-events-none select-none">Sign here</p>
           </div>
-          <button onClick={clearCanvas} className="mt-2 text-xs text-gray-400 hover:text-gray-600 underline">
+          <button onClick={clearCanvas} className="mt-2 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 underline">
             Clear signature
           </button>
         </div>
@@ -292,7 +292,7 @@ export default function SignaturePad({
               <button
                 type="button"
                 onClick={() => setUploadedSig("")}
-                className="mt-2 text-xs text-red-400 hover:text-red-600 underline block"
+                className="mt-2 text-xs text-red-700 dark:text-red-400 hover:text-red-600 underline block"
               >
                 Remove
               </button>
@@ -310,7 +310,7 @@ export default function SignaturePad({
             value={typedName}
             onChange={(e) => setTypedName(e.target.value)}
             placeholder="Enter your full name"
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-400 focus:border-blue-400 focus:outline-none mb-3"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-500 dark:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none mb-3"
           />
 
           <label className={labelClass}>Choose a font style:</label>

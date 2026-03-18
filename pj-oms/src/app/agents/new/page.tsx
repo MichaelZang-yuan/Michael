@@ -71,26 +71,26 @@ export default function NewAgentPage() {
     router.push(`/agents/${data.id}`);
   };
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges />
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
         <div className="mb-8">
           <h2 className="text-2xl font-bold sm:text-3xl">Add Agent</h2>
-          <p className="text-sm text-white/50 mt-1">Add a new referral agent or partner.</p>
+          <p className="text-sm text-gray-500 dark:text-white/50 mt-1">Add a new referral agent or partner.</p>
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className={labelClass}>Agent Name *</label>
@@ -107,8 +107,8 @@ export default function NewAgentPage() {
             <div>
               <label className={labelClass}>Agent Type</label>
               <select name="agent_type" value={form.agent_type} onChange={handleChange} className={selectClass}>
-                <option value="individual" className="bg-blue-900">Individual</option>
-                <option value="company" className="bg-blue-900">Company</option>
+                <option value="individual" className="bg-white dark:bg-blue-900">Individual</option>
+                <option value="company" className="bg-white dark:bg-blue-900">Company</option>
               </select>
             </div>
             <div>
@@ -125,7 +125,7 @@ export default function NewAgentPage() {
             <button type="submit" disabled={isSaving} className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50">
               {isSaving ? "Saving..." : "Save Agent"}
             </button>
-            <button type="button" onClick={() => router.push("/agents")} className="rounded-lg border border-white/20 px-6 py-3 font-bold hover:bg-white/10">
+            <button type="button" onClick={() => router.push("/agents")} className="rounded-lg border border-gray-300 dark:border-white/20 px-6 py-3 font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Cancel
             </button>
           </div>

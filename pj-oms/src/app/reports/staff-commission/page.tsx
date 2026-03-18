@@ -289,24 +289,24 @@ export default function StaffCommissionPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
-  const inputClass = "rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-white focus:border-blue-400 focus:outline-none";
+  const inputClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
   const btnPrimary = "rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50";
-  const btnSecondary = "rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10";
+  const btnSecondary = "rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <p className="text-sm text-white/50 mb-1">Reports</p>
+          <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Reports</p>
           <h1 className="text-2xl font-bold">Staff Commission</h1>
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 text-sm ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 text-sm ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
@@ -314,21 +314,21 @@ export default function StaffCommissionPage() {
         {/* Section 1: Rate Settings */}
         <section className="mb-10">
           <h2 className="text-lg font-bold mb-4">Commission Rate Settings</h2>
-          <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Staff Name</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Role</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Default Rate (%)</th>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Staff Name</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Role</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Default Rate (%)</th>
                   <th className="px-4 py-3 w-32"></th>
                 </tr>
               </thead>
               <tbody>
                 {staffSettings.map(s => (
-                  <tr key={s.user_id} className="border-b border-white/5 hover:bg-white/5 last:border-0">
+                  <tr key={s.user_id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 last:border-0">
                     <td className="px-4 py-3 font-medium">{s.full_name ?? "—"}</td>
-                    <td className="px-4 py-3 text-white/60">{ROLE_LABELS[s.role] ?? s.role}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{ROLE_LABELS[s.role] ?? s.role}</td>
                     <td className="px-4 py-3">
                       {editingUserId === s.user_id ? (
                         <input
@@ -338,7 +338,7 @@ export default function StaffCommissionPage() {
                           className={`${inputClass} w-24 text-sm`}
                         />
                       ) : (
-                        <span className="text-white/80">{s.default_commission_rate}%</span>
+                        <span className="text-gray-700 dark:text-white/80">{s.default_commission_rate}%</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -347,13 +347,13 @@ export default function StaffCommissionPage() {
                           <button onClick={() => handleSaveRate(s)} disabled={isSavingRate} className="rounded bg-blue-600 px-3 py-1 text-xs font-bold hover:bg-blue-700 disabled:opacity-50">
                             {isSavingRate ? "Saving..." : "Save"}
                           </button>
-                          <button onClick={() => setEditingUserId(null)} disabled={isSavingRate} className="rounded border border-white/20 px-3 py-1 text-xs font-bold hover:bg-white/10">
+                          <button onClick={() => setEditingUserId(null)} disabled={isSavingRate} className="rounded border border-gray-300 dark:border-white/20 px-3 py-1 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                             Cancel
                           </button>
                         </div>
                       ) : (
                         <div className="flex justify-end">
-                          <button onClick={() => handleEditRate(s)} className="text-xs text-blue-400 hover:underline">
+                          <button onClick={() => handleEditRate(s)} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">
                             Edit
                           </button>
                         </div>
@@ -377,26 +377,26 @@ export default function StaffCommissionPage() {
 
           {showAddModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-950 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-blue-950 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
                 <h3 className="text-lg font-bold mb-5">Add Commission Record</h3>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-white/70 mb-1">Deal *</label>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Deal *</label>
                     <select value={addForm.deal_id} onChange={e => handleAddFormDealChange(e.target.value)} className={`${selectClass} w-full`}>
-                      <option value="" className="bg-blue-900">Select deal...</option>
+                      <option value="" className="bg-white dark:bg-blue-900">Select deal...</option>
                       {deals.map(d => (
-                        <option key={d.id} value={d.id} className="bg-blue-900">
+                        <option key={d.id} value={d.id} className="bg-white dark:bg-blue-900">
                           {d.deal_number ?? d.id}{d.total_amount != null ? ` — $${d.total_amount.toLocaleString()}` : ""}
                         </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-white/70 mb-1">Staff Member *</label>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Staff Member *</label>
                     <select value={addForm.user_id} onChange={e => handleAddFormStaffChange(e.target.value)} className={`${selectClass} w-full`}>
-                      <option value="" className="bg-blue-900">Select staff...</option>
+                      <option value="" className="bg-white dark:bg-blue-900">Select staff...</option>
                       {profiles.map(p => (
-                        <option key={p.id} value={p.id} className="bg-blue-900">
+                        <option key={p.id} value={p.id} className="bg-white dark:bg-blue-900">
                           {p.full_name ?? p.id} ({ROLE_LABELS[p.role] ?? p.role})
                         </option>
                       ))}
@@ -404,37 +404,37 @@ export default function StaffCommissionPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-1">Role in Deal</label>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Role in Deal</label>
                       <select value={addForm.role_in_deal} onChange={e => setAddForm(f => ({ ...f, role_in_deal: e.target.value }))} className={`${selectClass} w-full`}>
-                        <option value="sales" className="bg-blue-900">Sales</option>
-                        <option value="lia" className="bg-blue-900">LIA</option>
-                        <option value="copywriter" className="bg-blue-900">Copywriter</option>
-                        <option value="admin" className="bg-blue-900">Admin</option>
-                        <option value="accountant" className="bg-blue-900">Accountant</option>
-                        <option value="other" className="bg-blue-900">Other</option>
+                        <option value="sales" className="bg-white dark:bg-blue-900">Sales</option>
+                        <option value="lia" className="bg-white dark:bg-blue-900">LIA</option>
+                        <option value="copywriter" className="bg-white dark:bg-blue-900">Copywriter</option>
+                        <option value="admin" className="bg-white dark:bg-blue-900">Admin</option>
+                        <option value="accountant" className="bg-white dark:bg-blue-900">Accountant</option>
+                        <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-1">Quarter</label>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Quarter</label>
                       <input value={addForm.quarter} onChange={e => setAddForm(f => ({ ...f, quarter: e.target.value }))} placeholder="e.g. 2026-Q1" className={`${inputClass} w-full text-sm`} />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-1">Base Amount ($)</label>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Base Amount ($)</label>
                       <input type="number" min="0" step="0.01" value={addForm.base_amount} onChange={e => handleBaseChange(e.target.value)} className={`${inputClass} w-full text-sm`} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-1">Rate (%)</label>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Rate (%)</label>
                       <input type="number" min="0" max="100" step="0.1" value={addForm.commission_rate} onChange={e => handleRateChange(e.target.value)} className={`${inputClass} w-full text-sm`} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-1">Commission ($)</label>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Commission ($)</label>
                       <input type="number" min="0" step="0.01" value={addForm.commission_amount} onChange={e => setAddForm(f => ({ ...f, commission_amount: e.target.value }))} className={`${inputClass} w-full text-sm`} />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-white/70 mb-1">Notes</label>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Notes</label>
                     <textarea value={addForm.notes} onChange={e => setAddForm(f => ({ ...f, notes: e.target.value }))} rows={2} className={`${inputClass} w-full text-sm resize-y`} placeholder="Optional notes..." />
                   </div>
                 </div>
@@ -457,8 +457,8 @@ export default function StaffCommissionPage() {
             <h2 className="text-lg font-bold">Quarterly Summary</h2>
             <div className="flex items-center gap-3">
               <select value={filterQuarter} onChange={e => setFilterQuarter(e.target.value)} className={`${selectClass} text-sm`}>
-                <option value="all" className="bg-blue-900">All Quarters</option>
-                {allQuarters.map(q => <option key={q} value={q} className="bg-blue-900">{q}</option>)}
+                <option value="all" className="bg-white dark:bg-blue-900">All Quarters</option>
+                {allQuarters.map(q => <option key={q} value={q} className="bg-white dark:bg-blue-900">{q}</option>)}
               </select>
               <button onClick={handleExportCsv} disabled={filtered.length === 0} className={`${btnSecondary} text-sm disabled:opacity-50`}>
                 Export CSV
@@ -467,7 +467,7 @@ export default function StaffCommissionPage() {
           </div>
 
           {Object.keys(quarterGroups).length === 0 ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center text-white/50">
+            <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-10 text-center text-gray-500 dark:text-white/50">
               No commission records yet. Add records above.
             </div>
           ) : (
@@ -481,9 +481,9 @@ export default function StaffCommissionPage() {
                   const isExpanded = expandedQuarters.has(quarter);
 
                   return (
-                    <div key={quarter} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                    <div key={quarter} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
                       <button
-                        className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 text-left"
+                        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-white/5 text-left"
                         onClick={() => setExpandedQuarters(prev => {
                           const next = new Set(prev);
                           if (next.has(quarter)) next.delete(quarter); else next.add(quarter);
@@ -492,60 +492,60 @@ export default function StaffCommissionPage() {
                       >
                         <div className="flex items-center gap-4">
                           <span className="font-bold text-base">{quarter}</span>
-                          <span className="text-white/50 text-sm">{records.length} record{records.length !== 1 ? "s" : ""}</span>
+                          <span className="text-gray-500 dark:text-white/50 text-sm">{records.length} record{records.length !== 1 ? "s" : ""}</span>
                         </div>
                         <div className="flex items-center gap-4 sm:gap-6 text-sm">
-                          <span className="hidden sm:block"><span className="text-white/40 mr-1">Total</span><span className="font-bold">${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></span>
-                          <span><span className="text-yellow-400/70 mr-1">Pending</span><span className="text-yellow-400 font-bold">${pending.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></span>
-                          <span><span className="text-green-400/70 mr-1">Settled</span><span className="text-green-400 font-bold">${settled.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></span>
-                          <svg className={`w-4 h-4 transition-transform text-white/40 shrink-0 ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="hidden sm:block"><span className="text-gray-500 dark:text-white/40 mr-1">Total</span><span className="font-bold">${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></span>
+                          <span><span className="text-yellow-700 dark:text-yellow-400/70 mr-1">Pending</span><span className="text-yellow-700 dark:text-yellow-400 font-bold">${pending.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></span>
+                          <span><span className="text-green-700 dark:text-green-400/70 mr-1">Settled</span><span className="text-green-700 dark:text-green-400 font-bold">${settled.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></span>
+                          <svg className={`w-4 h-4 transition-transform text-gray-500 dark:text-white/40 shrink-0 ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                       </button>
 
                       {isExpanded && (
-                        <div className="border-t border-white/10 overflow-x-auto">
+                        <div className="border-t border-gray-200 dark:border-white/10 overflow-x-auto">
                           <table className="w-full min-w-[750px] text-sm">
                             <thead>
-                              <tr className="border-b border-white/10 bg-white/5">
-                                <th className="text-left px-4 py-2 text-white/40 font-medium text-xs">Deal</th>
-                                <th className="text-left px-4 py-2 text-white/40 font-medium text-xs">Staff</th>
-                                <th className="text-left px-4 py-2 text-white/40 font-medium text-xs">Role</th>
-                                <th className="text-right px-4 py-2 text-white/40 font-medium text-xs">Base</th>
-                                <th className="text-right px-4 py-2 text-white/40 font-medium text-xs">Rate</th>
-                                <th className="text-right px-4 py-2 text-white/40 font-medium text-xs">Commission</th>
-                                <th className="text-left px-4 py-2 text-white/40 font-medium text-xs">Status</th>
+                              <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                                <th className="text-left px-4 py-2 text-gray-500 dark:text-white/40 font-medium text-xs">Deal</th>
+                                <th className="text-left px-4 py-2 text-gray-500 dark:text-white/40 font-medium text-xs">Staff</th>
+                                <th className="text-left px-4 py-2 text-gray-500 dark:text-white/40 font-medium text-xs">Role</th>
+                                <th className="text-right px-4 py-2 text-gray-500 dark:text-white/40 font-medium text-xs">Base</th>
+                                <th className="text-right px-4 py-2 text-gray-500 dark:text-white/40 font-medium text-xs">Rate</th>
+                                <th className="text-right px-4 py-2 text-gray-500 dark:text-white/40 font-medium text-xs">Commission</th>
+                                <th className="text-left px-4 py-2 text-gray-500 dark:text-white/40 font-medium text-xs">Status</th>
                                 <th className="px-4 py-2 text-xs w-24"></th>
                               </tr>
                             </thead>
                             <tbody>
                               {records.map(r => (
-                                <tr key={r.id} className="border-b border-white/5 hover:bg-white/5 last:border-0">
+                                <tr key={r.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 last:border-0">
                                   <td className="px-4 py-3">
-                                    <Link href={`/deals/${r.deal_id}`} className="text-blue-400 hover:underline">
+                                    <Link href={`/deals/${r.deal_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">
                                       {r.deals?.deal_number ?? "—"}
                                     </Link>
                                   </td>
                                   <td className="px-4 py-3">{r.staff_profile?.full_name ?? "—"}</td>
-                                  <td className="px-4 py-3 text-white/60 capitalize">{r.role_in_deal ?? "—"}</td>
-                                  <td className="px-4 py-3 text-right text-white/80">${r.base_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                  <td className="px-4 py-3 text-right text-white/80">{r.commission_rate}%</td>
+                                  <td className="px-4 py-3 text-gray-500 dark:text-white/60 capitalize">{r.role_in_deal ?? "—"}</td>
+                                  <td className="px-4 py-3 text-right text-gray-700 dark:text-white/80">${r.base_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                  <td className="px-4 py-3 text-right text-gray-700 dark:text-white/80">{r.commission_rate}%</td>
                                   <td className="px-4 py-3 text-right font-bold">${r.commission_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                   <td className="px-4 py-3">
-                                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${r.status === "settled" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${r.status === "settled" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"}`}>
                                       {r.status === "settled" ? "Settled" : "Pending"}
                                     </span>
-                                    {r.settled_date && <span className="text-xs text-white/40 ml-1">{new Date(r.settled_date).toLocaleDateString()}</span>}
+                                    {r.settled_date && <span className="text-xs text-gray-500 dark:text-white/40 ml-1">{new Date(r.settled_date).toLocaleDateString()}</span>}
                                   </td>
                                   <td className="px-4 py-3">
                                     <div className="flex gap-2">
                                       {r.status === "pending" && (
-                                        <button onClick={() => handleSettle(r.id)} disabled={isSettling === r.id} className="text-xs text-green-400 hover:underline disabled:opacity-50">
+                                        <button onClick={() => handleSettle(r.id)} disabled={isSettling === r.id} className="text-xs text-green-700 dark:text-green-400 hover:underline disabled:opacity-50">
                                           {isSettling === r.id ? "..." : "Settle"}
                                         </button>
                                       )}
-                                      <button onClick={() => handleDelete(r.id)} disabled={isDeleting === r.id} className="text-xs text-red-400 hover:underline disabled:opacity-50">
+                                      <button onClick={() => handleDelete(r.id)} disabled={isDeleting === r.id} className="text-xs text-red-700 dark:text-red-400 hover:underline disabled:opacity-50">
                                         {isDeleting === r.id ? "..." : "Delete"}
                                       </button>
                                     </div>

@@ -54,7 +54,7 @@ const DEPT_LABELS: Record<string, string> = {
 };
 
 const inputClass =
-  "rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full";
+  "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full";
 
 function getYearRange() {
   const y = new Date().getFullYear();
@@ -281,8 +281,8 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
@@ -354,50 +354,50 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <h2 className="text-3xl font-bold mb-8">My Profile</h2>
 
         {/* 基本信息（只读） */}
-        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+        <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
           <h3 className="text-lg font-bold mb-4">Account Information</h3>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Full Name</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Full Name</label>
               <input
                 type="text"
                 value={profile?.full_name ?? "—"}
                 readOnly
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white/80 cursor-not-allowed"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-4 py-3 text-gray-700 dark:text-white/80 cursor-not-allowed"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Email</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Email</label>
               <input
                 type="email"
                 value={profile?.email ?? "—"}
                 readOnly
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white/80 cursor-not-allowed"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-4 py-3 text-gray-700 dark:text-white/80 cursor-not-allowed"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Role</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Role</label>
               <input
                 type="text"
                 value={profile?.roles ? formatRoles(profile.roles) : profile?.role ? ROLE_LABELS[profile.role] ?? profile.role : "—"}
                 readOnly
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white/80 cursor-not-allowed"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-4 py-3 text-gray-700 dark:text-white/80 cursor-not-allowed"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Department</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Department</label>
               <input
                 type="text"
                 value={profile?.department ? DEPT_LABELS[profile.department] ?? profile.department : "—"}
                 readOnly
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white/80 cursor-not-allowed"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-4 py-3 text-gray-700 dark:text-white/80 cursor-not-allowed"
               />
             </div>
           </div>
@@ -405,22 +405,22 @@ export default function ProfilePage() {
 
         {/* My Signature（仅 LIA 显示） */}
         {isLia && (
-          <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+          <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
             <h3 className="text-lg font-bold mb-4">My Signature</h3>
-            <p className="text-sm text-white/50 mb-4">
+            <p className="text-sm text-gray-500 dark:text-white/50 mb-4">
               Save a default signature to quickly sign contracts without redrawing each time.
             </p>
 
             {sigMessage && (
-              <p className={`mb-4 text-sm ${sigMessage.type === "success" ? "text-green-400" : "text-red-400"}`}>
+              <p className={`mb-4 text-sm ${sigMessage.type === "success" ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}>
                 {sigMessage.text}
               </p>
             )}
 
             {profile?.default_signature_url ? (
               <div className="mb-4">
-                <p className="text-sm font-semibold text-white/70 mb-2">Current Saved Signature:</p>
-                <div className="rounded-lg border border-white/20 bg-white p-4 inline-block">
+                <p className="text-sm font-semibold text-gray-600 dark:text-white/70 mb-2">Current Saved Signature:</p>
+                <div className="rounded-lg border border-gray-300 dark:border-white/20 bg-white p-4 inline-block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={profile.default_signature_url} alt="Saved signature" className="max-h-20 object-contain" />
                 </div>
@@ -429,12 +429,12 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleRemoveSignature}
                     disabled={isSavingSig}
-                    className="rounded-lg border border-red-500/50 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
+                    className="rounded-lg border border-red-500/50 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20 disabled:opacity-50"
                   >
                     Remove Signature
                   </button>
                 </div>
-                <p className="text-xs text-white/40 mt-3">Upload a new signature below to replace:</p>
+                <p className="text-xs text-gray-500 dark:text-white/40 mt-3">Upload a new signature below to replace:</p>
               </div>
             ) : null}
 
@@ -449,13 +449,13 @@ export default function ProfilePage() {
 
         {/* My Students（仅 sales 显示） */}
         {isSales && (
-          <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+          <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
             <h3 className="text-lg font-bold mb-4">My Students</h3>
 
             {/* 时间段筛选 */}
             <div className="flex flex-wrap items-end gap-4 mb-6">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-white/70">From</label>
+                <label className="text-sm font-semibold text-gray-600 dark:text-white/70">From</label>
                 <input
                   type="date"
                   value={dateFrom}
@@ -464,7 +464,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-white/70">To</label>
+                <label className="text-sm font-semibold text-gray-600 dark:text-white/70">To</label>
                 <input
                   type="date"
                   value={dateTo}
@@ -476,73 +476,73 @@ export default function ProfilePage() {
 
             {/* 统计区域 */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5 mb-6">
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="mb-2 text-xs font-bold uppercase text-white/60">Total Students</div>
+              <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                <div className="mb-2 text-xs font-bold uppercase text-gray-500 dark:text-white/60">Total Students</div>
                 <p className="text-2xl font-bold">{isLoadingStudents ? "…" : myStats.totalStudents}</p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="mb-2 text-xs font-bold uppercase text-white/60">Active Students</div>
-                <p className="text-2xl font-bold text-green-400">{isLoadingStudents ? "…" : myStats.activeStudents}</p>
+              <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                <div className="mb-2 text-xs font-bold uppercase text-gray-500 dark:text-white/60">Active Students</div>
+                <p className="text-2xl font-bold text-green-700 dark:text-green-400">{isLoadingStudents ? "…" : myStats.activeStudents}</p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="mb-2 text-xs font-bold uppercase text-white/60">Cancelled Students</div>
-                <p className="text-2xl font-bold text-red-400">{isLoadingStudents ? "…" : myStats.cancelledStudents}</p>
+              <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                <div className="mb-2 text-xs font-bold uppercase text-gray-500 dark:text-white/60">Cancelled Students</div>
+                <p className="text-2xl font-bold text-red-700 dark:text-red-400">{isLoadingStudents ? "…" : myStats.cancelledStudents}</p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="mb-2 text-xs font-bold uppercase text-white/60">Total Pending Commissions</div>
-                <p className="text-2xl font-bold text-yellow-400">
+              <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                <div className="mb-2 text-xs font-bold uppercase text-gray-500 dark:text-white/60">Total Pending Commissions</div>
+                <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">
                   {isLoadingStudents ? "…" : `$${myStats.totalPendingCommissions.toLocaleString()} NZD`}
                 </p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="mb-2 text-xs font-bold uppercase text-white/60">Total Claimed Commissions</div>
-                <p className="text-2xl font-bold text-green-400">
+              <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                <div className="mb-2 text-xs font-bold uppercase text-gray-500 dark:text-white/60">Total Claimed Commissions</div>
+                <p className="text-2xl font-bold text-green-700 dark:text-green-400">
                   {isLoadingStudents ? "…" : `$${myStats.totalClaimedCommissions.toLocaleString()} NZD`}
                 </p>
               </div>
             </div>
 
             {/* 学生列表表格 */}
-            <div className="overflow-x-auto rounded-xl border border-white/10">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
               {isLoadingStudents ? (
-                <p className="py-8 text-center text-white/60">Loading...</p>
+                <p className="py-8 text-center text-gray-500 dark:text-white/60">Loading...</p>
               ) : myStudents.length === 0 ? (
-                <p className="py-8 text-center text-white/60">No students in this date range.</p>
+                <p className="py-8 text-center text-gray-500 dark:text-white/60">No students in this date range.</p>
               ) : (
                 <table className="w-full min-w-[600px] border-collapse">
                   <thead>
-                    <tr className="border-b border-white/10 bg-white/5">
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Student</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">School</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Department</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Enrollment Date</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Commission Status</th>
+                    <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Student</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">School</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Department</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Enrollment Date</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Commission Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {myStudents.map((s) => {
                       const comm = commissionsByStudent[s.id] ?? { pendingCount: 0, claimedCount: 0 };
                       return (
-                        <tr key={s.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
+                        <tr key={s.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 last:border-b-0">
                           <td className="px-6 py-4">
                             <Link
                               href={`/students/${s.id}`}
-                              className="font-semibold text-blue-400 hover:underline"
+                              className="font-semibold text-blue-700 dark:text-blue-400 hover:underline"
                             >
                               {s.full_name ?? "—"}
                             </Link>
                           </td>
-                          <td className="px-6 py-4 text-white/70">{s.schools?.name ?? "—"}</td>
-                          <td className="px-6 py-4 text-white/70">{DEPT_LABELS[s.department] ?? s.department}</td>
-                          <td className="px-6 py-4 text-white/70">
+                          <td className="px-6 py-4 text-gray-600 dark:text-white/70">{s.schools?.name ?? "—"}</td>
+                          <td className="px-6 py-4 text-gray-600 dark:text-white/70">{DEPT_LABELS[s.department] ?? s.department}</td>
+                          <td className="px-6 py-4 text-gray-600 dark:text-white/70">
                             {s.enrollment_date ? new Date(s.enrollment_date).toLocaleDateString() : "—"}
                           </td>
-                          <td className="px-6 py-4 text-white/70">
+                          <td className="px-6 py-4 text-gray-600 dark:text-white/70">
                             {comm.pendingCount > 0 || comm.claimedCount > 0 ? (
                               <>
-                                <span className="text-yellow-400">{comm.pendingCount} pending</span>
+                                <span className="text-yellow-700 dark:text-yellow-400">{comm.pendingCount} pending</span>
                                 {" / "}
-                                <span className="text-green-400">{comm.claimedCount} claimed</span>
+                                <span className="text-green-700 dark:text-green-400">{comm.claimedCount} claimed</span>
                               </>
                             ) : (
                               "—"
@@ -559,72 +559,72 @@ export default function ProfilePage() {
         )}
 
         {/* My Commission */}
-        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+        <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">My Commission</h3>
             <select
               value={commissionQuarter}
               onChange={e => setCommissionQuarter(e.target.value)}
-              className="rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
             >
-              <option value="all" className="bg-blue-900">All Quarters</option>
-              {quarterOptions.map(q => <option key={q} value={q} className="bg-blue-900">{q}</option>)}
+              <option value="all" className="bg-white dark:bg-blue-900">All Quarters</option>
+              {quarterOptions.map(q => <option key={q} value={q} className="bg-white dark:bg-blue-900">{q}</option>)}
             </select>
           </div>
 
           {isLoadingStaffCommissions ? (
-            <p className="py-8 text-center text-white/60">Loading...</p>
+            <p className="py-8 text-center text-gray-500 dark:text-white/60">Loading...</p>
           ) : myStaffCommissions.length === 0 ? (
-            <p className="py-8 text-center text-white/60">No commission records for this period.</p>
+            <p className="py-8 text-center text-gray-500 dark:text-white/60">No commission records for this period.</p>
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Records</p>
+                <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-gray-500 dark:text-white/50 mb-1">Records</p>
                   <p className="text-xl font-bold">{myStaffCommissions.length}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Total</p>
+                <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-gray-500 dark:text-white/50 mb-1">Total</p>
                   <p className="text-xl font-bold">${myStaffCommissions.reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Pending</p>
-                  <p className="text-xl font-bold text-yellow-400">${myStaffCommissions.filter(c => c.status === "pending").reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-gray-500 dark:text-white/50 mb-1">Pending</p>
+                  <p className="text-xl font-bold text-yellow-700 dark:text-yellow-400">${myStaffCommissions.filter(c => c.status === "pending").reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-bold uppercase text-white/50 mb-1">Settled</p>
-                  <p className="text-xl font-bold text-green-400">${myStaffCommissions.filter(c => c.status === "settled").reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-bold uppercase text-gray-500 dark:text-white/50 mb-1">Settled</p>
+                  <p className="text-xl font-bold text-green-700 dark:text-green-400">${myStaffCommissions.filter(c => c.status === "settled").reduce((s, c) => s + c.commission_amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-white/10">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
                 <table className="w-full min-w-[560px] text-sm border-collapse">
                   <thead>
-                    <tr className="border-b border-white/10 bg-white/5">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Deal</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Quarter</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Role</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-white/60">Base</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-white/60">Rate</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-white/60">Commission</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/60">Status</th>
+                    <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-white/60">Deal</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-white/60">Quarter</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-white/60">Role</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-white/60">Base</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-white/60">Rate</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-white/60">Commission</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-white/60">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {myStaffCommissions.map(c => (
-                      <tr key={c.id} className="border-b border-white/10 hover:bg-white/5 last:border-0">
+                      <tr key={c.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 last:border-0">
                         <td className="px-4 py-3">
-                          <Link href={`/deals/${c.deal_id}`} className="text-blue-400 hover:underline">
+                          <Link href={`/deals/${c.deal_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">
                             {c.deals?.deal_number ?? "—"}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-white/60">{c.quarter ?? "—"}</td>
-                        <td className="px-4 py-3 text-white/60 capitalize">{c.role_in_deal ?? "—"}</td>
-                        <td className="px-4 py-3 text-right text-white/80">${c.base_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                        <td className="px-4 py-3 text-right text-white/80">{c.commission_rate}%</td>
+                        <td className="px-4 py-3 text-gray-500 dark:text-white/60">{c.quarter ?? "—"}</td>
+                        <td className="px-4 py-3 text-gray-500 dark:text-white/60 capitalize">{c.role_in_deal ?? "—"}</td>
+                        <td className="px-4 py-3 text-right text-gray-700 dark:text-white/80">${c.base_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3 text-right text-gray-700 dark:text-white/80">{c.commission_rate}%</td>
                         <td className="px-4 py-3 text-right font-bold">${c.commission_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${c.status === "settled" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${c.status === "settled" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"}`}>
                             {c.status === "settled" ? "Settled" : "Pending"}
                           </span>
                         </td>
@@ -638,11 +638,11 @@ export default function ProfilePage() {
         </div>
 
         {/* 修改密码表单 */}
-        <form onSubmit={handleChangePassword} className="rounded-xl border border-white/10 bg-white/5 p-6">
+        <form onSubmit={handleChangePassword} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
           <h3 className="text-lg font-bold mb-4">Change Password</h3>
           <div className="flex flex-col gap-5 max-w-md">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">New Password *</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">New Password *</label>
               <input
                 type="password"
                 name="newPassword"
@@ -655,7 +655,7 @@ export default function ProfilePage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Confirm New Password *</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Confirm New Password *</label>
               <input
                 type="password"
                 name="confirmPassword"
@@ -668,7 +668,7 @@ export default function ProfilePage() {
               />
             </div>
             {message && (
-              <p className={message.type === "success" ? "text-green-400" : "text-red-400"}>
+              <p className={message.type === "success" ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}>
                 {message.text}
               </p>
             )}

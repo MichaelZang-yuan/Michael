@@ -320,13 +320,13 @@ export default function RevenueReportPage() {
     else { setSortField(field); setSortDir("desc"); }
   };
 
-  const selectClass = "rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none";
-  const inputClass = "rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none";
+  const selectClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const inputClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <h2 className="text-2xl font-bold mb-6">Revenue Report</h2>
@@ -335,14 +335,14 @@ export default function RevenueReportPage() {
         <div className="flex flex-wrap gap-3 mb-8">
           {PERIODS.map(p => (
             <button key={p.value} onClick={() => setPeriod(p.value)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${period === p.value ? "bg-blue-600 text-white" : "bg-white/5 text-white/60 hover:bg-white/10"}`}>
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${period === p.value ? "bg-blue-600 text-white" : "bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
               {p.label}
             </button>
           ))}
           {period === "custom" && (
             <div className="flex gap-2 items-center">
               <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className={inputClass} />
-              <span className="text-white/40">to</span>
+              <span className="text-gray-500 dark:text-white/40">to</span>
               <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className={inputClass} />
             </div>
           )}
@@ -356,10 +356,10 @@ export default function RevenueReportPage() {
             { label: "Commission Revenue", value: commRevenue, change: commChange },
             { label: "Foreign Currency Revenue", value: foreignRevenue, change: foreignChange },
           ].map(card => (
-            <div key={card.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <p className="text-white/50 text-xs mb-1">{card.label}</p>
+            <div key={card.label} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <p className="text-gray-500 dark:text-white/50 text-xs mb-1">{card.label}</p>
               <p className="text-xl font-bold">{fmtMoney(card.value)}</p>
-              <p className={`text-xs mt-1 ${card.change.positive ? "text-green-400" : "text-red-400"}`}>
+              <p className={`text-xs mt-1 ${card.change.positive ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}>
                 {card.change.text} vs prior period
               </p>
             </div>
@@ -369,7 +369,7 @@ export default function RevenueReportPage() {
         {/* ── Charts Row: Department + Visa Type ─────────────────────── */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Department */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
             <h3 className="text-lg font-semibold mb-4">Revenue by Department</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={deptData}>
@@ -386,10 +386,10 @@ export default function RevenueReportPage() {
           </div>
 
           {/* Visa Type */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
             <h3 className="text-lg font-semibold mb-4">Revenue by Visa Type</h3>
             {visaData.length === 0 ? (
-              <p className="text-white/40 text-sm text-center py-20">No data for this period</p>
+              <p className="text-gray-500 dark:text-white/40 text-sm text-center py-20">No data for this period</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -405,7 +405,7 @@ export default function RevenueReportPage() {
         </div>
 
         {/* ── Monthly Revenue Trend ───────────────────────────────────── */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-8">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 mb-8">
           <h3 className="text-lg font-semibold mb-4">Monthly Revenue Trend (Last 12 Months)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlyData}>
@@ -422,19 +422,19 @@ export default function RevenueReportPage() {
         </div>
 
         {/* ── Revenue by Sales ────────────────────────────────────────── */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-8">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Revenue by Sales</h3>
             <button onClick={() => {
               const headers = ["Sales", "Deals", "Total Billed", "Total Collected", "Outstanding", "Collection Rate"];
               const rows = salesData.map(s => [s.name, s.deals, s.billed.toFixed(2), s.collected.toFixed(2), s.outstanding.toFixed(2), s.rate.toFixed(1) + "%"]);
               downloadCSV(headers, rows, `revenue-by-sales-${from}-to-${to}.csv`);
-            }} className="text-xs text-blue-400 hover:underline">Export CSV</button>
+            }} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">Export CSV</button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-white/50">
+                <tr className="border-b border-gray-200 dark:border-white/10 text-left text-gray-500 dark:text-white/50">
                   <th className="px-4 py-3 font-medium">Sales</th>
                   <th className="px-4 py-3 font-medium text-right">Deals</th>
                   <th className="px-4 py-3 font-medium text-right">Total Billed</th>
@@ -445,16 +445,16 @@ export default function RevenueReportPage() {
               </thead>
               <tbody>
                 {salesData.length === 0 ? (
-                  <tr><td colSpan={6} className="px-4 py-8 text-center text-white/40">No data</td></tr>
+                  <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500 dark:text-white/40">No data</td></tr>
                 ) : salesData.map(s => (
-                  <tr key={s.id} className="border-b border-white/5 hover:bg-white/5">
+                  <tr key={s.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
                     <td className="px-4 py-3 font-medium">{s.name}</td>
                     <td className="px-4 py-3 text-right">{s.deals}</td>
                     <td className="px-4 py-3 text-right">{fmtMoney(s.billed)}</td>
-                    <td className="px-4 py-3 text-right font-medium text-green-400">{fmtMoney(s.collected)}</td>
-                    <td className="px-4 py-3 text-right text-orange-400">{fmtMoney(s.outstanding)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-green-700 dark:text-green-400">{fmtMoney(s.collected)}</td>
+                    <td className="px-4 py-3 text-right text-orange-700 dark:text-orange-400">{fmtMoney(s.outstanding)}</td>
                     <td className="px-4 py-3 text-right">
-                      <span className={s.rate >= 80 ? "text-green-400" : s.rate >= 50 ? "text-yellow-400" : "text-red-400"}>
+                      <span className={s.rate >= 80 ? "text-green-700 dark:text-green-400" : s.rate >= 50 ? "text-yellow-700 dark:text-yellow-400" : "text-red-700 dark:text-red-400"}>
                         {s.rate.toFixed(1)}%
                       </span>
                     </td>
@@ -466,7 +466,7 @@ export default function RevenueReportPage() {
         </div>
 
         {/* ── Revenue Detail ─────────────────────────────────────────── */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h3 className="text-lg font-semibold">Revenue Detail</h3>
             <div className="flex gap-3 items-center">
@@ -475,13 +475,13 @@ export default function RevenueReportPage() {
                 const headers = ["Date", "Invoice #", "Client/School", "Type", "Amount", "Currency", "Department", "Sales"];
                 const rows = filteredDetail.map(r => [r.date, r.invoiceNumber, r.client, r.type, r.amount.toFixed(2), r.currency, r.department, r.sales]);
                 downloadCSV(headers, rows, `revenue-detail-${from}-to-${to}.csv`);
-              }} className="text-xs text-blue-400 hover:underline whitespace-nowrap">Export CSV</button>
+              }} className="text-xs text-blue-700 dark:text-blue-400 hover:underline whitespace-nowrap">Export CSV</button>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-white/50">
+                <tr className="border-b border-gray-200 dark:border-white/10 text-left text-gray-500 dark:text-white/50">
                   {[
                     { key: "date", label: "Date" },
                     { key: "invoiceNumber", label: "Invoice #" },
@@ -493,7 +493,7 @@ export default function RevenueReportPage() {
                     { key: "sales", label: "Sales" },
                   ].map(col => (
                     <th key={col.key} onClick={() => handleSort(col.key)}
-                      className={`px-4 py-3 font-medium cursor-pointer hover:text-white/80 select-none ${col.right ? "text-right" : ""}`}>
+                      className={`px-4 py-3 font-medium cursor-pointer hover:text-gray-700 dark:hover:text-white/80 select-none ${col.right ? "text-right" : ""}`}>
                       {col.label} {sortField === col.key ? (sortDir === "asc" ? "↑" : "↓") : ""}
                     </th>
                   ))}
@@ -501,24 +501,24 @@ export default function RevenueReportPage() {
               </thead>
               <tbody>
                 {filteredDetail.length === 0 ? (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-white/40">No data</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500 dark:text-white/40">No data</td></tr>
                 ) : filteredDetail.slice(0, 100).map((r, i) => (
-                  <tr key={i} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="px-4 py-3 text-white/60">{r.date}</td>
+                  <tr key={i} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{r.date}</td>
                     <td className="px-4 py-3 font-medium">{r.invoiceNumber}</td>
                     <td className="px-4 py-3">{r.client}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.type === "CRM" ? "bg-blue-500/20 text-blue-400" : "bg-green-500/20 text-green-400"}`}>{r.type}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.type === "CRM" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400"}`}>{r.type}</span>
                     </td>
                     <td className="px-4 py-3 text-right font-medium">{fmtMoney(r.amount)}</td>
-                    <td className="px-4 py-3 text-white/60">{r.currency}</td>
-                    <td className="px-4 py-3 text-white/60">{r.department}</td>
-                    <td className="px-4 py-3 text-white/60">{r.sales}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{r.currency}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{r.department}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{r.sales}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {filteredDetail.length > 100 && <p className="text-center text-white/40 text-xs py-2">Showing first 100 of {filteredDetail.length} rows</p>}
+            {filteredDetail.length > 100 && <p className="text-center text-gray-500 dark:text-white/40 text-xs py-2">Showing first 100 of {filteredDetail.length} rows</p>}
           </div>
         </div>
       </main>

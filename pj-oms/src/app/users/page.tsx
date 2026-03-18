@@ -32,10 +32,10 @@ const DEPT_LABELS: Record<string, string> = {
 };
 
 const inputClass =
-  "rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full";
+  "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full";
 
 const selectClass =
-  "rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full";
+  "rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full";
 
 function RolesCheckboxGroup({
   selected,
@@ -69,10 +69,10 @@ function RolesCheckboxGroup({
             disabled={isDisabled}
             className={`rounded-lg border px-3 py-1.5 text-sm font-bold transition-colors ${
               isSelected
-                ? "border-blue-400 bg-blue-600/30 text-blue-300"
+                ? "border-blue-400 bg-blue-600/30 text-blue-700 dark:text-blue-300"
                 : isDisabled
-                  ? "border-white/10 text-white/20 cursor-not-allowed"
-                  : "border-white/20 text-white/60 hover:bg-white/10"
+                  ? "border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/20 cursor-not-allowed"
+                  : "border-gray-300 dark:border-white/20 text-gray-500 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/10"
             }`}
           >
             {ROLE_LABELS[role]}
@@ -85,16 +85,16 @@ function RolesCheckboxGroup({
 
 function RoleBadges({ roles }: { roles: string[] }) {
   const colors: Record<string, string> = {
-    admin: "bg-red-500/20 text-red-400",
-    sales: "bg-blue-500/20 text-blue-400",
-    lia: "bg-purple-500/20 text-purple-400",
-    accountant: "bg-green-500/20 text-green-400",
-    copywriter: "bg-yellow-500/20 text-yellow-400",
+    admin: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+    sales: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+    lia: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
+    accountant: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+    copywriter: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
   };
   return (
     <div className="flex flex-wrap gap-1">
       {roles.map((r) => (
-        <span key={r} className={`rounded-full px-2 py-0.5 text-xs font-bold ${colors[r] ?? "bg-gray-500/20 text-gray-400"}`}>
+        <span key={r} className={`rounded-full px-2 py-0.5 text-xs font-bold ${colors[r] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
           {ROLE_LABELS[r] ?? r}
         </span>
       ))}
@@ -283,33 +283,33 @@ export default function UsersPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-blue-950 text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
         <Navbar />
         <main className="mx-auto max-w-6xl px-6 py-20 text-center">
-          <p className="text-2xl font-bold text-red-400">Access Denied</p>
-          <p className="text-white/50 mt-2">You do not have permission to view this page.</p>
+          <p className="text-2xl font-bold text-red-700 dark:text-red-400">Access Denied</p>
+          <p className="text-gray-500 dark:text-white/50 mt-2">You do not have permission to view this page.</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold">Users</h2>
-            <p className="text-white/50 mt-1">{users.length} total</p>
+            <p className="text-gray-500 dark:text-white/50 mt-1">{users.length} total</p>
           </div>
           <button
             onClick={() => setShowInviteForm(!showInviteForm)}
@@ -320,11 +320,11 @@ export default function UsersPage() {
         </div>
 
         {showInviteForm && (
-          <form onSubmit={handleInvite} className="mb-10 rounded-xl border border-white/10 bg-white/5 p-6">
+          <form onSubmit={handleInvite} className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
             <h3 className="text-lg font-bold mb-4">Invite New User</h3>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-white/70">Email *</label>
+                <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Email *</label>
                 <input
                   type="email"
                   name="email"
@@ -336,7 +336,7 @@ export default function UsersPage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-white/70">Full Name *</label>
+                <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Full Name *</label>
                 <input
                   name="full_name"
                   value={form.full_name}
@@ -347,19 +347,19 @@ export default function UsersPage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5 md:col-span-2">
-                <label className="text-sm font-semibold text-white/70">Roles (select up to {MAX_ROLES})</label>
+                <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Roles (select up to {MAX_ROLES})</label>
                 <RolesCheckboxGroup
                   selected={form.roles}
                   onChange={(roles) => setForm({ ...form, roles })}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-white/70">Department</label>
+                <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Department</label>
                 <select name="department" value={form.department} onChange={handleChange} className={selectClass}>
-                  <option value="china" className="bg-blue-900 text-white">China</option>
-                  <option value="thailand" className="bg-blue-900 text-white">Thailand</option>
-                  <option value="myanmar" className="bg-blue-900 text-white">Myanmar</option>
-                  <option value="korea_japan" className="bg-blue-900 text-white">Korea & Japan</option>
+                  <option value="china" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">China</option>
+                  <option value="thailand" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Thailand</option>
+                  <option value="myanmar" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Myanmar</option>
+                  <option value="korea_japan" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Korea & Japan</option>
                 </select>
               </div>
             </div>
@@ -374,21 +374,21 @@ export default function UsersPage() {
         )}
 
         {message && (
-          <p className={`mb-6 ${message.type === "success" ? "text-green-400" : "text-red-400"}`}>
+          <p className={`mb-6 ${message.type === "success" ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}>
             {message.text}
           </p>
         )}
 
-        <div className="overflow-x-auto rounded-xl border border-white/10">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
           <table className="w-full min-w-[600px] border-collapse">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Roles</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Department</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Created At</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Actions</th>
+              <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Name</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Email</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Roles</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Department</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Created At</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -398,7 +398,7 @@ export default function UsersPage() {
                 const userRoles = user.roles ?? [user.role];
 
                 return (
-                  <tr key={user.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
+                  <tr key={user.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 last:border-b-0">
                     {isEditing && editForm ? (
                       <>
                         <td className="px-6 py-4">
@@ -410,7 +410,7 @@ export default function UsersPage() {
                             placeholder="Full Name"
                           />
                         </td>
-                        <td className="px-6 py-4 text-white/70">{user.email ?? "---"}</td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-white/70">{user.email ?? "---"}</td>
                         <td className="px-6 py-4">
                           <RolesCheckboxGroup
                             selected={editForm.roles}
@@ -424,13 +424,13 @@ export default function UsersPage() {
                             onChange={handleEditChange}
                             className={`${selectClass} py-2 text-sm`}
                           >
-                            <option value="china" className="bg-blue-900 text-white">China</option>
-                            <option value="thailand" className="bg-blue-900 text-white">Thailand</option>
-                            <option value="myanmar" className="bg-blue-900 text-white">Myanmar</option>
-                            <option value="korea_japan" className="bg-blue-900 text-white">Korea & Japan</option>
+                            <option value="china" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">China</option>
+                            <option value="thailand" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Thailand</option>
+                            <option value="myanmar" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Myanmar</option>
+                            <option value="korea_japan" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Korea & Japan</option>
                           </select>
                         </td>
-                        <td className="px-6 py-4 text-white/70">
+                        <td className="px-6 py-4 text-gray-600 dark:text-white/70">
                           {user.created_at ? new Date(user.created_at).toLocaleString() : "---"}
                         </td>
                         <td className="px-6 py-4">
@@ -447,7 +447,7 @@ export default function UsersPage() {
                               type="button"
                               onClick={handleEditCancel}
                               disabled={isSavingEdit}
-                              className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10 disabled:opacity-50"
+                              className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50"
                             >
                               Cancel
                             </button>
@@ -457,10 +457,10 @@ export default function UsersPage() {
                     ) : (
                       <>
                         <td className="px-6 py-4 font-semibold">{user.full_name ?? "---"}</td>
-                        <td className="px-6 py-4 text-white/70">{user.email ?? "---"}</td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-white/70">{user.email ?? "---"}</td>
                         <td className="px-6 py-4"><RoleBadges roles={userRoles} /></td>
-                        <td className="px-6 py-4 text-white/70">{DEPT_LABELS[user.department] ?? user.department}</td>
-                        <td className="px-6 py-4 text-white/70">
+                        <td className="px-6 py-4 text-gray-600 dark:text-white/70">{DEPT_LABELS[user.department] ?? user.department}</td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-white/70">
                           {user.created_at ? new Date(user.created_at).toLocaleString() : "---"}
                         </td>
                         <td className="px-6 py-4">
@@ -469,7 +469,7 @@ export default function UsersPage() {
                               <button
                                 type="button"
                                 onClick={() => handleEditClick(user)}
-                                className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10"
+                                className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10"
                               >
                                 Edit
                               </button>
@@ -478,7 +478,7 @@ export default function UsersPage() {
                               <button
                                 onClick={() => handleDelete(user.id, user)}
                                 disabled={isDeleting === user.id}
-                                className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
+                                className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20 disabled:opacity-50"
                               >
                                 {isDeleting === user.id ? "Deleting..." : "Delete"}
                               </button>
@@ -497,28 +497,28 @@ export default function UsersPage() {
         {/* Login History */}
         <div className="mt-12">
           <h3 className="mb-4 text-xl font-bold">Login History</h3>
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
             <table className="w-full min-w-[400px] border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Time</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">User</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white/70">Email</th>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Time</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">User</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-white/70">Email</th>
                 </tr>
               </thead>
               <tbody>
                 {loginLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-white/50">No login records yet.</td>
+                    <td colSpan={3} className="px-6 py-8 text-center text-gray-500 dark:text-white/50">No login records yet.</td>
                   </tr>
                 ) : (
                   loginLogs.map((log) => (
-                    <tr key={log.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
-                      <td className="px-6 py-4 text-white/70">
+                    <tr key={log.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 last:border-b-0">
+                      <td className="px-6 py-4 text-gray-600 dark:text-white/70">
                         {new Date(log.created_at).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 font-semibold">{log.profiles?.full_name ?? "---"}</td>
-                      <td className="px-6 py-4 text-white/70">
+                      <td className="px-6 py-4 text-gray-600 dark:text-white/70">
                         {log.profiles?.email ?? (log.details as { email?: string })?.email ?? "---"}
                       </td>
                     </tr>

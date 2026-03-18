@@ -18,7 +18,7 @@ type School = {
 };
 
 const inputClass =
-  "rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full";
+  "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full";
 
 export default function EditSchoolPage() {
   const router = useRouter();
@@ -118,18 +118,18 @@ export default function EditSchoolPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   if (!school) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-blue-950">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 dark:bg-blue-950">
         <Navbar />
-        <p className="text-white/60 mb-4">School not found.</p>
-        <Link href="/schools" className="text-blue-400 hover:underline">← Back to Schools</Link>
+        <p className="text-gray-500 dark:text-white/60 mb-4">School not found.</p>
+        <Link href="/schools" className="text-blue-700 dark:text-blue-400 hover:underline">← Back to Schools</Link>
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function EditSchoolPage() {
   const isDirty = initialForm !== "" && JSON.stringify(form) !== initialForm;
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges={isDirty} />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
@@ -146,7 +146,7 @@ export default function EditSchoolPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">School Name *</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">School Name *</label>
               <input
                 name="name"
                 value={form.name}
@@ -157,7 +157,7 @@ export default function EditSchoolPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Contact Email</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Contact Email</label>
               <input
                 type="email"
                 name="contact_email"
@@ -168,7 +168,7 @@ export default function EditSchoolPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type A Name</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type A Name</label>
               <input
                 name="course_type_a_name"
                 value={form.course_type_a_name}
@@ -178,7 +178,7 @@ export default function EditSchoolPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type A Commission Rate (%)</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type A Commission Rate (%)</label>
               <input
                 type="number"
                 name="course_type_a_rate"
@@ -192,7 +192,7 @@ export default function EditSchoolPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type B Name</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type B Name</label>
               <input
                 name="course_type_b_name"
                 value={form.course_type_b_name}
@@ -202,7 +202,7 @@ export default function EditSchoolPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type B Commission Rate (%)</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type B Commission Rate (%)</label>
               <input
                 type="number"
                 name="course_type_b_rate"
@@ -216,7 +216,7 @@ export default function EditSchoolPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-white/70">Notes</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Notes</label>
               <textarea
                 name="notes"
                 value={form.notes}
@@ -229,7 +229,7 @@ export default function EditSchoolPage() {
           </div>
 
           {message && (
-            <p className={message.type === "success" ? "text-green-400" : "text-red-400"}>
+            <p className={message.type === "success" ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}>
               {message.text}
             </p>
           )}
@@ -244,7 +244,7 @@ export default function EditSchoolPage() {
             </button>
             <Link
               href={`/schools/${id}`}
-              className="rounded-lg border border-white/20 px-8 py-3 font-bold text-white hover:bg-white/10"
+              className="rounded-lg border border-gray-300 dark:border-white/20 px-8 py-3 font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
             >
               Cancel
             </Link>

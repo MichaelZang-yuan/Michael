@@ -39,9 +39,9 @@ const AGING_BUCKETS = [
 
 function getOverdueColor(days: number): string {
   if (days <= 0) return "";
-  if (days <= 30) return "text-yellow-400";
-  if (days <= 60) return "text-orange-400";
-  if (days <= 90) return "text-red-400";
+  if (days <= 30) return "text-yellow-700 dark:text-yellow-400";
+  if (days <= 60) return "text-orange-700 dark:text-orange-400";
+  if (days <= 90) return "text-red-700 dark:text-red-400";
   return "text-red-600 font-bold";
 }
 
@@ -50,7 +50,7 @@ function getOverdueBgColor(days: number): string {
   if (days <= 30) return "bg-yellow-500/10";
   if (days <= 60) return "bg-orange-500/10";
   if (days <= 90) return "bg-red-500/10";
-  return "bg-red-500/20";
+  return "bg-red-100 dark:bg-red-500/20";
 }
 
 export default function ARDashboardPage() {
@@ -200,40 +200,40 @@ export default function ARDashboardPage() {
   };
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <h2 className="text-2xl font-bold mb-6">Accounts Receivable</h2>
 
         {message && (
-          <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${message.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+          <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${message.type === "success" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"}`}>
             {message.text}
           </div>
         )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-white/50 text-xs mb-1">Total Receivable</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Total Receivable</p>
             <p className="text-xl font-bold">${totalReceivable.toFixed(2)}</p>
           </div>
           {agingData.map((bucket) => (
-            <div key={bucket.name} className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <p className="text-white/50 text-xs mb-1">{bucket.name}</p>
+            <div key={bucket.name} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <p className="text-gray-500 dark:text-white/50 text-xs mb-1">{bucket.name}</p>
               <p className="text-xl font-bold" style={{ color: bucket.amount > 0 ? bucket.color : undefined }}>
                 ${bucket.amount.toFixed(2)}
               </p>
-              <p className="text-white/30 text-xs">{bucket.count} invoice{bucket.count !== 1 ? "s" : ""}</p>
+              <p className="text-gray-500 dark:text-white/30 text-xs">{bucket.count} invoice{bucket.count !== 1 ? "s" : ""}</p>
             </div>
           ))}
         </div>
 
         {/* AR Aging Chart */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 mb-8">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-8">
           <h3 className="text-lg font-semibold mb-4">AR Aging</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -260,13 +260,13 @@ export default function ARDashboardPage() {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setViewMode("list")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${viewMode === "list" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${viewMode === "list" ? "bg-blue-600" : "bg-gray-100 dark:bg-white/10 hover:bg-white/20"}`}
           >
             Overdue List
           </button>
           <button
             onClick={() => setViewMode("grouped")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${viewMode === "grouped" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${viewMode === "grouped" ? "bg-blue-600" : "bg-gray-100 dark:bg-white/10 hover:bg-white/20"}`}
           >
             By Client/School
           </button>
@@ -274,10 +274,10 @@ export default function ARDashboardPage() {
 
         {/* Overdue List View */}
         {viewMode === "list" && (
-          <div className="overflow-x-auto rounded-xl border border-white/10 bg-white/5">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-white/50">
+                <tr className="border-b border-gray-200 dark:border-white/10 text-left text-gray-500 dark:text-white/50">
                   <th className="px-4 py-3 font-medium">Invoice #</th>
                   <th className="px-4 py-3 font-medium">Type</th>
                   <th className="px-4 py-3 font-medium">Client / School</th>
@@ -291,28 +291,28 @@ export default function ARDashboardPage() {
               </thead>
               <tbody>
                 {overdueInvoices.length === 0 ? (
-                  <tr><td colSpan={9} className="px-4 py-8 text-center text-white/40">No overdue invoices</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500 dark:text-white/40">No overdue invoices</td></tr>
                 ) : overdueInvoices.map((inv) => (
-                  <tr key={inv.id} className={`border-b border-white/5 ${getOverdueBgColor(inv.days_overdue)}`}>
+                  <tr key={inv.id} className={`border-b border-gray-100 dark:border-white/5 ${getOverdueBgColor(inv.days_overdue)}`}>
                     <td className="px-4 py-3 font-medium">
                       {inv.type === "crm" && inv.deal_id ? (
-                        <Link href={`/deals/${inv.deal_id}`} className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                        <Link href={`/deals/${inv.deal_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">{inv.invoice_number}</Link>
                       ) : inv.type === "commission" ? (
-                        <Link href="/commission/invoices" className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                        <Link href="/commission/invoices" className="text-blue-700 dark:text-blue-400 hover:underline">{inv.invoice_number}</Link>
                       ) : (
                         inv.invoice_number
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs rounded-full px-2 py-0.5 ${inv.type === "crm" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>
+                      <span className={`text-xs rounded-full px-2 py-0.5 ${inv.type === "crm" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" : "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400"}`}>
                         {inv.type === "crm" ? "CRM" : "Commission"}
                       </span>
                     </td>
                     <td className="px-4 py-3">{inv.client_name}</td>
                     <td className="px-4 py-3 text-right">${inv.total.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right text-white/60">${inv.paid_amount.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-gray-500 dark:text-white/60">${inv.paid_amount.toFixed(2)}</td>
                     <td className="px-4 py-3 text-right font-medium">${inv.outstanding.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-white/60">{inv.due_date}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{inv.due_date}</td>
                     <td className={`px-4 py-3 font-medium ${getOverdueColor(inv.days_overdue)}`}>
                       {inv.days_overdue > 0 ? `${inv.days_overdue} days` : "Current"}
                     </td>
@@ -338,40 +338,40 @@ export default function ARDashboardPage() {
         {viewMode === "grouped" && (
           <div className="space-y-4">
             {grouped.length === 0 ? (
-              <p className="text-white/40 text-center py-8">No outstanding invoices</p>
+              <p className="text-gray-500 dark:text-white/40 text-center py-8">No outstanding invoices</p>
             ) : grouped.map((group) => (
-              <details key={group.name} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
-                <summary className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5">
+              <details key={group.name} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
+                <summary className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5">
                   <div className="flex items-center gap-4">
                     <span className="font-medium">{group.name}</span>
-                    <span className="text-white/50 text-sm">{group.invoices.length} invoice{group.invoices.length !== 1 ? "s" : ""}</span>
+                    <span className="text-gray-500 dark:text-white/50 text-sm">{group.invoices.length} invoice{group.invoices.length !== 1 ? "s" : ""}</span>
                   </div>
                   <div className="flex items-center gap-6 text-sm">
                     <span>Outstanding: <span className="font-bold">${group.total_outstanding.toFixed(2)}</span></span>
                     {group.total_overdue > 0 && (
-                      <span className="text-red-400">Overdue: <span className="font-bold">${group.total_overdue.toFixed(2)}</span></span>
+                      <span className="text-red-700 dark:text-red-400">Overdue: <span className="font-bold">${group.total_overdue.toFixed(2)}</span></span>
                     )}
                   </div>
                 </summary>
-                <div className="border-t border-white/10">
+                <div className="border-t border-gray-200 dark:border-white/10">
                   <table className="w-full text-sm">
                     <tbody>
                       {group.invoices.map((inv) => (
-                        <tr key={inv.id} className={`border-b border-white/5 ${getOverdueBgColor(inv.days_overdue)}`}>
+                        <tr key={inv.id} className={`border-b border-gray-100 dark:border-white/5 ${getOverdueBgColor(inv.days_overdue)}`}>
                           <td className="px-4 py-2 font-medium">
                             {inv.type === "crm" && inv.deal_id ? (
-                              <Link href={`/deals/${inv.deal_id}`} className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                              <Link href={`/deals/${inv.deal_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">{inv.invoice_number}</Link>
                             ) : (
-                              <Link href="/commission/invoices" className="text-blue-400 hover:underline">{inv.invoice_number}</Link>
+                              <Link href="/commission/invoices" className="text-blue-700 dark:text-blue-400 hover:underline">{inv.invoice_number}</Link>
                             )}
                           </td>
                           <td className="px-4 py-2">
-                            <span className={`text-xs rounded-full px-2 py-0.5 ${inv.type === "crm" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>
+                            <span className={`text-xs rounded-full px-2 py-0.5 ${inv.type === "crm" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" : "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400"}`}>
                               {inv.type === "crm" ? "CRM" : "Commission"}
                             </span>
                           </td>
                           <td className="px-4 py-2 text-right">${inv.outstanding.toFixed(2)}</td>
-                          <td className="px-4 py-2 text-white/60">{inv.due_date}</td>
+                          <td className="px-4 py-2 text-gray-500 dark:text-white/60">{inv.due_date}</td>
                           <td className={`px-4 py-2 ${getOverdueColor(inv.days_overdue)}`}>
                             {inv.days_overdue > 0 ? `${inv.days_overdue}d overdue` : "Current"}
                           </td>

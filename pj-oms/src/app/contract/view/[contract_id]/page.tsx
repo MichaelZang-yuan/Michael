@@ -93,7 +93,7 @@ export default function ContractViewPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-blue-900 text-white py-5 px-4 print:hidden">
+      <div className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white py-5 px-4 print:hidden">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-base font-bold">PJ Operation & Management System</h1>
@@ -101,7 +101,7 @@ export default function ContractViewPage() {
           </div>
           <button
             onClick={() => window.print()}
-            className="rounded-lg border border-white/30 px-4 py-2 text-sm hover:bg-white/10"
+            className="rounded-lg border border-gray-300 dark:border-white/30 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-white/10"
           >
             Print / Save PDF
           </button>
@@ -140,7 +140,7 @@ export default function ContractViewPage() {
             </div>
           </div>
           {contract.sent_date && (
-            <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-100">
               Issued: {new Date(contract.sent_date).toLocaleDateString("en-NZ", { year: "numeric", month: "long", day: "numeric" })}
             </p>
           )}
@@ -160,8 +160,8 @@ export default function ContractViewPage() {
             />
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-400">Contract content not available.</p>
-              <p className="text-gray-300 text-sm mt-2">Please contact your consultant.</p>
+              <p className="text-gray-500 dark:text-gray-400">Contract content not available.</p>
+              <p className="text-gray-500 dark:text-gray-300 text-sm mt-2">Please contact your consultant.</p>
             </div>
           )}
         </div>
@@ -191,7 +191,7 @@ export default function ContractViewPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-400 pb-6">
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400 pb-6">
           Contract {contract.contract_number} — PJ Operation & Management System<br />
           This document is confidential and intended solely for the named client.
         </p>

@@ -33,9 +33,9 @@ type ForeignPayment = {
 
 const CURRENCY_SYMBOLS: Record<string, string> = { CNY: "¥", THB: "฿" };
 const STATUS_COLORS: Record<string, string> = {
-  received: "bg-blue-500/20 text-blue-400",
-  confirmed: "bg-green-500/20 text-green-400",
-  disputed: "bg-red-500/20 text-red-400",
+  received: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  confirmed: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  disputed: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
 };
 
 export default function ForeignPaymentsPage() {
@@ -95,38 +95,38 @@ export default function ForeignPaymentsPage() {
     return contact ? `${contact.first_name} ${contact.last_name}` : company?.company_name ?? "—";
   };
 
-  const selectClass = "rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none";
+  const selectClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <h2 className="text-2xl font-bold mb-6">Foreign Currency Payments</h2>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-white/50 text-xs mb-1">Total CNY</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Total CNY</p>
             <p className="text-xl font-bold">¥{totalCNY.toFixed(2)}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-white/50 text-xs mb-1">Total THB</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Total THB</p>
             <p className="text-xl font-bold">฿{totalTHB.toFixed(2)}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-white/50 text-xs mb-1">Total NZD Equiv.</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">Total NZD Equiv.</p>
             <p className="text-xl font-bold">${totalNZD.toFixed(2)}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-white/50 text-xs mb-1">This Month (NZD)</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">This Month (NZD)</p>
             <p className="text-xl font-bold">${monthNZD.toFixed(2)}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-white/50 text-xs mb-1">This Quarter (NZD)</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+            <p className="text-gray-500 dark:text-white/50 text-xs mb-1">This Quarter (NZD)</p>
             <p className="text-xl font-bold">${quarterNZD.toFixed(2)}</p>
           </div>
         </div>
@@ -147,10 +147,10 @@ export default function ForeignPaymentsPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-white/10 bg-white/5">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-left text-white/50">
+              <tr className="border-b border-gray-200 dark:border-white/10 text-left text-gray-500 dark:text-white/50">
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Invoice</th>
                 <th className="px-4 py-3 font-medium">Client</th>
@@ -165,21 +165,21 @@ export default function ForeignPaymentsPage() {
             </thead>
             <tbody>
               {payments.length === 0 ? (
-                <tr><td colSpan={10} className="px-4 py-8 text-center text-white/40">No foreign currency payments found</td></tr>
+                <tr><td colSpan={10} className="px-4 py-8 text-center text-gray-500 dark:text-white/40">No foreign currency payments found</td></tr>
               ) : payments.map((p) => {
                 const inv = p.invoices as unknown as Record<string, unknown> | null;
                 const invNumber = (inv?.invoice_number as string) ?? "—";
                 return (
-                  <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="px-4 py-3 text-white/60">{p.payment_date}</td>
+                  <tr key={p.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{p.payment_date}</td>
                     <td className="px-4 py-3 font-medium">{invNumber}</td>
                     <td className="px-4 py-3">{getClientName(p)}</td>
                     <td className="px-4 py-3 text-right font-medium">{CURRENCY_SYMBOLS[p.currency] ?? ""}{Number(p.amount).toFixed(2)}</td>
                     <td className="px-4 py-3">{p.currency}</td>
-                    <td className="px-4 py-3 text-right text-white/60">{p.exchange_rate ?? "—"}</td>
+                    <td className="px-4 py-3 text-right text-gray-500 dark:text-white/60">{p.exchange_rate ?? "—"}</td>
                     <td className="px-4 py-3 text-right">${Number(p.nzd_equivalent || 0).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-white/60">{p.payment_method?.replace("_", " ") ?? "—"}</td>
-                    <td className="px-4 py-3 text-white/60 max-w-[120px] truncate">{p.payment_reference ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60">{p.payment_method?.replace("_", " ") ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60 max-w-[120px] truncate">{p.payment_reference ?? "—"}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status] ?? ""}`}>
                         {p.status}

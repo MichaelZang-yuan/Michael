@@ -136,23 +136,23 @@ export default function SchoolsPage() {
     return `${(rate * 100).toFixed(0)}%`;
   };
 
-  const inputClass = "rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full";
+  const inputClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-8">
           <h2 className="text-2xl font-bold sm:text-3xl">Schools</h2>
-          <p className="text-white/50 mt-1">{schools.length} total</p>
+          <p className="text-gray-500 dark:text-white/50 mt-1">{schools.length} total</p>
         </div>
 
-        <form onSubmit={handleAddSchool} className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <form onSubmit={handleAddSchool} className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <h3 className="text-lg font-bold mb-4">Add School</h3>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">School Name *</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">School Name *</label>
               <input
                 name="name"
                 value={form.name}
@@ -163,7 +163,7 @@ export default function SchoolsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Contact Email</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Contact Email</label>
               <input
                 type="email"
                 name="contact_email"
@@ -174,7 +174,7 @@ export default function SchoolsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type A Name</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type A Name</label>
               <input
                 name="course_type_a_name"
                 value={form.course_type_a_name}
@@ -184,7 +184,7 @@ export default function SchoolsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type A Commission Rate (%)</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type A Commission Rate (%)</label>
               <input
                 type="number"
                 name="course_type_a_rate"
@@ -198,7 +198,7 @@ export default function SchoolsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type B Name</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type B Name</label>
               <input
                 name="course_type_b_name"
                 value={form.course_type_b_name}
@@ -208,7 +208,7 @@ export default function SchoolsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-white/70">Course Type B Commission Rate (%)</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Course Type B Commission Rate (%)</label>
               <input
                 type="number"
                 name="course_type_b_rate"
@@ -222,7 +222,7 @@ export default function SchoolsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-white/70">Notes</label>
+              <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Notes</label>
               <textarea
                 name="notes"
                 value={form.notes}
@@ -243,11 +243,11 @@ export default function SchoolsPage() {
         </form>
 
         {isLoading ? (
-          <p className="text-white/50 text-center py-20">Loading...</p>
+          <p className="text-gray-500 dark:text-white/50 text-center py-20">Loading...</p>
         ) : schools.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-12 text-center">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-12 text-center">
             <p className="text-xl font-bold mb-2">No schools yet</p>
-            <p className="text-white/50">Add your first school above.</p>
+            <p className="text-gray-500 dark:text-white/50">Add your first school above.</p>
           </div>
         ) : (
           <>
@@ -257,49 +257,49 @@ export default function SchoolsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search schools..."
-                className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full max-w-xs"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full max-w-xs"
               />
             </div>
-            <div className="overflow-x-auto rounded-xl border border-white/10">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
             {filteredSchools.length === 0 ? (
-              <p className="py-8 text-center text-white/50">No schools match your search.</p>
+              <p className="py-8 text-center text-gray-500 dark:text-white/50">No schools match your search.</p>
             ) : (
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Name</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Course Type A</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Rate A</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Course Type B</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Rate B</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Contact Email</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Notes</th>
-                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-white/70 sm:text-sm">Actions</th>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Name</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Course Type A</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Rate A</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Course Type B</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Rate B</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Contact Email</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Notes</th>
+                  <th className="px-3 py-2 sm:px-4 sm:py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70 sm:text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredSchools.map((school) => (
-                  <tr key={school.id} className="border-b border-white/10 hover:bg-white/5 last:border-b-0">
+                  <tr key={school.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 last:border-b-0">
                     <td className="px-3 py-2 font-semibold text-xs sm:px-4 sm:py-3 sm:text-base">
-                      <Link href={`/schools/${school.id}`} className="text-blue-400 hover:underline">
+                      <Link href={`/schools/${school.id}`} className="text-blue-700 dark:text-blue-400 hover:underline">
                         {school.name}
                       </Link>
                     </td>
-                    <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{school.course_type_a_name ?? "—"}</td>
-                    <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{formatRate(school.course_type_a_rate)}</td>
-                    <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{school.course_type_b_name ?? "—"}</td>
-                    <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{formatRate(school.course_type_b_rate)}</td>
-                    <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base max-w-[120px] sm:max-w-[150px] truncate">{school.contact_email ?? "—"}</td>
-                    <td className="px-3 py-2 text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base max-w-[100px] sm:max-w-[150px] truncate" title={school.notes ?? undefined}>{school.notes ?? "—"}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{school.course_type_a_name ?? "—"}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{formatRate(school.course_type_a_rate)}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{school.course_type_b_name ?? "—"}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base">{formatRate(school.course_type_b_rate)}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base max-w-[120px] sm:max-w-[150px] truncate">{school.contact_email ?? "—"}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-white/70 text-xs sm:px-4 sm:py-3 sm:text-base max-w-[100px] sm:max-w-[150px] truncate" title={school.notes ?? undefined}>{school.notes ?? "—"}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3">
                       <div className="flex flex-wrap gap-2">
                         <Link
                           href={`/schools/${school.id}/edit`}
-                          className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10"
+                          className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10"
                         >
                           Edit
                         </Link>
-                        <button onClick={() => handleDelete(school.id)} className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-400 hover:bg-red-500/20">Delete</button>
+                        <button onClick={() => handleDelete(school.id)} className="rounded-lg border border-red-500/50 px-3 py-1.5 text-sm font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20">Delete</button>
                       </div>
                     </td>
                   </tr>

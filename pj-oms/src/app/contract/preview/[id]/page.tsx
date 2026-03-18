@@ -99,28 +99,28 @@ export default function ContractPreviewPage() {
   };
 
   if (isLoading) return (
-    <div className="flex min-h-screen items-center justify-center bg-blue-950">
-      <p className="text-white/60">Loading contract...</p>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+      <p className="text-gray-500 dark:text-white/60">Loading contract...</p>
     </div>
   );
 
   if (error) return (
-    <div className="flex min-h-screen items-center justify-center bg-blue-950">
-      <p className="text-red-400">{error}</p>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+      <p className="text-red-700 dark:text-red-400">{error}</p>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Top bar */}
-      <div className="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
+      <div className="bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white px-6 py-4 flex items-center justify-between">
         <div>
-          <p className="text-sm text-white/50">Contract Preview</p>
+          <p className="text-sm text-gray-500 dark:text-white/50">Contract Preview</p>
           <h1 className="font-bold text-lg">{contract?.contract_number ?? "Contract"}</h1>
         </div>
         <div className="flex gap-3">
           {contract?.deal_id && (
-            <a href={`/deals/${contract.deal_id}`} className="rounded-lg border border-white/30 px-4 py-2 text-sm hover:bg-white/10">
+            <a href={`/deals/${contract.deal_id}`} className="rounded-lg border border-gray-300 dark:border-white/30 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-white/10">
               ← Back to Deal
             </a>
           )}
@@ -139,7 +139,7 @@ export default function ContractPreviewPage() {
           {displayHtml ? (
             <div dangerouslySetInnerHTML={{ __html: displayHtml }} />
           ) : (
-            <p className="text-gray-400 italic text-center py-12">No contract content available.</p>
+            <p className="text-gray-500 dark:text-gray-400 italic text-center py-12">No contract content available.</p>
           )}
         </div>
 
@@ -168,7 +168,7 @@ export default function ContractPreviewPage() {
                 ? `Signed on ${new Date(contract.adviser_signed_at).toLocaleDateString("en-NZ")}`
                 : "Signature recorded."}
             </p>
-            <p className="text-xs text-gray-400 mt-2">A signed PDF has been saved to the deal&apos;s attachments.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">A signed PDF has been saved to the deal&apos;s attachments.</p>
             {contract?.deal_id && (
               <a href={`/deals/${contract.deal_id}`}
                 className="mt-4 inline-block rounded-lg bg-blue-700 px-6 py-2 text-sm font-bold text-white hover:bg-blue-800">

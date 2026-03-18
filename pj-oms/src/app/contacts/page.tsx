@@ -107,19 +107,19 @@ export default function ContactsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const filterSelectClass = "rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none";
+  const filterSelectClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold sm:text-3xl">Contacts</h2>
-            <p className="text-sm text-white/50 mt-1">{filtered.length} total</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 mt-1">{filtered.length} total</p>
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3">
-            <button onClick={handleExportCsv} disabled={filtered.length === 0} className="rounded-lg border border-white/20 px-5 py-2.5 font-bold hover:bg-white/10 disabled:opacity-50 text-sm">
+            <button onClick={handleExportCsv} disabled={filtered.length === 0} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2.5 font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 text-sm">
               Export CSV
             </button>
             <Link href="/contacts/new" className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700">
@@ -130,81 +130,81 @@ export default function ContactsPage() {
 
         {/* Filters */}
         {!isLoading && contacts.length > 0 && (
-          <div className="mb-6 flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="mb-6 flex flex-col gap-3 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:flex-row sm:flex-wrap sm:items-center">
             {isAdmin && (
               <select value={filters.department} onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))} className={filterSelectClass}>
-                <option value="all" className="bg-blue-900">All Departments</option>
-                <option value="china" className="bg-blue-900">China</option>
-                <option value="thailand" className="bg-blue-900">Thailand</option>
-                <option value="myanmar" className="bg-blue-900">Myanmar</option>
-                <option value="korea_japan" className="bg-blue-900">Korea & Japan</option>
+                <option value="all" className="bg-white dark:bg-blue-900">All Departments</option>
+                <option value="china" className="bg-white dark:bg-blue-900">China</option>
+                <option value="thailand" className="bg-white dark:bg-blue-900">Thailand</option>
+                <option value="myanmar" className="bg-white dark:bg-blue-900">Myanmar</option>
+                <option value="korea_japan" className="bg-white dark:bg-blue-900">Korea & Japan</option>
               </select>
             )}
             <select value={filters.type} onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))} className={filterSelectClass}>
-              <option value="all" className="bg-blue-900">All Types</option>
-              <option value="lead" className="bg-blue-900">Lead</option>
-              <option value="client" className="bg-blue-900">Client</option>
+              <option value="all" className="bg-white dark:bg-blue-900">All Types</option>
+              <option value="lead" className="bg-white dark:bg-blue-900">Lead</option>
+              <option value="client" className="bg-white dark:bg-blue-900">Client</option>
             </select>
             <select value={filters.on_offshore} onChange={(e) => setFilters(f => ({ ...f, on_offshore: e.target.value }))} className={filterSelectClass}>
-              <option value="all" className="bg-blue-900">All Locations</option>
-              <option value="onshore" className="bg-blue-900">Onshore</option>
-              <option value="offshore" className="bg-blue-900">Offshore</option>
+              <option value="all" className="bg-white dark:bg-blue-900">All Locations</option>
+              <option value="onshore" className="bg-white dark:bg-blue-900">Onshore</option>
+              <option value="offshore" className="bg-white dark:bg-blue-900">Offshore</option>
             </select>
             <input
               type="text" value={filters.search} onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
               placeholder="Search by name or email..."
-              className="flex-1 min-w-[180px] rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none"
+              className="flex-1 min-w-[180px] rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
             />
-            <button onClick={() => setFilters({ department: "all", type: "all", on_offshore: "all", search: "" })} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10">
+            <button onClick={() => setFilters({ department: "all", type: "all", on_offshore: "all", search: "" })} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Clear
             </button>
           </div>
         )}
 
         {isLoading ? (
-          <p className="text-white/50 text-center py-20">Loading...</p>
+          <p className="text-gray-500 dark:text-white/50 text-center py-20">Loading...</p>
         ) : contacts.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-12 text-center">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-12 text-center">
             <p className="text-xl font-bold mb-2">No contacts yet</p>
-            <p className="text-white/50 mb-6">Add your first contact to get started.</p>
+            <p className="text-gray-500 dark:text-white/50 mb-6">Add your first contact to get started.</p>
             <Link href="/contacts/new" className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700">+ Add Contact</Link>
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-8 text-center text-white/50">No contacts match the current filters.</p>
+          <p className="py-8 text-center text-gray-500 dark:text-white/50">No contacts match the current filters.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
             <table className="w-full min-w-[700px] border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Mobile</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Visa</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Location</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Dept</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white/70">Sales</th>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Mobile</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Visa</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Location</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Dept</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Sales</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((c) => (
-                  <tr key={c.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5 cursor-pointer" onClick={() => router.push(`/contacts/${c.id}`)}>
+                  <tr key={c.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer" onClick={() => router.push(`/contacts/${c.id}`)}>
                     <td className="px-4 py-3 text-sm font-semibold">
-                      <Link href={`/contacts/${c.id}`} className="hover:text-blue-400 hover:underline" onClick={(e) => e.stopPropagation()}>
+                      <Link href={`/contacts/${c.id}`} className="hover:text-blue-700 dark:text-blue-400 hover:underline" onClick={(e) => e.stopPropagation()}>
                         {c.first_name} {c.last_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-sm text-white/70">{c.email ?? "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/70">{c.mobile ?? "—"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">{c.email ?? "—"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-white/70">{c.mobile ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${c.type === "client" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${c.type === "client" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"}`}>
                         {c.type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-white/70">{c.current_visa_type ?? "—"}</td>
-                    <td className="px-4 py-3 text-xs text-white/70 capitalize">{c.on_offshore ?? "—"}</td>
-                    <td className="px-4 py-3 text-xs text-white/70">{c.department ? DEPT_LABELS[c.department] ?? c.department : "—"}</td>
-                    <td className="px-4 py-3 text-xs text-white/70">{c.profiles?.full_name ?? "—"}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-white/70">{c.current_visa_type ?? "—"}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-white/70 capitalize">{c.on_offshore ?? "—"}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-white/70">{c.department ? DEPT_LABELS[c.department] ?? c.department : "—"}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-white/70">{c.profiles?.full_name ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>

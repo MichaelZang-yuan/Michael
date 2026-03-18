@@ -76,7 +76,7 @@ export default function ClientSignPage() {
         <div className="text-5xl mb-4">⚠️</div>
         <h1 className="text-xl font-bold text-gray-800 mb-2">Link Invalid or Expired</h1>
         <p className="text-gray-500">{error}</p>
-        <p className="text-sm text-gray-400 mt-4">Please contact PJ Immigration Services for assistance.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">Please contact PJ Immigration Services for assistance.</p>
       </div>
     </div>
   );
@@ -84,7 +84,7 @@ export default function ClientSignPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-blue-900 text-white px-6 py-5">
+      <div className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white px-6 py-5">
         <div className="max-w-3xl mx-auto">
           <p className="text-sm text-blue-200 mb-0.5">PJ Immigration Services Ltd</p>
           <h1 className="text-xl font-bold">Service Agreement — {contract?.deal_number ?? ""}</h1>
@@ -111,7 +111,7 @@ export default function ClientSignPage() {
           {contract?.html ? (
             <div dangerouslySetInnerHTML={{ __html: contract.html }} />
           ) : (
-            <p className="text-gray-400 italic text-center py-8">Contract content unavailable. Please contact us.</p>
+            <p className="text-gray-500 dark:text-gray-400 italic text-center py-8">Contract content unavailable. Please contact us.</p>
           )}
         </div>
 
@@ -157,14 +157,14 @@ export default function ClientSignPage() {
               canvasHeight={160}
             />
 
-            <p className="text-xs text-gray-400 text-center mt-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
               Your electronic signature is legally binding under New Zealand law.
             </p>
           </div>
         )}
 
         {/* Footer */}
-        <div className="text-center text-xs text-gray-400 mt-8 pb-8">
+        <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-8 pb-8">
           PJ Immigration Services Ltd · Licensed Immigration Advisers<br />
           Jiale WAN · Xu ZHOU · Di WU
         </div>

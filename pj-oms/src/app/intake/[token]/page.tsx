@@ -186,7 +186,7 @@ function SignatureField({
           onTouchEnd={stopDraw}
         />
       </div>
-      <p className="text-xs text-gray-400 mt-1">Sign above using your mouse or finger</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Sign above using your mouse or finger</p>
       <button type="button" onClick={clear} className="mt-1 text-xs text-red-500 hover:text-red-700 underline">
         Clear signature
       </button>
@@ -743,7 +743,7 @@ export default function IntakeFormPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-3">{msg.title}</h1>
           <p className="text-gray-600 mb-4">{msg.body}</p>
-          {dealNumber && <p className="text-sm text-gray-400">Case Reference: {dealNumber}</p>}
+          {dealNumber && <p className="text-sm text-gray-500 dark:text-gray-400">Case Reference: {dealNumber}</p>}
         </div>
       </div>
     );
@@ -785,11 +785,11 @@ export default function IntakeFormPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── Header ── */}
-      <div className="bg-blue-900 text-white py-5 px-4">
+      <div className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white py-5 px-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-base font-bold leading-tight">PJ Operation & Management</h1>
-            {templateName && <p className="text-blue-300 text-xs mt-0.5">{templateName}</p>}
+            {templateName && <p className="text-blue-700 dark:text-blue-300 text-xs mt-0.5">{templateName}</p>}
           </div>
           {/* Language switcher */}
           {langOptions.length > 1 && (
@@ -798,7 +798,7 @@ export default function IntakeFormPage() {
                 <button
                   key={l}
                   onClick={() => handleLangSwitch(l as Language)}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${lang === l ? "bg-white text-blue-900" : "text-blue-200 hover:text-white hover:bg-white/10"}`}
+                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${lang === l ? "bg-white text-blue-900" : "text-blue-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"}`}
                 >
                   {LANG_LABELS[l as Language]}
                 </button>
@@ -818,7 +818,7 @@ export default function IntakeFormPage() {
                 <span className="ml-2 text-gray-700 font-medium">{t(currentSection.title, lang)}</span>
               )}
             </p>
-            <p className="text-xs text-gray-400">{progress}%</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{progress}%</p>
           </div>
           <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
@@ -827,7 +827,7 @@ export default function IntakeFormPage() {
             />
           </div>
           {lastSavedAt && (
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {SAVED_LABEL[lang]}: {formatSavedAt(lastSavedAt)}
               {isSaving && <span className="ml-2 text-blue-500">saving...</span>}
             </p>
@@ -926,7 +926,7 @@ export default function IntakeFormPage() {
           </button>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
           {lang === "zh"
             ? "您的信息将被安全传输，仅用于移民申请。"
             : lang === "th"

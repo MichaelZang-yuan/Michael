@@ -30,14 +30,14 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  deal_approval_request: "bg-blue-500/20 text-blue-400",
-  deal_approval_result: "bg-purple-500/20 text-purple-400",
-  contract_signed: "bg-green-500/20 text-green-400",
-  visa_submitted: "bg-orange-500/20 text-orange-400",
-  visa_result: "bg-emerald-500/20 text-emerald-400",
-  intake_completed: "bg-cyan-500/20 text-cyan-400",
-  refund_request: "bg-red-500/20 text-red-400",
-  invoice_overdue: "bg-yellow-500/20 text-yellow-400",
+  deal_approval_request: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  deal_approval_result: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  contract_signed: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  visa_submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  visa_result: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+  intake_completed: "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400",
+  refund_request: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  invoice_overdue: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
 };
 
 function formatTimeAgo(dateStr: string): string {
@@ -127,23 +127,23 @@ export default function NotificationsPage() {
 
   const filterClass = (active: boolean) =>
     `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-      active ? "bg-white/10 text-white" : "text-white/60 hover:text-white hover:bg-white/5"
+      active ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white" : "text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5"
     }`;
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <Link href="/crm" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">← Dashboard</Link>
+            <Link href="/crm" className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">← Dashboard</Link>
             <h2 className="text-2xl font-bold sm:text-3xl">Notifications</h2>
-            <p className="text-sm text-white/50 mt-1">{total} total{unreadCount > 0 ? ` · ${unreadCount} unread` : ""}</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 mt-1">{total} total{unreadCount > 0 ? ` · ${unreadCount} unread` : ""}</p>
           </div>
           {unreadCount > 0 && (
-            <button onClick={handleMarkAllRead} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10">
+            <button onClick={handleMarkAllRead} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Mark All as Read
             </button>
           )}
@@ -157,31 +157,31 @@ export default function NotificationsPage() {
           <button onClick={() => { setFilter("unread"); setOffset(0); }} className={filterClass(filter === "unread")}>
             Unread
           </button>
-          <span className="text-white/20 mx-1">|</span>
+          <span className="text-gray-500 dark:text-white/20 mx-1">|</span>
           <select
             value={typeFilter}
             onChange={e => { setTypeFilter(e.target.value); setOffset(0); }}
-            className="rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+            className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
           >
-            <option value="all" className="bg-blue-900">All Types</option>
-            <option value="deal_approval_request" className="bg-blue-900">Approval Requests</option>
-            <option value="deal_approval_result" className="bg-blue-900">Approval Results</option>
-            <option value="contract_signed" className="bg-blue-900">Contract Signed</option>
-            <option value="visa_submitted" className="bg-blue-900">Visa Submitted</option>
-            <option value="visa_result" className="bg-blue-900">Visa Results</option>
-            <option value="intake_completed" className="bg-blue-900">Intake Completed</option>
-            <option value="refund_request" className="bg-blue-900">Refund Requests</option>
-            <option value="invoice_overdue" className="bg-blue-900">Invoice Overdue</option>
+            <option value="all" className="bg-white dark:bg-blue-900">All Types</option>
+            <option value="deal_approval_request" className="bg-white dark:bg-blue-900">Approval Requests</option>
+            <option value="deal_approval_result" className="bg-white dark:bg-blue-900">Approval Results</option>
+            <option value="contract_signed" className="bg-white dark:bg-blue-900">Contract Signed</option>
+            <option value="visa_submitted" className="bg-white dark:bg-blue-900">Visa Submitted</option>
+            <option value="visa_result" className="bg-white dark:bg-blue-900">Visa Results</option>
+            <option value="intake_completed" className="bg-white dark:bg-blue-900">Intake Completed</option>
+            <option value="refund_request" className="bg-white dark:bg-blue-900">Refund Requests</option>
+            <option value="invoice_overdue" className="bg-white dark:bg-blue-900">Invoice Overdue</option>
           </select>
         </div>
 
         {/* Notification List */}
         {isLoading ? (
-          <p className="text-white/50 text-center py-20">Loading...</p>
+          <p className="text-gray-500 dark:text-white/50 text-center py-20">Loading...</p>
         ) : notifications.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-12 text-center">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-12 text-center">
             <p className="text-xl font-bold mb-2">No notifications</p>
-            <p className="text-white/50">You&apos;re all caught up!</p>
+            <p className="text-gray-500 dark:text-white/50">You&apos;re all caught up!</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -189,29 +189,29 @@ export default function NotificationsPage() {
               <div
                 key={n.id}
                 onClick={() => handleClick(n)}
-                className={`rounded-xl border p-4 cursor-pointer transition-colors hover:bg-white/5 flex gap-4 items-start ${
+                className={`rounded-xl border p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/5 flex gap-4 items-start ${
                   !n.is_read
-                    ? "border-blue-400/30 bg-blue-600/5 border-l-4 border-l-blue-400"
-                    : "border-white/10 bg-white/[0.02]"
+                    ? "border-blue-400/30 bg-blue-600/5 border-l-4 border-l-blue-500 dark:border-l-blue-400"
+                    : "border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]"
                 }`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${TYPE_COLORS[n.type] ?? "bg-gray-500/20 text-gray-400"}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${TYPE_COLORS[n.type] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                       {TYPE_LABELS[n.type] ?? n.type}
                     </span>
-                    <span className="text-xs text-white/30">{formatTimeAgo(n.created_at)}</span>
+                    <span className="text-xs text-gray-500 dark:text-white/30">{formatTimeAgo(n.created_at)}</span>
                   </div>
-                  <p className={`text-sm font-semibold ${!n.is_read ? "text-white" : "text-white/70"}`}>
+                  <p className={`text-sm font-semibold ${!n.is_read ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-white/70"}`}>
                     {n.title}
                   </p>
-                  <p className="text-sm text-white/50 mt-0.5">{n.message}</p>
+                  <p className="text-sm text-gray-500 dark:text-white/50 mt-0.5">{n.message}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {!n.is_read && (
                     <button
                       onClick={e => { e.stopPropagation(); handleMarkRead(n.id); }}
-                      className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap"
+                      className="text-xs text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 whitespace-nowrap"
                     >
                       Mark read
                     </button>
@@ -223,7 +223,7 @@ export default function NotificationsPage() {
 
             {notifications.length < total && (
               <div className="text-center pt-4">
-                <button onClick={handleLoadMore} className="rounded-lg border border-white/20 px-6 py-2.5 text-sm font-bold hover:bg-white/10">
+                <button onClick={handleLoadMore} className="rounded-lg border border-gray-300 dark:border-white/20 px-6 py-2.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                   Load More
                 </button>
               </div>

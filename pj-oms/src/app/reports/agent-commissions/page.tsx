@@ -155,25 +155,25 @@ export default function AgentCommissionsReportPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
-  const inputClass = "rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
+  const inputClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
   const btnPrimary = "rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50";
-  const btnSecondary = "rounded-lg border border-white/20 px-3 py-1.5 text-xs font-bold hover:bg-white/10";
+  const btnSecondary = "rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <p className="text-sm text-white/50 mb-1">Reports</p>
+          <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Reports</p>
           <h1 className="text-2xl font-bold">Agent Commissions</h1>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-end gap-3 mb-6">
           <div>
-            <label className="block text-xs text-white/50 mb-1">From</label>
+            <label className="block text-xs text-gray-500 dark:text-white/50 mb-1">From</label>
             <input
               type="date"
               value={dateFilter.from}
@@ -186,7 +186,7 @@ export default function AgentCommissionsReportPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-white/50 mb-1">To</label>
+            <label className="block text-xs text-gray-500 dark:text-white/50 mb-1">To</label>
             <input
               type="date"
               value={dateFilter.to}
@@ -212,18 +212,18 @@ export default function AgentCommissionsReportPage() {
 
         {/* Summary cards */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-8">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-            <p className="text-xs text-white/50 mb-1">Total Commission</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-5">
+            <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Total Commission</p>
             <p className="text-2xl font-bold">${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p className="text-xs text-white/40 mt-1">{commissions.length} records</p>
+            <p className="text-xs text-gray-500 dark:text-white/40 mt-1">{commissions.length} records</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-            <p className="text-xs text-white/50 mb-1">Pending / Approved</p>
-            <p className="text-2xl font-bold text-yellow-400">${grandPending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-5">
+            <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Pending / Approved</p>
+            <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">${grandPending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-            <p className="text-xs text-white/50 mb-1">Paid</p>
-            <p className="text-2xl font-bold text-green-400">${grandPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-5">
+            <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Paid</p>
+            <p className="text-2xl font-bold text-green-700 dark:text-green-400">${grandPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </div>
 
@@ -231,27 +231,27 @@ export default function AgentCommissionsReportPage() {
         {agentSummaries.length > 0 && (
           <section className="mb-8">
             <h2 className="text-lg font-bold mb-4">Summary by Agent</h2>
-            <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+            <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 bg-white/5">
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Agent</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Deals</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Total</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Pending</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Paid</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Agent</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Deals</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Total</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Pending</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Paid</th>
                   </tr>
                 </thead>
                 <tbody>
                   {agentSummaries.map(s => (
-                    <tr key={s.agent_id} className="border-b border-white/5 hover:bg-white/5 last:border-0">
+                    <tr key={s.agent_id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 last:border-0">
                       <td className="px-4 py-3 font-medium">
-                        <Link href={`/agents/${s.agent_id}`} className="text-blue-400 hover:underline">{s.agent_name}</Link>
+                        <Link href={`/agents/${s.agent_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">{s.agent_name}</Link>
                       </td>
-                      <td className="px-4 py-3 text-white/70">{s.count}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-white/70">{s.count}</td>
                       <td className="px-4 py-3 font-medium">${s.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="px-4 py-3 text-yellow-400">${s.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="px-4 py-3 text-green-400">${s.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="px-4 py-3 text-yellow-700 dark:text-yellow-400">${s.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="px-4 py-3 text-green-700 dark:text-green-400">${s.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -264,23 +264,23 @@ export default function AgentCommissionsReportPage() {
         <section>
           <h2 className="text-lg font-bold mb-4">All Commission Records</h2>
           {commissions.length === 0 ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-8 text-center">
-              <p className="text-white/50">No commission records found for the selected period.</p>
+            <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-8 text-center">
+              <p className="text-gray-500 dark:text-white/50">No commission records found for the selected period.</p>
             </div>
           ) : (
-            <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden overflow-x-auto">
+            <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden overflow-x-auto">
               <table className="w-full min-w-[900px] text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 bg-white/5">
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Agent</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Deal #</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Client</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Type</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Rate</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Base</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Commission</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Status</th>
-                    <th className="text-left px-4 py-3 text-white/50 font-medium">Paid Date</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Agent</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Deal #</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Client</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Type</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Rate</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Base</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Commission</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Status</th>
+                    <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Paid Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -290,33 +290,33 @@ export default function AgentCommissionsReportPage() {
                       : c.deals?.companies?.company_name ?? "—";
                     const rateDisplay = c.commission_type === "percentage" ? `${c.commission_rate}%` : `$${c.commission_rate}`;
                     return (
-                      <tr key={c.id} className="border-b border-white/5 hover:bg-white/5 last:border-0">
+                      <tr key={c.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 last:border-0">
                         <td className="px-4 py-3">
-                          <Link href={`/agents/${c.agent_id}`} className="text-blue-400 hover:underline">{c.agents?.agent_name ?? "—"}</Link>
+                          <Link href={`/agents/${c.agent_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">{c.agents?.agent_name ?? "—"}</Link>
                         </td>
                         <td className="px-4 py-3">
-                          <Link href={`/deals/${c.deal_id}`} className="text-blue-400 hover:underline">{c.deals?.deal_number ?? "—"}</Link>
+                          <Link href={`/deals/${c.deal_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">{c.deals?.deal_number ?? "—"}</Link>
                         </td>
-                        <td className="px-4 py-3 text-white/80">{client}</td>
-                        <td className="px-4 py-3 text-white/70 capitalize">{c.commission_type}</td>
-                        <td className="px-4 py-3 text-white/80">{rateDisplay}</td>
-                        <td className="px-4 py-3 text-white/80">${(c.base_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3 text-gray-700 dark:text-white/80">{client}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-white/70 capitalize">{c.commission_type}</td>
+                        <td className="px-4 py-3 text-gray-700 dark:text-white/80">{rateDisplay}</td>
+                        <td className="px-4 py-3 text-gray-700 dark:text-white/80">${(c.base_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td className="px-4 py-3 font-medium">${(c.commission_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td className="px-4 py-3">
                           <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${
-                            c.status === "paid" ? "bg-green-500/20 text-green-400" :
-                            c.status === "approved" ? "bg-blue-500/20 text-blue-400" :
-                            "bg-yellow-500/20 text-yellow-400"
+                            c.status === "paid" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" :
+                            c.status === "approved" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" :
+                            "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
                           }`}>{c.status}</span>
                         </td>
-                        <td className="px-4 py-3 text-white/70">{c.paid_date ?? "—"}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-white/70">{c.paid_date ?? "—"}</td>
                       </tr>
                     );
                   })}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t border-white/10 bg-white/5">
-                    <td colSpan={5} className="px-4 py-3 text-right font-bold text-white/70">Totals:</td>
+                  <tr className="border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                    <td colSpan={5} className="px-4 py-3 text-right font-bold text-gray-600 dark:text-white/70">Totals:</td>
                     <td className="px-4 py-3 font-bold">${commissions.reduce((s, c) => s + (c.base_amount || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td className="px-4 py-3 font-bold">${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td colSpan={2}></td>

@@ -341,7 +341,7 @@ export default function NewStudentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges={isDirty} />
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -350,8 +350,8 @@ export default function NewStudentPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
 
           {/* Upload Offer Letter - Drag & Drop */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
-            <h3 className="text-sm font-semibold text-white/70 mb-3">Upload Offer Letter (Optional)</h3>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
+            <h3 className="text-sm font-semibold text-gray-600 dark:text-white/70 mb-3">Upload Offer Letter (Optional)</h3>
             <div
               onClick={() => !isExtracting && fileInputRef.current?.click()}
               onDrop={handleDrop}
@@ -361,8 +361,8 @@ export default function NewStudentPage() {
                 isExtracting
                   ? "cursor-wait border-amber-500/50 bg-amber-900/20"
                   : isDragging
-                    ? "cursor-pointer border-blue-400 bg-blue-900/50"
-                    : "cursor-pointer border-white/20 hover:border-white/40"
+                    ? "cursor-pointer border-blue-400 bg-gray-50 dark:bg-blue-900/50"
+                    : "cursor-pointer border-gray-300 dark:border-white/20 hover:border-white/40"
               }`}
             >
               <input
@@ -372,150 +372,150 @@ export default function NewStudentPage() {
                 onChange={handleFileChange}
                 className="hidden"
               />
-              <p className="text-white/70 text-sm">
+              <p className="text-gray-600 dark:text-white/70 text-sm">
                 Drag & drop your offer letter here, or click to browse
               </p>
-              <p className="mt-1 text-xs text-white/50">PDF, JPG, PNG</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-white/50">PDF, JPG, PNG</p>
               {uploadedFile && (
                 <p className="mt-3 text-sm">
                   {isExtracting ? (
                     <span className="text-amber-400">Extracting information...</span>
                   ) : (
-                    <span className="text-green-400">Selected: {uploadedFile.name}</span>
+                    <span className="text-green-700 dark:text-green-400">Selected: {uploadedFile.name}</span>
                   )}
                 </p>
               )}
             </div>
             {extractMessage && (
-              <p className="mt-2 text-sm text-green-400">{extractMessage}</p>
+              <p className="mt-2 text-sm text-green-700 dark:text-green-400">{extractMessage}</p>
             )}
           </div>
 
           {/* Name */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Full Name *</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Full Name *</label>
             <input
               name="full_name"
               value={form.full_name}
               onChange={handleChange}
               required
               placeholder="e.g. Zhang Wei"
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
             />
           </div>
 
           {/* Student Number */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Student Number</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Student Number</label>
             <input
               name="student_number"
               value={form.student_number}
               onChange={handleChange}
               placeholder="e.g. ST123456"
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
             />
           </div>
 
           {/* School */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">School</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">School</label>
             <select
               name="school_id"
               value={form.school_id}
               onChange={handleChange}
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
             >
-              <option value="" className="bg-blue-900 text-white">Select a school...</option>
+              <option value="" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Select a school...</option>
               {schools.map((s) => (
-                <option key={s.id} value={s.id} className="bg-blue-900 text-white">{s.name}</option>
+                <option key={s.id} value={s.id} className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">{s.name}</option>
               ))}
             </select>
           </div>
 
           {/* Department */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Department *</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Department *</label>
             <select
               name="department"
               value={form.department}
               onChange={handleChange}
               required
               disabled={isSales}
-              className="rounded-lg border border-white/20 bg-blue-900 px-4 py-3 text-white focus:border-blue-400 focus:outline-none w-full disabled:cursor-not-allowed disabled:opacity-70"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-3 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <option value="" className="bg-blue-900 text-white">Select a department...</option>
-              <option value="china" className="bg-blue-900 text-white">China</option>
-              <option value="thailand" className="bg-blue-900 text-white">Thailand</option>
-              <option value="myanmar" className="bg-blue-900 text-white">Myanmar</option>
-              <option value="korea_japan" className="bg-blue-900 text-white">Korea & Japan</option>
+              <option value="" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Select a department...</option>
+              <option value="china" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">China</option>
+              <option value="thailand" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Thailand</option>
+              <option value="myanmar" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Myanmar</option>
+              <option value="korea_japan" className="bg-white dark:bg-blue-900 text-gray-900 dark:text-white">Korea & Japan</option>
             </select>
             {isSales && (
-              <p className="text-xs text-white/50 mt-1">Department is locked to your profile.</p>
+              <p className="text-xs text-gray-500 dark:text-white/50 mt-1">Department is locked to your profile.</p>
             )}
           </div>
 
           {/* Notes */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-white/70">Notes</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">Notes</label>
             <textarea
               name="notes"
               value={form.notes}
               onChange={handleChange}
               placeholder="Any additional notes..."
               rows={3}
-              className="rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
             />
           </div>
 
           {/* Commission Details - Year 1 Optional */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
-            <h3 className="text-sm font-semibold text-white/70 mb-3">Commission Details</h3>
-            <p className="text-xs text-white/50 mb-4">Add Year 1 Commission (Optional)</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
+            <h3 className="text-sm font-semibold text-gray-600 dark:text-white/70 mb-3">Commission Details</h3>
+            <p className="text-xs text-gray-500 dark:text-white/50 mb-4">Add Year 1 Commission (Optional)</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-white/60">Enrollment Date for Year 1</label>
+                <label className="text-xs text-gray-500 dark:text-white/60">Enrollment Date for Year 1</label>
                 <input
                   type="date"
                   value={commissionForm.enrollment_date}
                   onChange={(e) => handleCommissionChange("enrollment_date", e.target.value)}
-                  className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none w-full"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-white/60">Tuition Fee for Year 1</label>
+                <label className="text-xs text-gray-500 dark:text-white/60">Tuition Fee for Year 1</label>
                 <input
                   type="number"
                   value={commissionForm.tuition_fee}
                   onChange={(e) => handleCommissionChange("tuition_fee", e.target.value)}
                   placeholder="e.g. 20000"
-                  className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-white/60">Commission Rate (%)</label>
+                <label className="text-xs text-gray-500 dark:text-white/60">Commission Rate (%)</label>
                 <input
                   type="number"
                   value={commissionForm.commission_rate}
                   onChange={(e) => handleCommissionChange("commission_rate", e.target.value)}
                   placeholder="e.g. 15"
                   step="0.1"
-                  className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-white/60">Amount</label>
+                <label className="text-xs text-gray-500 dark:text-white/60">Amount</label>
                 <input
                   type="number"
                   value={commissionForm.amount}
                   onChange={(e) => handleCommissionChange("amount", e.target.value)}
                   placeholder="Auto"
-                  className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none w-full"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none w-full"
                 />
               </div>
             </div>
           </div>
 
-          {error && <p className="text-red-400">{error}</p>}
+          {error && <p className="text-red-700 dark:text-red-400">{error}</p>}
 
           <div className="flex flex-wrap gap-3 pt-2">
             <button
@@ -527,7 +527,7 @@ export default function NewStudentPage() {
             </button>
             <Link
               href="/students"
-              className="rounded-lg border border-white/20 px-8 py-3 font-bold text-white hover:bg-white/10"
+              className="rounded-lg border border-gray-300 dark:border-white/20 px-8 py-3 font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
             >
               Cancel
             </Link>

@@ -337,33 +337,33 @@ export default function EditDealPage() {
     router.push(`/deals/${id}`);
   };
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges />
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
 
         <div className="mb-8">
-          <Link href={`/deals/${id}`} className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">
+          <Link href={`/deals/${id}`} className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">
             ← Back to Deal
           </Link>
           <h2 className="text-2xl font-bold sm:text-3xl">Edit Deal {dealNumber ?? ""}</h2>
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
@@ -378,17 +378,17 @@ export default function EditDealPage() {
                 <div className="flex items-center justify-between rounded-lg border border-blue-400/30 bg-blue-600/10 px-4 py-3">
                   <div>
                     <p className="font-semibold">{contactInfo.first_name} {contactInfo.last_name}</p>
-                    {contactInfo.department && <p className="text-xs text-white/60">{DEPT_LABELS[contactInfo.department] ?? contactInfo.department}</p>}
+                    {contactInfo.department && <p className="text-xs text-gray-500 dark:text-white/60">{DEPT_LABELS[contactInfo.department] ?? contactInfo.department}</p>}
                   </div>
-                  <Link href={`/contacts/${contactInfo.id}`} className="text-xs text-blue-400 hover:underline">View contact →</Link>
+                  <Link href={`/contacts/${contactInfo.id}`} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View contact →</Link>
                 </div>
               ) : companyInfo ? (
                 <div className="flex items-center justify-between rounded-lg border border-blue-400/30 bg-blue-600/10 px-4 py-3">
                   <div>
                     <p className="font-semibold">{companyInfo.company_name}</p>
-                    {companyInfo.department && <p className="text-xs text-white/60">{DEPT_LABELS[companyInfo.department] ?? companyInfo.department}</p>}
+                    {companyInfo.department && <p className="text-xs text-gray-500 dark:text-white/60">{DEPT_LABELS[companyInfo.department] ?? companyInfo.department}</p>}
                   </div>
-                  <Link href={`/companies/${companyInfo.id}`} className="text-xs text-blue-400 hover:underline">View company →</Link>
+                  <Link href={`/companies/${companyInfo.id}`} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View company →</Link>
                 </div>
               ) : null}
             </div>
@@ -400,7 +400,7 @@ export default function EditDealPage() {
             {selectedAgent ? (
               <div className="flex items-center justify-between rounded-lg border border-orange-400/30 bg-orange-600/10 px-4 py-3">
                 <p className="font-semibold">{selectedAgent.agent_name}</p>
-                <button type="button" onClick={() => { setSelectedAgent(null); setAgentSearch(""); }} className="text-xs text-white/50 hover:text-white">Remove</button>
+                <button type="button" onClick={() => { setSelectedAgent(null); setAgentSearch(""); }} className="text-xs text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white">Remove</button>
               </div>
             ) : (
               <div>
@@ -411,11 +411,11 @@ export default function EditDealPage() {
                   className={inputClass}
                 />
                 {agentResults.length > 0 && (
-                  <ul className="mt-1 rounded-lg border border-white/10 bg-blue-950 max-h-40 overflow-y-auto">
+                  <ul className="mt-1 rounded-lg border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-blue-950 max-h-40 overflow-y-auto">
                     {agentResults.map(a => (
                       <li key={a.id}>
                         <button type="button" onClick={() => { setSelectedAgent(a); setAgentSearch(""); setAgentResults([]); }}
-                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/10">
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-white/10">
                           {a.agent_name}
                         </button>
                       </li>
@@ -433,18 +433,18 @@ export default function EditDealPage() {
               <div>
                 <label className={labelClass}>Deal Type *</label>
                 <select name="deal_type" value={form.deal_type} onChange={handleChange} required className={selectClass}>
-                  <option value="individual_visa" className="bg-blue-900">Individual Visa</option>
-                  <option value="accreditation" className="bg-blue-900">Accreditation</option>
-                  <option value="job_check" className="bg-blue-900">Job Check</option>
-                  <option value="school_application" className="bg-blue-900">School Application</option>
+                  <option value="individual_visa" className="bg-white dark:bg-blue-900">Individual Visa</option>
+                  <option value="accreditation" className="bg-white dark:bg-blue-900">Accreditation</option>
+                  <option value="job_check" className="bg-white dark:bg-blue-900">Job Check</option>
+                  <option value="school_application" className="bg-white dark:bg-blue-900">School Application</option>
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Visa / Service Type *</label>
                 {isCompanyDeal ? (
                   <select name="visa_type" value={form.visa_type} onChange={handleChange} required className={selectClass}>
-                    <option value="" className="bg-blue-900">Select...</option>
-                    {COMPANY_VISA_OPTIONS.map(v => <option key={v} value={v} className="bg-blue-900">{v}</option>)}
+                    <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                    {COMPANY_VISA_OPTIONS.map(v => <option key={v} value={v} className="bg-white dark:bg-blue-900">{v}</option>)}
                   </select>
                 ) : (
                   <>
@@ -473,13 +473,13 @@ export default function EditDealPage() {
           {/* Reference Prices */}
           {refPrices.length > 0 && (
             <div className={sectionClass}>
-              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Reference Prices</p>
-              <p className="text-xs text-white/40 mb-3">Reference price — actual fee may vary</p>
+              <p className="text-xs font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider mb-2">Reference Prices</p>
+              <p className="text-xs text-gray-500 dark:text-white/40 mb-3">Reference price — actual fee may vary</p>
               <div className="space-y-1">
                 {refPrices.map((p, i) => (
-                  <div key={i} className="flex justify-between text-sm text-white/70 py-1 border-b border-white/5">
+                  <div key={i} className="flex justify-between text-sm text-gray-600 dark:text-white/70 py-1 border-b border-gray-100 dark:border-white/5">
                     <span>{p.service_name}</span>
-                    <span className="text-white/90">Svc: ${p.service_fee.toLocaleString()} {p.inz_fee > 0 ? `| INZ: $${p.inz_fee.toLocaleString()}` : ""}</span>
+                    <span className="text-gray-800 dark:text-white/90">Svc: ${p.service_fee.toLocaleString()} {p.inz_fee > 0 ? `| INZ: $${p.inz_fee.toLocaleString()}` : ""}</span>
                   </div>
                 ))}
               </div>
@@ -493,9 +493,9 @@ export default function EditDealPage() {
               <div>
                 <label className={labelClass}>Contract Language</label>
                 <select name="preferred_language" value={form.preferred_language} onChange={handleChange} className={selectClass}>
-                  <option value="en" className="bg-blue-900">English</option>
-                  <option value="zh" className="bg-blue-900">Chinese (中文)</option>
-                  <option value="th" className="bg-blue-900">Thai (ภาษาไทย)</option>
+                  <option value="en" className="bg-white dark:bg-blue-900">English</option>
+                  <option value="zh" className="bg-white dark:bg-blue-900">Chinese (中文)</option>
+                  <option value="th" className="bg-white dark:bg-blue-900">Thai (ภาษาไทย)</option>
                 </select>
               </div>
               <div>
@@ -507,31 +507,31 @@ export default function EditDealPage() {
             {/* Payment stage rows */}
             <div className="space-y-3 mb-4">
               {paymentStages.map((stage, idx) => (
-                <div key={stage.id} className={`rounded-lg border p-4 ${stage.is_paid ? "border-green-500/30 bg-green-500/5 opacity-70" : "border-white/10 bg-white/5"}`}>
+                <div key={stage.id} className={`rounded-lg border p-4 ${stage.is_paid ? "border-green-500/30 bg-green-500/5 opacity-70" : "border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5"}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Stage {idx + 1}</span>
-                      {stage.is_paid && <span className="text-xs text-green-400 bg-green-500/20 rounded-full px-2 py-0.5">Paid — locked</span>}
+                      <span className="text-xs font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider">Stage {idx + 1}</span>
+                      {stage.is_paid && <span className="text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-500/20 rounded-full px-2 py-0.5">Paid — locked</span>}
                     </div>
                     {!stage.is_paid && paymentStages.length > 1 && (
                       <button type="button" onClick={() => setPaymentStages(ps => ps.filter(s => s.id !== stage.id))}
-                        className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                        className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300">Remove</button>
                     )}
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-3">
                     <div>
                       <label className={labelClass}>Stage Name</label>
                       {stage.is_paid
-                        ? <p className="text-sm text-white/70 px-1">{stage.stage_name}</p>
+                        ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{stage.stage_name}</p>
                         : <select value={stage.stage_name} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, stage_name: e.target.value } : s))} className={selectClass}>
-                            {STAGE_NAMES.map(n => <option key={n} value={n} className="bg-blue-900">{n}</option>)}
+                            {STAGE_NAMES.map(n => <option key={n} value={n} className="bg-white dark:bg-blue-900">{n}</option>)}
                           </select>
                       }
                     </div>
                     <div>
                       <label className={labelClass}>Stage Details</label>
                       {stage.is_paid
-                        ? <p className="text-sm text-white/70 px-1">{stage.stage_details || "—"}</p>
+                        ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{stage.stage_details || "—"}</p>
                         : <input value={stage.stage_details} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, stage_details: e.target.value } : s))}
                             placeholder="e.g. Signing agreement" className={inputClass} />
                       }
@@ -565,18 +565,18 @@ export default function EditDealPage() {
                     <div>
                       <label className={labelClass}>GST</label>
                       {stage.is_paid
-                        ? <p className="text-sm text-white/70 px-1">{stage.gst_type}</p>
+                        ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{stage.gst_type}</p>
                         : <select value={stage.gst_type} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, gst_type: e.target.value } : s))} className={selectClass}>
-                            {GST_TYPES.map(g => <option key={g} value={g} className="bg-blue-900">{g}</option>)}
+                            {GST_TYPES.map(g => <option key={g} value={g} className="bg-white dark:bg-blue-900">{g}</option>)}
                           </select>
                       }
                     </div>
                     <div>
                       <label className={labelClass}>Currency</label>
                       {stage.is_paid
-                        ? <p className="text-sm text-white/70 px-1">{stage.currency}</p>
+                        ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{stage.currency}</p>
                         : <select value={stage.currency} onChange={e => setPaymentStages(ps => ps.map(s => s.id === stage.id ? { ...s, currency: e.target.value } : s))} className={selectClass}>
-                            {CURRENCIES.map(c => <option key={c} value={c} className="bg-blue-900">{c}</option>)}
+                            {CURRENCIES.map(c => <option key={c} value={c} className="bg-white dark:bg-blue-900">{c}</option>)}
                           </select>
                       }
                     </div>
@@ -587,19 +587,19 @@ export default function EditDealPage() {
 
             {paymentStages.length < 6 && (
               <button type="button" onClick={() => setPaymentStages(ps => [...ps, newStageRow()])}
-                className="mb-4 text-sm text-blue-400 hover:text-blue-300 border border-blue-400/30 rounded-lg px-4 py-2 hover:bg-blue-400/10 transition-colors">
+                className="mb-4 text-sm text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 border border-blue-400/30 rounded-lg px-4 py-2 hover:bg-blue-400/10 transition-colors">
                 + Add Payment Stage
               </button>
             )}
 
             {/* Totals summary */}
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Totals (auto-calculated)</p>
+            <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <p className="text-xs font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider mb-3">Totals (auto-calculated)</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
-                <div><p className="text-white/50 text-xs">Service Fee</p><p className="font-bold">${stageServiceTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
-                <div><p className="text-white/50 text-xs">INZ Fee</p><p className="font-bold">${stageInzTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
-                <div><p className="text-white/50 text-xs">Other Fee</p><p className="font-bold">${stageOtherTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
-                <div><p className="text-white/50 text-xs">Total</p><p className="text-xl font-bold">${stageTotalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+                <div><p className="text-gray-500 dark:text-white/50 text-xs">Service Fee</p><p className="font-bold">${stageServiceTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+                <div><p className="text-gray-500 dark:text-white/50 text-xs">INZ Fee</p><p className="font-bold">${stageInzTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+                <div><p className="text-gray-500 dark:text-white/50 text-xs">Other Fee</p><p className="font-bold">${stageOtherTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
+                <div><p className="text-gray-500 dark:text-white/50 text-xs">Total</p><p className="text-xl font-bold">${stageTotalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div>
               </div>
             </div>
           </div>
@@ -611,22 +611,22 @@ export default function EditDealPage() {
               <div>
                 <label className={labelClass}>Assigned Sales</label>
                 <select name="assigned_sales_id" value={form.assigned_sales_id} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">— None —</option>
-                  {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                  <option value="" className="bg-white dark:bg-blue-900">— None —</option>
+                  {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-blue-900">{s.full_name}</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Assigned LIA</label>
                 <select name="assigned_lia_id" value={form.assigned_lia_id} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">— None —</option>
-                  {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                  <option value="" className="bg-white dark:bg-blue-900">— None —</option>
+                  {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-blue-900">{s.full_name}</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Assigned Copywriter</label>
                 <select name="assigned_copywriter_id" value={form.assigned_copywriter_id} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">— None —</option>
-                  {copywriterUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name}</option>)}
+                  <option value="" className="bg-white dark:bg-blue-900">— None —</option>
+                  {copywriterUsers.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-blue-900">{s.full_name}</option>)}
                 </select>
               </div>
             </div>
@@ -636,11 +636,11 @@ export default function EditDealPage() {
           <div className={sectionClass}>
             <h3 className="text-base font-bold mb-4">Department</h3>
             <select name="department" value={form.department} onChange={handleChange} className={`${selectClass} max-w-xs`}>
-              <option value="" className="bg-blue-900">— Select —</option>
-              <option value="china" className="bg-blue-900">China</option>
-              <option value="thailand" className="bg-blue-900">Thailand</option>
-              <option value="myanmar" className="bg-blue-900">Myanmar</option>
-              <option value="korea_japan" className="bg-blue-900">Korea & Japan</option>
+              <option value="" className="bg-white dark:bg-blue-900">— Select —</option>
+              <option value="china" className="bg-white dark:bg-blue-900">China</option>
+              <option value="thailand" className="bg-white dark:bg-blue-900">Thailand</option>
+              <option value="myanmar" className="bg-white dark:bg-blue-900">Myanmar</option>
+              <option value="korea_japan" className="bg-white dark:bg-blue-900">Korea & Japan</option>
             </select>
           </div>
 
@@ -654,7 +654,7 @@ export default function EditDealPage() {
             <button type="submit" disabled={isSaving} className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50">
               {isSaving ? "Saving..." : "Save Changes"}
             </button>
-            <Link href={`/deals/${id}`} className="rounded-lg border border-white/20 px-6 py-3 font-bold hover:bg-white/10 inline-flex items-center">
+            <Link href={`/deals/${id}`} className="rounded-lg border border-gray-300 dark:border-white/20 px-6 py-3 font-bold hover:bg-gray-100 dark:hover:bg-white/10 inline-flex items-center">
               Cancel
             </Link>
           </div>

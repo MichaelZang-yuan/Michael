@@ -43,11 +43,11 @@ const DEPT_LABELS: Record<string, string> = {
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400", quoted: "bg-blue-500/20 text-blue-400",
-  contracted: "bg-purple-500/20 text-purple-400", in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-orange-500/20 text-orange-400", approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400", completed: "bg-green-600/20 text-green-300",
-  cancelled: "bg-red-600/20 text-red-300",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400", quoted: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contracted: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400", in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400", approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400", completed: "bg-green-100 dark:bg-green-600/20 text-green-700 dark:text-green-300",
+  cancelled: "bg-red-100 dark:bg-red-600/20 text-red-700 dark:text-red-300",
 };
 
 export default function ContactDetailPage() {
@@ -492,30 +492,30 @@ export default function ContactDetailPage() {
   };
 
   if (isLoading) return (
-    <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>
   );
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges={hasUnsavedChanges} />
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
 
         {/* Header */}
         <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <Link href="/contacts" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">← Contacts</Link>
+            <Link href="/contacts" className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">← Contacts</Link>
             <h2 className="text-2xl font-bold sm:text-3xl">{form.first_name} {form.last_name}</h2>
             <div className="mt-2 flex flex-wrap gap-2">
-              <span className={`rounded-full px-3 py-0.5 text-xs font-bold uppercase ${form.type === "client" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+              <span className={`rounded-full px-3 py-0.5 text-xs font-bold uppercase ${form.type === "client" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"}`}>
                 {form.type}
               </span>
               {form.department && (
-                <span className="rounded-full bg-blue-500/20 px-3 py-0.5 text-xs font-bold text-blue-400">
+                <span className="rounded-full bg-blue-100 dark:bg-blue-500/20 px-3 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-400">
                   {DEPT_LABELS[form.department] ?? form.department}
                 </span>
               )}
@@ -523,12 +523,12 @@ export default function ContactDetailPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {form.type === "lead" && (
-              <button onClick={handleConvertToClient} className="rounded-lg border border-green-500/50 bg-green-500/10 px-4 py-2 text-sm font-bold text-green-400 hover:bg-green-500/20">
+              <button onClick={handleConvertToClient} className="rounded-lg border border-green-500/50 bg-green-500/10 px-4 py-2 text-sm font-bold text-green-700 dark:text-green-400 hover:bg-green-100 dark:bg-green-500/20">
                 Convert to Client
               </button>
             )}
             {isAdmin && (
-              <button onClick={handleDelete} disabled={isDeleting} className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50">
+              <button onClick={handleDelete} disabled={isDeleting} className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20 disabled:opacity-50">
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
             )}
@@ -536,7 +536,7 @@ export default function ContactDetailPage() {
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
@@ -546,17 +546,17 @@ export default function ContactDetailPage() {
           <h3 className="text-lg font-bold mb-4">Contact Information</h3>
 
           {/* Basic */}
-          <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Basic</p>
+          <p className="text-xs font-bold text-gray-500 dark:text-white/40 uppercase tracking-wider mb-3">Basic</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
             <div><label className={labelClass}>First Name *</label><input name="first_name" value={form.first_name} onChange={handleChange} className={inputClass} /></div>
             <div><label className={labelClass}>Last Name *</label><input name="last_name" value={form.last_name} onChange={handleChange} className={inputClass} /></div>
             <div>
               <label className={labelClass}>Gender</label>
               <select name="gender" value={form.gender} onChange={handleChange} className={selectClass}>
-                <option value="" className="bg-blue-900">Select...</option>
-                <option value="male" className="bg-blue-900">Male</option>
-                <option value="female" className="bg-blue-900">Female</option>
-                <option value="other" className="bg-blue-900">Other</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                <option value="male" className="bg-white dark:bg-blue-900">Male</option>
+                <option value="female" className="bg-white dark:bg-blue-900">Female</option>
+                <option value="other" className="bg-white dark:bg-blue-900">Other</option>
               </select>
             </div>
             <div><label className={labelClass}>Date of Birth</label><input name="date_of_birth" value={form.date_of_birth} onChange={handleChange} type="date" className={inputClass} /></div>
@@ -569,59 +569,59 @@ export default function ContactDetailPage() {
           </div>
 
           {/* Service */}
-          <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Service Information</p>
+          <p className="text-xs font-bold text-gray-500 dark:text-white/40 uppercase tracking-wider mb-3">Service Information</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
             <div>
               <label className={labelClass}>Type</label>
               <select name="type" value={form.type} onChange={handleChange} className={selectClass}>
-                <option value="lead" className="bg-blue-900">Lead</option>
-                <option value="client" className="bg-blue-900">Client</option>
+                <option value="lead" className="bg-white dark:bg-blue-900">Lead</option>
+                <option value="client" className="bg-white dark:bg-blue-900">Client</option>
               </select>
             </div>
             <div>
               <label className={labelClass}>On/Offshore</label>
               <select name="on_offshore" value={form.on_offshore} onChange={handleChange} className={selectClass}>
-                <option value="" className="bg-blue-900">Select...</option>
-                <option value="onshore" className="bg-blue-900">Onshore</option>
-                <option value="offshore" className="bg-blue-900">Offshore</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                <option value="onshore" className="bg-white dark:bg-blue-900">Onshore</option>
+                <option value="offshore" className="bg-white dark:bg-blue-900">Offshore</option>
               </select>
             </div>
             <div><label className={labelClass}>Service Required</label><input name="service_required" value={form.service_required} onChange={handleChange} className={inputClass} /></div>
             <div>
               <label className={labelClass}>Lead Source</label>
               <select name="lead_source" value={form.lead_source} onChange={handleChange} className={selectClass}>
-                <option value="" className="bg-blue-900">Select...</option>
-                <option value="referral" className="bg-blue-900">Referral</option>
-                <option value="walk-in" className="bg-blue-900">Walk-In</option>
-                <option value="online" className="bg-blue-900">Online</option>
-                <option value="social_media" className="bg-blue-900">Social Media</option>
-                <option value="agent" className="bg-blue-900">Agent</option>
-                <option value="other" className="bg-blue-900">Other</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                <option value="referral" className="bg-white dark:bg-blue-900">Referral</option>
+                <option value="walk-in" className="bg-white dark:bg-blue-900">Walk-In</option>
+                <option value="online" className="bg-white dark:bg-blue-900">Online</option>
+                <option value="social_media" className="bg-white dark:bg-blue-900">Social Media</option>
+                <option value="agent" className="bg-white dark:bg-blue-900">Agent</option>
+                <option value="other" className="bg-white dark:bg-blue-900">Other</option>
               </select>
             </div>
             <div><label className={labelClass}>Source Name</label><input name="source_name" value={form.source_name} onChange={handleChange} className={inputClass} /></div>
             <div>
               <label className={labelClass}>Agent</label>
               <select name="agent_id" value={form.agent_id} onChange={handleChange} className={selectClass}>
-                <option value="" className="bg-blue-900">No Agent</option>
-                {agents.map(a => <option key={a.id} value={a.id} className="bg-blue-900">{a.agent_name}</option>)}
+                <option value="" className="bg-white dark:bg-blue-900">No Agent</option>
+                {agents.map(a => <option key={a.id} value={a.id} className="bg-white dark:bg-blue-900">{a.agent_name}</option>)}
               </select>
             </div>
           </div>
 
           {/* Personal */}
-          <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Personal Details</p>
+          <p className="text-xs font-bold text-gray-500 dark:text-white/40 uppercase tracking-wider mb-3">Personal Details</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
             <div className="sm:col-span-2"><label className={labelClass}>Address</label><input name="address" value={form.address} onChange={handleChange} className={inputClass} /></div>
             <div>
               <label className={labelClass}>Marital Status</label>
               <select name="marital_status" value={form.marital_status} onChange={handleChange} className={selectClass}>
-                <option value="" className="bg-blue-900">Select...</option>
-                <option value="single" className="bg-blue-900">Single</option>
-                <option value="married" className="bg-blue-900">Married</option>
-                <option value="partnered" className="bg-blue-900">Partnered</option>
-                <option value="divorced" className="bg-blue-900">Divorced</option>
-                <option value="widowed" className="bg-blue-900">Widowed</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                <option value="single" className="bg-white dark:bg-blue-900">Single</option>
+                <option value="married" className="bg-white dark:bg-blue-900">Married</option>
+                <option value="partnered" className="bg-white dark:bg-blue-900">Partnered</option>
+                <option value="divorced" className="bg-white dark:bg-blue-900">Divorced</option>
+                <option value="widowed" className="bg-white dark:bg-blue-900">Widowed</option>
               </select>
             </div>
             <div><label className={labelClass}>Employer</label><input name="employer" value={form.employer} onChange={handleChange} className={inputClass} /></div>
@@ -633,7 +633,7 @@ export default function ContactDetailPage() {
 
           {/* Visa & Passport */}
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-bold text-white/40 uppercase tracking-wider">Visa & Passport</p>
+            <p className="text-xs font-bold text-gray-500 dark:text-white/40 uppercase tracking-wider">Visa & Passport</p>
             <div className="flex gap-2">
               <label className={`cursor-pointer rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 ${isExtractingPassport ? "opacity-50 pointer-events-none" : ""}`}>
                 {isExtractingPassport ? "Extracting..." : "Extract from Passport"}
@@ -653,13 +653,13 @@ export default function ContactDetailPage() {
             if (days <= 30) {
               const isExpired = days <= 0;
               return (
-                <div className={`mb-4 rounded-lg border px-4 py-3 flex items-center gap-3 ${isExpired ? "border-red-500 bg-red-500/20" : "border-orange-500 bg-orange-500/20"}`}>
+                <div className={`mb-4 rounded-lg border px-4 py-3 flex items-center gap-3 ${isExpired ? "border-red-500 bg-red-100 dark:bg-red-500/20" : "border-orange-500 bg-orange-100 dark:bg-orange-500/20"}`}>
                   <span className="text-2xl">{isExpired ? "🚨" : "⚠️"}</span>
                   <div>
-                    <p className={`text-sm font-bold ${isExpired ? "text-red-300" : "text-orange-300"}`}>
+                    <p className={`text-sm font-bold ${isExpired ? "text-red-700 dark:text-red-300" : "text-orange-700 dark:text-orange-300"}`}>
                       {isExpired ? "Visa Expired!" : "Visa Expiring Soon!"}
                     </p>
-                    <p className={`text-xs ${isExpired ? "text-red-400" : "text-orange-400"}`}>
+                    <p className={`text-xs ${isExpired ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"}`}>
                       {isExpired
                         ? `Visa expired ${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} ago (${new Date(form.visa_expiry_date).toLocaleDateString("en-NZ")})`
                         : `${days} day${days !== 1 ? "s" : ""} until expiry (${new Date(form.visa_expiry_date).toLocaleDateString("en-NZ")})`}
@@ -674,13 +674,13 @@ export default function ContactDetailPage() {
             <div>
               <label className={labelClass}>Current Visa Type</label>
               <select name="current_visa_type" value={form.current_visa_type} onChange={handleChange} className={selectClass}>
-                <option value="" className="bg-blue-900">Select...</option>
-                <option value="Student Visa" className="bg-blue-900">Student Visa</option>
-                <option value="Work Visa" className="bg-blue-900">Work Visa</option>
-                <option value="Visitor Visa" className="bg-blue-900">Visitor Visa</option>
-                <option value="Resident Visa" className="bg-blue-900">Resident Visa</option>
-                <option value="Partnership Visa" className="bg-blue-900">Partnership Visa</option>
-                <option value="Other" className="bg-blue-900">Other</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                <option value="Student Visa" className="bg-white dark:bg-blue-900">Student Visa</option>
+                <option value="Work Visa" className="bg-white dark:bg-blue-900">Work Visa</option>
+                <option value="Visitor Visa" className="bg-white dark:bg-blue-900">Visitor Visa</option>
+                <option value="Resident Visa" className="bg-white dark:bg-blue-900">Resident Visa</option>
+                <option value="Partnership Visa" className="bg-white dark:bg-blue-900">Partnership Visa</option>
+                <option value="Other" className="bg-white dark:bg-blue-900">Other</option>
               </select>
             </div>
             <div><label className={labelClass}>Visa Expiry</label><input name="visa_expiry_date" value={form.visa_expiry_date} onChange={handleChange} type="date" className={inputClass} /></div>
@@ -691,37 +691,37 @@ export default function ContactDetailPage() {
           </div>
 
           {/* OneDrive */}
-          <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">OneDrive (Reserved)</p>
+          <p className="text-xs font-bold text-gray-500 dark:text-white/40 uppercase tracking-wider mb-3">OneDrive (Reserved)</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
             <div><label className={labelClass}>Folder ID</label><input name="onedrive_folder_id" value={form.onedrive_folder_id} onChange={handleChange} className={inputClass} /></div>
             <div><label className={labelClass}>Folder Link</label><input name="onedrive_folder_link" value={form.onedrive_folder_link} onChange={handleChange} className={inputClass} /></div>
           </div>
 
           {/* Department & Sales */}
-          <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Assignment</p>
+          <p className="text-xs font-bold text-gray-500 dark:text-white/40 uppercase tracking-wider mb-3">Assignment</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className={labelClass}>Department</label>
               {isSales ? (
-                <p className="text-white/70 py-2.5">{DEPT_LABELS[form.department] ?? form.department}</p>
+                <p className="text-gray-600 dark:text-white/70 py-2.5">{DEPT_LABELS[form.department] ?? form.department}</p>
               ) : (
                 <select name="department" value={form.department} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="china" className="bg-blue-900">China</option>
-                  <option value="thailand" className="bg-blue-900">Thailand</option>
-                  <option value="myanmar" className="bg-blue-900">Myanmar</option>
-                  <option value="korea_japan" className="bg-blue-900">Korea & Japan</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="china" className="bg-white dark:bg-blue-900">China</option>
+                  <option value="thailand" className="bg-white dark:bg-blue-900">Thailand</option>
+                  <option value="myanmar" className="bg-white dark:bg-blue-900">Myanmar</option>
+                  <option value="korea_japan" className="bg-white dark:bg-blue-900">Korea & Japan</option>
                 </select>
               )}
             </div>
             <div>
               <label className={labelClass}>Assigned Sales</label>
               {isSales ? (
-                <p className="text-white/70 py-2.5">{salesUsers.find(s => s.id === form.assigned_sales_id)?.full_name ?? "—"}</p>
+                <p className="text-gray-600 dark:text-white/70 py-2.5">{salesUsers.find(s => s.id === form.assigned_sales_id)?.full_name ?? "—"}</p>
               ) : (
                 <select name="assigned_sales_id" value={form.assigned_sales_id} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.full_name ?? s.id}</option>)}
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  {salesUsers.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-blue-900">{s.full_name ?? s.id}</option>)}
                 </select>
               )}
             </div>
@@ -738,20 +738,20 @@ export default function ContactDetailPage() {
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Medical & PCC</h3>
-            <button onClick={() => setShowMedicalForm(!showMedicalForm)} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10">
+            <button onClick={() => setShowMedicalForm(!showMedicalForm)} className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               + Add Row
             </button>
           </div>
 
           {showMedicalForm && (
-            <div className="mb-4 rounded-lg border border-white/10 bg-white/5 p-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mb-4 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div>
                 <label className={labelClass}>Item</label>
                 <select value={newMedical.item} onChange={e => setNewMedical(f => ({ ...f, item: e.target.value }))} className={selectClass}>
-                  <option value="medical" className="bg-blue-900">Medical</option>
-                  <option value="pcc" className="bg-blue-900">PCC</option>
-                  <option value="chest_xray" className="bg-blue-900">Chest X-Ray</option>
-                  <option value="other" className="bg-blue-900">Other</option>
+                  <option value="medical" className="bg-white dark:bg-blue-900">Medical</option>
+                  <option value="pcc" className="bg-white dark:bg-blue-900">PCC</option>
+                  <option value="chest_xray" className="bg-white dark:bg-blue-900">Chest X-Ray</option>
+                  <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                 </select>
               </div>
               <div>
@@ -768,34 +768,34 @@ export default function ContactDetailPage() {
               </div>
               <div className="col-span-2 sm:col-span-4 flex gap-2">
                 <button onClick={handleAddMedical} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">Add</button>
-                <button onClick={() => setShowMedicalForm(false)} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10">Cancel</button>
+                <button onClick={() => setShowMedicalForm(false)} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">Cancel</button>
               </div>
             </div>
           )}
 
           {medicalRows.length === 0 ? (
-            <p className="text-white/50 text-sm">No records yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No records yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[400px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Item</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Country</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Issue Date</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Expiry Date</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10">
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Item</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Country</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Issue Date</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Expiry Date</th>
                     <th className="px-3 py-2"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {medicalRows.map((row) => (
-                    <tr key={row.id} className="border-b border-white/10 last:border-b-0">
+                    <tr key={row.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0">
                       <td className="px-3 py-2 text-sm capitalize">{row.item?.replace("_", " ") ?? "—"}</td>
-                      <td className="px-3 py-2 text-sm text-white/70">{row.country ?? "—"}</td>
-                      <td className="px-3 py-2 text-sm text-white/70">{row.issue_date ?? "—"}</td>
-                      <td className="px-3 py-2 text-sm text-white/70">{row.expiry_date ?? "—"}</td>
+                      <td className="px-3 py-2 text-sm text-gray-600 dark:text-white/70">{row.country ?? "—"}</td>
+                      <td className="px-3 py-2 text-sm text-gray-600 dark:text-white/70">{row.issue_date ?? "—"}</td>
+                      <td className="px-3 py-2 text-sm text-gray-600 dark:text-white/70">{row.expiry_date ?? "—"}</td>
                       <td className="px-3 py-2">
-                        <button onClick={() => handleDeleteMedical(row.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                        <button onClick={() => handleDeleteMedical(row.id)} className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300">Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -809,14 +809,14 @@ export default function ContactDetailPage() {
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Family Relationships</h3>
-            <button onClick={() => setShowLinkModal(true)} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10">
+            <button onClick={() => setShowLinkModal(true)} className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Link Family Member
             </button>
           </div>
 
           {showLinkModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-              <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+              <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
                 <h4 className="text-lg font-bold mb-4">Link Family Member</h4>
                 <div className="mb-3">
                   <label className={labelClass}>Search Contact</label>
@@ -827,12 +827,12 @@ export default function ContactDetailPage() {
                     className={inputClass}
                   />
                   {familySearchResults.length > 0 && (
-                    <ul className="mt-1 rounded-lg border border-white/10 bg-blue-950 max-h-40 overflow-y-auto">
+                    <ul className="mt-1 rounded-lg border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-blue-950 max-h-40 overflow-y-auto">
                       {familySearchResults.map(c => (
                         <li key={c.id}>
                           <button
                             onClick={() => { setLinkForm(f => ({ ...f, related_contact_id: c.id })); setFamilySearch(`${c.first_name} ${c.last_name}`); setFamilySearchResults([]); }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-white/10 ${linkForm.related_contact_id === c.id ? "bg-white/10" : ""}`}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-white/10 ${linkForm.related_contact_id === c.id ? "bg-gray-100 dark:bg-white/10" : ""}`}
                           >
                             {c.first_name} {c.last_name}
                           </button>
@@ -844,12 +844,12 @@ export default function ContactDetailPage() {
                 <div className="mb-3">
                   <label className={labelClass}>Relationship</label>
                   <select value={linkForm.relationship} onChange={e => setLinkForm(f => ({ ...f, relationship: e.target.value }))} className={selectClass}>
-                    <option value="spouse" className="bg-blue-900">Spouse</option>
-                    <option value="child" className="bg-blue-900">Child</option>
-                    <option value="parent" className="bg-blue-900">Parent</option>
-                    <option value="sibling" className="bg-blue-900">Sibling</option>
-                    <option value="partner" className="bg-blue-900">Partner</option>
-                    <option value="other" className="bg-blue-900">Other</option>
+                    <option value="spouse" className="bg-white dark:bg-blue-900">Spouse</option>
+                    <option value="child" className="bg-white dark:bg-blue-900">Child</option>
+                    <option value="parent" className="bg-white dark:bg-blue-900">Parent</option>
+                    <option value="sibling" className="bg-white dark:bg-blue-900">Sibling</option>
+                    <option value="partner" className="bg-white dark:bg-blue-900">Partner</option>
+                    <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                   </select>
                 </div>
                 <div className="mb-4">
@@ -860,7 +860,7 @@ export default function ContactDetailPage() {
                   <button onClick={handleAddFamilyLink} disabled={!linkForm.related_contact_id} className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50">
                     Link
                   </button>
-                  <button onClick={() => { setShowLinkModal(false); setFamilySearch(""); setFamilySearchResults([]); setLinkForm({ related_contact_id: "", relationship: "spouse", notes: "" }); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                  <button onClick={() => { setShowLinkModal(false); setFamilySearch(""); setFamilySearchResults([]); setLinkForm({ related_contact_id: "", relationship: "spouse", notes: "" }); }} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                     Cancel
                   </button>
                 </div>
@@ -869,19 +869,19 @@ export default function ContactDetailPage() {
           )}
 
           {familyLinks.length === 0 ? (
-            <p className="text-white/50 text-sm">No family links yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No family links yet.</p>
           ) : (
             <ul className="space-y-2">
               {familyLinks.map((link) => (
-                <li key={link.id} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2.5">
+                <li key={link.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2.5">
                   <div>
-                    <Link href={`/contacts/${link.related_contact_id}`} className="font-medium text-blue-400 hover:underline">
+                    <Link href={`/contacts/${link.related_contact_id}`} className="font-medium text-blue-700 dark:text-blue-400 hover:underline">
                       {link.related_contact?.first_name} {link.related_contact?.last_name}
                     </Link>
-                    <span className="ml-2 text-sm text-white/60 capitalize">{link.relationship ?? ""}</span>
-                    {link.notes && <span className="ml-2 text-xs text-white/40">{link.notes}</span>}
+                    <span className="ml-2 text-sm text-gray-500 dark:text-white/60 capitalize">{link.relationship ?? ""}</span>
+                    {link.notes && <span className="ml-2 text-xs text-gray-500 dark:text-white/40">{link.notes}</span>}
                   </div>
-                  <button onClick={() => handleDeleteFamilyLink(link.id)} className="text-xs text-red-400 hover:text-red-300 ml-4">Remove</button>
+                  <button onClick={() => handleDeleteFamilyLink(link.id)} className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300 ml-4">Remove</button>
                 </li>
               ))}
             </ul>
@@ -892,24 +892,24 @@ export default function ContactDetailPage() {
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Deals ({deals.length})</h3>
-            <Link href={`/deals/new?contact_id=${id}`} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10">
+            <Link href={`/deals/new?contact_id=${id}`} className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               + New Deal
             </Link>
           </div>
           {deals.length === 0 ? (
-            <p className="text-white/50 text-sm">No deals linked to this contact.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No deals linked to this contact.</p>
           ) : (
             <div className="space-y-2">
               {deals.map(d => (
-                <Link key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 hover:bg-white/10">
+                <Link key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-white/10">
                   <div>
-                    <span className="font-medium text-blue-400">{d.deal_number ?? "—"}</span>
-                    <span className="ml-3 text-sm text-white/70">{d.deal_type?.replace(/_/g, " ") ?? ""}</span>
-                    <span className="ml-3 text-xs text-white/40">{new Date(d.created_at).toLocaleDateString()}</span>
+                    <span className="font-medium text-blue-700 dark:text-blue-400">{d.deal_number ?? "—"}</span>
+                    <span className="ml-3 text-sm text-gray-600 dark:text-white/70">{d.deal_type?.replace(/_/g, " ") ?? ""}</span>
+                    <span className="ml-3 text-xs text-gray-500 dark:text-white/40">{new Date(d.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {d.total_amount != null && <span className="text-sm text-white/70">${d.total_amount.toLocaleString()}</span>}
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-500/20 text-gray-400"}`}>{d.status}</span>
+                    {d.total_amount != null && <span className="text-sm text-gray-600 dark:text-white/70">${d.total_amount.toLocaleString()}</span>}
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>{d.status}</span>
                   </div>
                 </Link>
               ))}
@@ -921,19 +921,19 @@ export default function ContactDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Attachments</h3>
           <div className="mb-3">
-            <label className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
+            <label className="cursor-pointer rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
               {isUploading ? "Uploading..." : "Upload File"}
               <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
             </label>
           </div>
           {attachments.length === 0 ? (
-            <p className="text-white/50 text-sm">No attachments yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No attachments yet.</p>
           ) : (
             <ul className="space-y-2">
               {attachments.map(f => (
-                <li key={f.name} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2">
-                  <span className="text-sm text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
-                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline whitespace-nowrap">View</a>
+                <li key={f.name} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2">
+                  <span className="text-sm text-gray-800 dark:text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
+                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 hover:underline whitespace-nowrap">View</a>
                 </li>
               ))}
             </ul>
@@ -944,14 +944,14 @@ export default function ContactDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Activity Timeline</h3>
           {activityLogs.length === 0 ? (
-            <p className="text-white/50 text-sm">No activity yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No activity yet.</p>
           ) : (
             <ul className="space-y-3">
               {activityLogs.map(log => (
                 <li key={log.id} className="flex gap-3 text-sm">
-                  <span className="text-white/40 whitespace-nowrap">{new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                  <span className="text-white/60">{userNames[log.user_id] ?? "Unknown"}</span>
-                  <span className="text-white/90">{log.action.replace(/_/g, " ")}</span>
+                  <span className="text-gray-500 dark:text-white/40 whitespace-nowrap">{new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span className="text-gray-500 dark:text-white/60">{userNames[log.user_id] ?? "Unknown"}</span>
+                  <span className="text-gray-800 dark:text-white/90">{log.action.replace(/_/g, " ")}</span>
                 </li>
               ))}
             </ul>
@@ -961,9 +961,9 @@ export default function ContactDetailPage() {
         {/* Passport Extraction Confirm Modal */}
         {showPassportConfirm && passportExtraction && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-4">Passport Data Extracted</h4>
-              <p className="text-sm text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
+              <p className="text-sm text-gray-500 dark:text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
               <div className="space-y-2 mb-5">
                 {([
                   ["Full Name", passportExtraction.full_name, `${form.first_name} ${form.last_name}`.trim()],
@@ -973,13 +973,13 @@ export default function ContactDetailPage() {
                   ["Passport Expiry", passportExtraction.expiry_date, form.passport_expiry_date],
                   ["Gender", passportExtraction.gender, form.gender],
                 ] as [string, string | null, string][]).map(([label, extracted, current]) => (
-                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm">
-                    <span className="text-white/50">{label}</span>
-                    <span className="text-green-400">{extracted ?? "—"}</span>
-                    <span className="text-white/40">{current || "—"}</span>
+                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm">
+                    <span className="text-gray-500 dark:text-white/50">{label}</span>
+                    <span className="text-green-700 dark:text-green-400">{extracted ?? "—"}</span>
+                    <span className="text-gray-500 dark:text-white/40">{current || "—"}</span>
                   </div>
                 ))}
-                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-white/30">
+                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-gray-500 dark:text-white/30">
                   <span>Field</span>
                   <span>Extracted</span>
                   <span>Current</span>
@@ -989,7 +989,7 @@ export default function ContactDetailPage() {
                 <button onClick={handleApplyPassportData} className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700">
                   Apply
                 </button>
-                <button onClick={() => { setShowPassportConfirm(false); setPassportExtraction(null); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                <button onClick={() => { setShowPassportConfirm(false); setPassportExtraction(null); }} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                   Cancel
                 </button>
               </div>
@@ -1000,9 +1000,9 @@ export default function ContactDetailPage() {
         {/* Visa Extraction Confirm Modal */}
         {showVisaConfirm && visaExtraction && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-4">Visa Data Extracted</h4>
-              <p className="text-sm text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
+              <p className="text-sm text-gray-500 dark:text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
               <div className="space-y-2 mb-5">
                 {([
                   ["Visa Type", visaExtraction.visa_type, form.current_visa_type],
@@ -1011,13 +1011,13 @@ export default function ContactDetailPage() {
                   ["Visa Number", visaExtraction.visa_number, null],
                   ["Entry Permission", visaExtraction.entry_permission, null],
                 ] as [string, string | null, string | null][]).map(([label, extracted, current]) => (
-                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm">
-                    <span className="text-white/50">{label}</span>
-                    <span className="text-green-400">{extracted ?? "—"}</span>
-                    <span className="text-white/40">{current || "—"}</span>
+                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm">
+                    <span className="text-gray-500 dark:text-white/50">{label}</span>
+                    <span className="text-green-700 dark:text-green-400">{extracted ?? "—"}</span>
+                    <span className="text-gray-500 dark:text-white/40">{current || "—"}</span>
                   </div>
                 ))}
-                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-white/30">
+                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-gray-500 dark:text-white/30">
                   <span>Field</span>
                   <span>Extracted</span>
                   <span>Current</span>
@@ -1027,7 +1027,7 @@ export default function ContactDetailPage() {
                 <button onClick={handleApplyVisaData} className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-700">
                   Apply
                 </button>
-                <button onClick={() => { setShowVisaConfirm(false); setVisaExtraction(null); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                <button onClick={() => { setShowVisaConfirm(false); setVisaExtraction(null); }} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                   Cancel
                 </button>
               </div>

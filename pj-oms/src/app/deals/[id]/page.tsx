@@ -156,13 +156,13 @@ const DEAL_STATUS_LABELS: Record<string, string> = {
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400", quoted: "bg-blue-500/20 text-blue-400",
-  contracted: "bg-purple-500/20 text-purple-400", in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-orange-500/20 text-orange-400", approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400", completed: "bg-green-600/20 text-green-300",
-  cancelled: "bg-red-600/20 text-red-300",
-  education_consultation: "bg-teal-500/20 text-teal-400", school_application: "bg-indigo-500/20 text-indigo-400",
-  offer_received: "bg-cyan-500/20 text-cyan-400", education_only: "bg-teal-600/20 text-teal-300",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400", quoted: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contracted: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400", in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400", approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400", completed: "bg-green-100 dark:bg-green-600/20 text-green-700 dark:text-green-300",
+  cancelled: "bg-red-100 dark:bg-red-600/20 text-red-700 dark:text-red-300",
+  education_consultation: "bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-400", school_application: "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400",
+  offer_received: "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400", education_only: "bg-teal-100 dark:bg-teal-600/20 text-teal-700 dark:text-teal-300",
 };
 
 const CONTRACT_STATUS_LABELS: Record<string, string> = {
@@ -180,11 +180,11 @@ const INTAKE_STATUS_LABELS: Record<string, string> = {
 };
 
 const INTAKE_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400",
-  sent: "bg-blue-500/20 text-blue-400",
-  in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-green-500/20 text-green-400",
-  completed: "bg-green-500/20 text-green-400",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400",
+  sent: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  completed: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
 };
 
 const EMAIL_TYPE_LABELS: Record<string, string> = {
@@ -1739,36 +1739,36 @@ export default function DealDetailPage() {
 
   // ─── Render helpers ───────────────────────────────────────────────────────
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
   const btnPrimary = "rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50";
-  const btnSecondary = "rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10 disabled:opacity-50";
-  const btnDanger = "rounded-lg border border-red-500/50 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/10 disabled:opacity-50";
+  const btnSecondary = "rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50";
+  const btnDanger = "rounded-lg border border-red-500/50 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-400 hover:bg-red-500/10 disabled:opacity-50";
 
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
 
         {/* ── Email Confirm Modal ─────────────────────────────────────────── */}
         {emailConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-sm rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-base font-bold mb-2">Send Email?</h4>
-              <p className="text-sm text-white/70 mb-1">
-                Type: <span className="text-white">{EMAIL_TYPE_LABELS[emailConfirm.emailType] ?? emailConfirm.emailType}</span>
+              <p className="text-sm text-gray-600 dark:text-white/70 mb-1">
+                Type: <span className="text-gray-900 dark:text-white">{EMAIL_TYPE_LABELS[emailConfirm.emailType] ?? emailConfirm.emailType}</span>
               </p>
-              <p className="text-sm text-white/70 mb-1">
-                To: <span className="text-white">{emailConfirm.recipientName}</span>
+              <p className="text-sm text-gray-600 dark:text-white/70 mb-1">
+                To: <span className="text-gray-900 dark:text-white">{emailConfirm.recipientName}</span>
               </p>
-              <p className="text-sm text-white/70 mb-4">
-                Email: <span className="text-white">{emailConfirm.recipientEmail}</span>
+              <p className="text-sm text-gray-600 dark:text-white/70 mb-4">
+                Email: <span className="text-gray-900 dark:text-white">{emailConfirm.recipientEmail}</span>
               </p>
               <div className="flex gap-2">
                 <button onClick={() => { emailConfirm.onConfirm(); setEmailConfirm(null); }} className={btnPrimary}>
@@ -1783,30 +1783,30 @@ export default function DealDetailPage() {
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <Link href="/deals" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">← Deals</Link>
+            <Link href="/deals" className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">← Deals</Link>
             <h2 className="text-2xl font-bold sm:text-3xl">{deal?.deal_number ?? "Deal"}</h2>
             <div className="mt-2 flex flex-wrap gap-2 items-center">
-              <span className={`rounded-full px-3 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[currentStatus] ?? "bg-gray-500/20 text-gray-400"}`}>
+              <span className={`rounded-full px-3 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[currentStatus] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                 {DEAL_STATUS_LABELS[currentStatus] ?? currentStatus}
               </span>
-              <span className="rounded-full bg-white/10 px-3 py-0.5 text-xs font-bold uppercase text-white/60">
+              <span className="rounded-full bg-gray-100 dark:bg-white/10 px-3 py-0.5 text-xs font-bold uppercase text-gray-500 dark:text-white/60">
                 {form.visa_type || form.deal_type?.replace(/_/g, " ")}
               </span>
               {deal?.contacts ? (
-                <Link href={`/contacts/${deal.contact_id}`} className="text-sm text-blue-400 hover:underline">{clientName}</Link>
+                <Link href={`/contacts/${deal.contact_id}`} className="text-sm text-blue-700 dark:text-blue-400 hover:underline">{clientName}</Link>
               ) : deal?.companies ? (
-                <Link href={`/companies/${deal.company_id}`} className="text-sm text-blue-400 hover:underline">{clientName}</Link>
+                <Link href={`/companies/${deal.company_id}`} className="text-sm text-blue-700 dark:text-blue-400 hover:underline">{clientName}</Link>
               ) : null}
             </div>
-            <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-white/50">
+            <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-gray-500 dark:text-white/50">
               {form.assigned_sales_id && <span>Sales: {salesUsers.find(s => s.id === form.assigned_sales_id)?.full_name ?? "—"}</span>}
               {form.assigned_lia_id && <span>LIA: {salesUsers.find(s => s.id === form.assigned_lia_id)?.full_name ?? "—"}</span>}
               {copywriterName && <span>Copywriter: {copywriterName}</span>}
               {approvalStatus !== "none" && (
                 <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
-                  approvalStatus === "approved" ? "bg-green-500/20 text-green-400" :
-                  approvalStatus === "declined" ? "bg-red-500/20 text-red-400" :
-                  "bg-yellow-500/20 text-yellow-400"
+                  approvalStatus === "approved" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" :
+                  approvalStatus === "declined" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400" :
+                  "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
                 }`}>
                   {approvalStatus === "pending_approval" ? "Pending Approval" : approvalStatus.charAt(0).toUpperCase() + approvalStatus.slice(1)}
                 </span>
@@ -1826,9 +1826,9 @@ export default function DealDetailPage() {
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 flex items-center justify-between ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 flex items-center justify-between ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             <span>{message.text}</span>
-            <button type="button" onClick={() => setMessage(null)} className="ml-3 text-white/50 hover:text-white text-lg leading-none">&times;</button>
+            <button type="button" onClick={() => setMessage(null)} className="ml-3 text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white text-lg leading-none">&times;</button>
           </div>
         )}
 
@@ -1836,7 +1836,7 @@ export default function DealDetailPage() {
         {canApprove && (
           <div className="mb-6 rounded-xl border border-blue-400/30 bg-blue-600/10 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-blue-300">This deal is pending your approval</h3>
+              <h3 className="text-lg font-bold text-blue-700 dark:text-blue-300">This deal is pending your approval</h3>
               <div className="flex gap-2">
                 <button onClick={handleApprove} disabled={isApproving} className="rounded-lg bg-green-600 px-5 py-2.5 font-bold text-white hover:bg-green-700 disabled:opacity-50 text-sm">
                   {isApproving ? "Approving..." : "Approve"}
@@ -1846,27 +1846,27 @@ export default function DealDetailPage() {
                 </button>
               </div>
             </div>
-            <p className="text-sm text-white/60 mb-3">Review the following information before approving:</p>
+            <p className="text-sm text-gray-500 dark:text-white/60 mb-3">Review the following information before approving:</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <div className="flex items-center gap-2 text-sm">
                 <span>{(deal?.contacts || deal?.companies) ? "✅" : "❌"}</span>
-                <span className="text-white/70">Contact/Company</span>
+                <span className="text-gray-600 dark:text-white/70">Contact/Company</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span>{form.visa_type ? "✅" : "❌"}</span>
-                <span className="text-white/70">Visa/Service Type</span>
+                <span className="text-gray-600 dark:text-white/70">Visa/Service Type</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span>{payments.length > 0 ? "✅" : "❌"}</span>
-                <span className="text-white/70">Payment Stages</span>
+                <span className="text-gray-600 dark:text-white/70">Payment Stages</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span>{form.preferred_language ? "✅" : "❌"}</span>
-                <span className="text-white/70">Preferred Language</span>
+                <span className="text-gray-600 dark:text-white/70">Preferred Language</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span>{form.assigned_lia_id ? "✅" : "❌"}</span>
-                <span className="text-white/70">Assigned LIA</span>
+                <span className="text-gray-600 dark:text-white/70">Assigned LIA</span>
               </div>
             </div>
           </div>
@@ -1874,9 +1874,9 @@ export default function DealDetailPage() {
 
         {isDeclinedApproval && !canApprove && (deal?.assigned_sales_id === profile?.id || isAdmin) && (
           <div className="mb-6 rounded-xl border border-red-500/30 bg-red-600/10 p-6">
-            <h3 className="text-lg font-bold text-red-300 mb-2">This deal was declined</h3>
+            <h3 className="text-lg font-bold text-red-700 dark:text-red-300 mb-2">This deal was declined</h3>
             {dealApproval?.decline_reason && (
-              <p className="text-sm text-white/70 mb-3">Reason: {dealApproval.decline_reason}</p>
+              <p className="text-sm text-gray-600 dark:text-white/70 mb-3">Reason: {dealApproval.decline_reason}</p>
             )}
             <button onClick={handleResubmit} disabled={isResubmitting} className="rounded-lg bg-blue-600 px-5 py-2.5 font-bold text-white hover:bg-blue-700 disabled:opacity-50 text-sm">
               {isResubmitting ? "Resubmitting..." : "Resubmit for Approval"}
@@ -1886,13 +1886,13 @@ export default function DealDetailPage() {
 
         {approvalStatus === "approved" && autoSendResults && (
           <div className="mb-6 rounded-xl border border-green-500/30 bg-green-600/10 p-4">
-            <h4 className="text-sm font-bold text-green-300 mb-2">Auto-send Results</h4>
+            <h4 className="text-sm font-bold text-green-700 dark:text-green-300 mb-2">Auto-send Results</h4>
             <div className="space-y-1">
               {autoSendResults.map((r, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
                   <span>{r.success ? "✅" : "❌"}</span>
-                  <span className="text-white/70">{r.step.replace(/_/g, " ")}</span>
-                  {r.error && <span className="text-red-400 text-xs">({r.error})</span>}
+                  <span className="text-gray-600 dark:text-white/70">{r.step.replace(/_/g, " ")}</span>
+                  {r.error && <span className="text-red-700 dark:text-red-400 text-xs">({r.error})</span>}
                 </div>
               ))}
             </div>
@@ -1902,21 +1902,21 @@ export default function DealDetailPage() {
         {/* Decline Modal */}
         {showDeclineModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-4">Decline Deal</h4>
-              <label className="block text-sm font-medium text-white/70 mb-1">Reason for declining *</label>
+              <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">Reason for declining *</label>
               <textarea
                 value={declineReason}
                 onChange={e => setDeclineReasonInput(e.target.value)}
                 rows={3}
-                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none resize-none"
+                className="w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none resize-none"
                 placeholder="Please explain why this deal is being declined..."
               />
               <div className="flex gap-2 mt-4">
                 <button onClick={handleDecline} disabled={isDeclining || !declineReason.trim()} className="rounded-lg bg-red-600 px-5 py-2.5 font-bold text-white hover:bg-red-700 disabled:opacity-50 text-sm">
                   {isDeclining ? "Declining..." : "Confirm Decline"}
                 </button>
-                <button onClick={() => { setShowDeclineModal(false); setDeclineReasonInput(""); }} className="rounded-lg border border-white/20 px-5 py-2.5 font-bold hover:bg-white/10 text-sm">
+                <button onClick={() => { setShowDeclineModal(false); setDeclineReasonInput(""); }} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2.5 font-bold hover:bg-gray-100 dark:hover:bg-white/10 text-sm">
                   Cancel
                 </button>
               </div>
@@ -1925,10 +1925,10 @@ export default function DealDetailPage() {
         )}
 
         {/* ── Workflow Progress Bar ───────────────────────────────────────── */}
-        <div className="mb-6 rounded-xl border border-white/10 bg-white/5 px-6 py-5">
+        <div className="mb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-6 py-5">
           {currentStatus === "education_only" && (
-            <div className="mb-3 rounded-lg border border-teal-500 bg-teal-500/20 px-4 py-2.5 text-center">
-              <span className="text-sm font-bold text-teal-300">Education Only — Visa Service Not Proceeded</span>
+            <div className="mb-3 rounded-lg border border-teal-500 bg-teal-100 dark:bg-teal-500/20 px-4 py-2.5 text-center">
+              <span className="text-sm font-bold text-teal-700 dark:text-teal-300">Education Only — Visa Service Not Proceeded</span>
             </div>
           )}
           <div className="flex items-center gap-0">
@@ -1944,19 +1944,19 @@ export default function DealDetailPage() {
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border-2 transition-all ${
                       isCompleted ? "bg-blue-500 border-blue-500 text-white" :
                       isEdOnly ? "bg-teal-500 border-teal-500 text-white" :
-                      isActive && !isTerminal ? "bg-blue-500/20 border-blue-400 text-blue-300" :
+                      isActive && !isTerminal ? "bg-blue-100 dark:bg-blue-500/20 border-blue-400 text-blue-700 dark:text-blue-300" :
                       isActive && currentStatus === "approved" ? "bg-green-500 border-green-500 text-white" :
                       isActive && isDeclined ? "bg-red-500 border-red-500 text-white" :
-                      "bg-white/5 border-white/20 text-white/30"
+                      "bg-gray-50 dark:bg-white/5 border-gray-300 dark:border-white/20 text-gray-500 dark:text-white/30"
                     }`}>
                       {isCompleted ? "✓" : i + 1}
                     </div>
-                    <span className={`text-xs mt-1 text-center leading-tight hidden sm:block ${isCompleted || isActive ? "text-white/80" : "text-white/30"}`} style={{ fontSize: "0.6rem" }}>
+                    <span className={`text-xs mt-1 text-center leading-tight hidden sm:block ${isCompleted || isActive ? "text-gray-700 dark:text-white/80" : "text-gray-500 dark:text-white/30"}`} style={{ fontSize: "0.6rem" }}>
                       {step.label}
                     </span>
                   </div>
                   {i < totalSteps - 1 && (
-                    <div className={`flex-1 h-0.5 mx-1 ${i < workflowStep ? "bg-blue-500" : "bg-white/10"}`} />
+                    <div className={`flex-1 h-0.5 mx-1 ${i < workflowStep ? "bg-blue-500" : "bg-gray-100 dark:bg-white/10"}`} />
                   )}
                 </div>
               );
@@ -2048,10 +2048,10 @@ export default function DealDetailPage() {
           <div className="mb-6">
             <button
               onClick={() => setShowVisaSubmitConfirm(true)}
-              className="w-full rounded-xl border-2 border-dashed border-green-400/50 bg-green-600/10 px-6 py-5 text-center hover:bg-green-600/20 transition-colors"
+              className="w-full rounded-xl border-2 border-dashed border-green-400/50 bg-green-600/10 px-6 py-5 text-center hover:bg-green-100 dark:bg-green-600/20 transition-colors"
             >
-              <span className="text-2xl font-bold text-green-300">🎉 Mark Visa as Submitted</span>
-              <p className="text-sm text-white/50 mt-1">Click to record visa application submission to INZ</p>
+              <span className="text-2xl font-bold text-green-700 dark:text-green-300">🎉 Mark Visa as Submitted</span>
+              <p className="text-sm text-gray-500 dark:text-white/50 mt-1">Click to record visa application submission to INZ</p>
             </button>
           </div>
         )}
@@ -2059,16 +2059,16 @@ export default function DealDetailPage() {
         {/* Visa Submit Confirm Modal */}
         {showVisaSubmitConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-4">Confirm Visa Submission</h4>
-              <p className="text-sm text-white/70 mb-4">
-                Confirm that the visa application for <strong className="text-white">{clientName}</strong> has been submitted to INZ?
+              <p className="text-sm text-gray-600 dark:text-white/70 mb-4">
+                Confirm that the visa application for <strong className="text-gray-900 dark:text-white">{clientName}</strong> has been submitted to INZ?
               </p>
               <div className="flex gap-2">
                 <button onClick={handleVisaSubmit} disabled={isSubmittingVisa} className="rounded-lg bg-green-600 px-5 py-2.5 font-bold text-white hover:bg-green-700 disabled:opacity-50 text-sm">
                   {isSubmittingVisa ? "Submitting..." : "Confirm Submission"}
                 </button>
-                <button onClick={() => setShowVisaSubmitConfirm(false)} className="rounded-lg border border-white/20 px-5 py-2.5 font-bold hover:bg-white/10 text-sm">
+                <button onClick={() => setShowVisaSubmitConfirm(false)} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2.5 font-bold hover:bg-gray-100 dark:hover:bg-white/10 text-sm">
                   Cancel
                 </button>
               </div>
@@ -2091,18 +2091,18 @@ export default function DealDetailPage() {
                     onChange={e => setVisaResultStatus(e.target.value)}
                     className={selectClass + " max-w-xs"}
                   >
-                    <option value="" className="bg-blue-900">— Select result —</option>
-                    <option value="approved" className="bg-blue-900">Approved</option>
-                    <option value="declined" className="bg-blue-900">Declined</option>
-                    <option value="aip" className="bg-blue-900">AIP (Approved in Principle)</option>
-                    <option value="rfi_ppi" className="bg-blue-900">RFI/PPI</option>
+                    <option value="" className="bg-white dark:bg-blue-900">— Select result —</option>
+                    <option value="approved" className="bg-white dark:bg-blue-900">Approved</option>
+                    <option value="declined" className="bg-white dark:bg-blue-900">Declined</option>
+                    <option value="aip" className="bg-white dark:bg-blue-900">AIP (Approved in Principle)</option>
+                    <option value="rfi_ppi" className="bg-white dark:bg-blue-900">RFI/PPI</option>
                   </select>
                   {visaResultStatus && (
                     <span className={`ml-3 inline-block rounded-full px-3 py-0.5 text-xs font-bold ${
-                      visaResultStatus === "approved" ? "bg-green-500/20 text-green-400" :
-                      visaResultStatus === "declined" ? "bg-red-500/20 text-red-400" :
-                      visaResultStatus === "aip" ? "bg-blue-500/20 text-blue-400" :
-                      "bg-orange-500/20 text-orange-400"
+                      visaResultStatus === "approved" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" :
+                      visaResultStatus === "declined" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400" :
+                      visaResultStatus === "aip" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" :
+                      "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400"
                     }`}>
                       {visaResultStatus === "approved" ? "Approved" :
                        visaResultStatus === "declined" ? "Declined" :
@@ -2118,14 +2118,14 @@ export default function DealDetailPage() {
                     multiple
                     accept=".pdf,.png,.jpg,.jpeg"
                     onChange={e => setVisaResultFiles(Array.from(e.target.files ?? []))}
-                    className="block w-full text-sm text-white/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                    className="block w-full text-sm text-gray-600 dark:text-white/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                   />
                   {visaResultFiles.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {visaResultFiles.map((f, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-white/60">
+                        <div key={i} className="flex items-center gap-2 text-sm text-gray-500 dark:text-white/60">
                           <span>📎 {f.name}</span>
-                          <button onClick={() => setVisaResultFiles(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 text-xs">×</button>
+                          <button onClick={() => setVisaResultFiles(prev => prev.filter((_, j) => j !== i))} className="text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300 text-xs">×</button>
                         </div>
                       ))}
                     </div>
@@ -2155,21 +2155,21 @@ export default function DealDetailPage() {
               <div>
                 {visaResultStatus ? (
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-white/70">Status:</span>
+                    <span className="text-sm text-gray-600 dark:text-white/70">Status:</span>
                     <span className={`rounded-full px-3 py-0.5 text-xs font-bold ${
-                      visaResultStatus === "approved" ? "bg-green-500/20 text-green-400" :
-                      visaResultStatus === "declined" ? "bg-red-500/20 text-red-400" :
-                      visaResultStatus === "aip" ? "bg-blue-500/20 text-blue-400" :
-                      "bg-orange-500/20 text-orange-400"
+                      visaResultStatus === "approved" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" :
+                      visaResultStatus === "declined" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400" :
+                      visaResultStatus === "aip" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" :
+                      "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400"
                     }`}>
                       {visaResultStatus === "approved" ? "Approved" :
                        visaResultStatus === "declined" ? "Declined" :
                        visaResultStatus === "aip" ? "AIP" : "RFI/PPI"}
                     </span>
-                    {visaResultNotes && <p className="text-sm text-white/60 mt-2">{visaResultNotes}</p>}
+                    {visaResultNotes && <p className="text-sm text-gray-500 dark:text-white/60 mt-2">{visaResultNotes}</p>}
                   </div>
                 ) : (
-                  <p className="text-sm text-white/50">No visa result recorded yet.</p>
+                  <p className="text-sm text-gray-500 dark:text-white/50">No visa result recorded yet.</p>
                 )}
               </div>
             )}
@@ -2184,8 +2184,8 @@ export default function DealDetailPage() {
               <div>
                 <label className={labelClass}>School</label>
                 <select value={schoolAppForm.school_id} onChange={e => setSchoolAppForm(f => ({ ...f, school_id: e.target.value }))} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select school...</option>
-                  {schoolsList.map(s => <option key={s.id} value={s.id} className="bg-blue-900">{s.name}</option>)}
+                  <option value="" className="bg-white dark:bg-blue-900">Select school...</option>
+                  {schoolsList.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-blue-900">{s.name}</option>)}
                 </select>
               </div>
               <div>
@@ -2195,10 +2195,10 @@ export default function DealDetailPage() {
               <div>
                 <label className={labelClass}>Application Status</label>
                 <select value={schoolAppForm.status} onChange={e => setSchoolAppForm(f => ({ ...f, status: e.target.value }))} className={selectClass}>
-                  <option value="pending" className="bg-blue-900">Pending</option>
-                  <option value="submitted" className="bg-blue-900">Submitted</option>
-                  <option value="offer_received" className="bg-blue-900">Offer Received</option>
-                  <option value="rejected" className="bg-blue-900">Rejected</option>
+                  <option value="pending" className="bg-white dark:bg-blue-900">Pending</option>
+                  <option value="submitted" className="bg-white dark:bg-blue-900">Submitted</option>
+                  <option value="offer_received" className="bg-white dark:bg-blue-900">Offer Received</option>
+                  <option value="rejected" className="bg-white dark:bg-blue-900">Rejected</option>
                 </select>
               </div>
               <div>
@@ -2239,63 +2239,63 @@ export default function DealDetailPage() {
 
           {/* Totals summary */}
           <div className="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-4">
-            <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Service Fee</p><p className="font-bold">${fmt(stageServiceTotal)}</p></div>
-            <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">INZ Fee</p><p className="font-bold">${fmt(stageInzTotal)}</p></div>
-            <div className="rounded-lg bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Other Fee</p><p className="font-bold">${fmt(stageOtherTotal)}</p></div>
-            <div className="rounded-lg bg-blue-600/20 px-3 py-2.5 text-center"><p className="text-xs text-white/50 mb-0.5">Total</p><p className="font-bold text-blue-300">${fmt(stageTotalAmount)}</p></div>
+            <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-gray-500 dark:text-white/50 mb-0.5">Service Fee</p><p className="font-bold">${fmt(stageServiceTotal)}</p></div>
+            <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-gray-500 dark:text-white/50 mb-0.5">INZ Fee</p><p className="font-bold">${fmt(stageInzTotal)}</p></div>
+            <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2.5 text-center"><p className="text-xs text-gray-500 dark:text-white/50 mb-0.5">Other Fee</p><p className="font-bold">${fmt(stageOtherTotal)}</p></div>
+            <div className="rounded-lg bg-blue-100 dark:bg-blue-600/20 px-3 py-2.5 text-center"><p className="text-xs text-gray-500 dark:text-white/50 mb-0.5">Total</p><p className="font-bold text-blue-700 dark:text-blue-300">${fmt(stageTotalAmount)}</p></div>
           </div>
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="rounded-lg bg-white/5 px-3 py-2 text-center"><p className="text-xs text-white/50 mb-0.5">Total Due</p><p className="font-semibold text-sm">${fmt(stageTotalAmount)}</p></div>
-            <div className="rounded-lg bg-green-500/10 px-3 py-2 text-center"><p className="text-xs text-white/50 mb-0.5">Paid</p><p className="font-semibold text-sm text-green-400">${fmt(totalPaidAmount)}</p></div>
-            <div className="rounded-lg bg-white/5 px-3 py-2 text-center"><p className="text-xs text-white/50 mb-0.5">Outstanding</p><p className={`font-semibold text-sm ${outstandingAmount > 0 ? "text-yellow-400" : "text-green-400"}`}>${fmt(outstandingAmount)}</p></div>
+            <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-center"><p className="text-xs text-gray-500 dark:text-white/50 mb-0.5">Total Due</p><p className="font-semibold text-sm">${fmt(stageTotalAmount)}</p></div>
+            <div className="rounded-lg bg-green-500/10 px-3 py-2 text-center"><p className="text-xs text-gray-500 dark:text-white/50 mb-0.5">Paid</p><p className="font-semibold text-sm text-green-700 dark:text-green-400">${fmt(totalPaidAmount)}</p></div>
+            <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-center"><p className="text-xs text-gray-500 dark:text-white/50 mb-0.5">Outstanding</p><p className={`font-semibold text-sm ${outstandingAmount > 0 ? "text-yellow-700 dark:text-yellow-400" : "text-green-700 dark:text-green-400"}`}>${fmt(outstandingAmount)}</p></div>
           </div>
 
           {/* View mode: stages table */}
           {!editingStages && payments.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="border-b border-white/10">
-                  <th className="text-left py-2 px-2 text-white/50 font-medium">Stage</th>
-                  <th className="text-left py-2 px-2 text-white/50 font-medium">Details</th>
-                  <th className="text-right py-2 px-2 text-white/50 font-medium">Svc Fee</th>
-                  <th className="text-right py-2 px-2 text-white/50 font-medium">INZ Fee</th>
-                  <th className="text-right py-2 px-2 text-white/50 font-medium">Other</th>
-                  <th className="text-left py-2 px-2 text-white/50 font-medium">GST</th>
-                  <th className="text-left py-2 px-2 text-white/50 font-medium">Ccy</th>
-                  <th className="text-right py-2 px-2 text-white/50 font-medium">Total</th>
-                  <th className="text-left py-2 px-2 text-white/50 font-medium">Status</th>
+                <thead><tr className="border-b border-gray-200 dark:border-white/10">
+                  <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Stage</th>
+                  <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Details</th>
+                  <th className="text-right py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Svc Fee</th>
+                  <th className="text-right py-2 px-2 text-gray-500 dark:text-white/50 font-medium">INZ Fee</th>
+                  <th className="text-right py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Other</th>
+                  <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">GST</th>
+                  <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Ccy</th>
+                  <th className="text-right py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Total</th>
+                  <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Status</th>
                   {hasAnyRole(profile, ["admin", "accountant"]) && <th className="py-2 px-2"></th>}
                 </tr></thead>
                 <tbody>
                   {payments.map(p => {
                     const stageTotal = (p.service_fee_amount || 0) + (p.inz_fee_amount || 0) + (p.other_fee_amount || 0);
                     return (
-                      <tr key={p.id} className={`border-b border-white/5 ${p.is_paid ? "opacity-60" : ""}`}>
-                        <td className="py-2 px-2 font-medium text-white/80">{p.stage_name ?? "—"}</td>
-                        <td className="py-2 px-2 text-white/60 text-xs">{p.stage_details ?? p.description ?? "—"}</td>
-                        <td className="py-2 px-2 text-right text-white/80">{p.service_fee_amount ? `$${fmt(p.service_fee_amount)}` : "-"}</td>
-                        <td className="py-2 px-2 text-right text-white/80">{p.inz_fee_amount ? `$${fmt(p.inz_fee_amount)}` : "-"}</td>
-                        <td className="py-2 px-2 text-right text-white/80">{p.other_fee_amount ? `$${fmt(p.other_fee_amount)}` : "-"}</td>
-                        <td className="py-2 px-2 text-white/60 text-xs">{p.gst_type ?? "—"}</td>
-                        <td className="py-2 px-2 text-white/60 text-xs">{p.currency ?? "NZD"}</td>
+                      <tr key={p.id} className={`border-b border-gray-100 dark:border-white/5 ${p.is_paid ? "opacity-60" : ""}`}>
+                        <td className="py-2 px-2 font-medium text-gray-700 dark:text-white/80">{p.stage_name ?? "—"}</td>
+                        <td className="py-2 px-2 text-gray-500 dark:text-white/60 text-xs">{p.stage_details ?? p.description ?? "—"}</td>
+                        <td className="py-2 px-2 text-right text-gray-700 dark:text-white/80">{p.service_fee_amount ? `$${fmt(p.service_fee_amount)}` : "-"}</td>
+                        <td className="py-2 px-2 text-right text-gray-700 dark:text-white/80">{p.inz_fee_amount ? `$${fmt(p.inz_fee_amount)}` : "-"}</td>
+                        <td className="py-2 px-2 text-right text-gray-700 dark:text-white/80">{p.other_fee_amount ? `$${fmt(p.other_fee_amount)}` : "-"}</td>
+                        <td className="py-2 px-2 text-gray-500 dark:text-white/60 text-xs">{p.gst_type ?? "—"}</td>
+                        <td className="py-2 px-2 text-gray-500 dark:text-white/60 text-xs">{p.currency ?? "NZD"}</td>
                         <td className="py-2 px-2 text-right font-semibold">${fmt(stageTotal)}</td>
                         <td className="py-2 px-2">
                           {p.is_paid
-                            ? <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400">Paid</span>
+                            ? <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400">Paid</span>
                             : (p.service_fee_paid || p.inz_fee_paid || p.other_fee_paid)
-                              ? <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-yellow-500/20 text-yellow-400" title={[
+                              ? <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400" title={[
                                   p.service_fee_paid ? "Svc: Paid" : (p.service_fee_amount ? "Svc: Unpaid" : null),
                                   p.inz_fee_paid ? "INZ: Paid" : (p.inz_fee_amount ? "INZ: Unpaid" : null),
                                   p.other_fee_paid ? "Other: Paid" : (p.other_fee_amount ? "Other: Unpaid" : null),
                                 ].filter(Boolean).join(", ")}>Partial (${fmt(p.paid_amount_total || 0)}/${fmt(stageTotal)})</span>
-                              : <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-red-500/20 text-red-400">Unpaid</span>
+                              : <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400">Unpaid</span>
                           }
                         </td>
                         {hasAnyRole(profile, ["admin", "accountant"]) && (
                           <td className="py-2 px-2">
                             {!p.is_paid && (
                               <button onClick={() => { setShowMarkPaidModal(p.id); setMarkPaidForm({ paid_date: new Date().toISOString().split("T")[0], payment_method: "bank_transfer" }); }}
-                                className="text-xs text-green-400 hover:text-green-300 whitespace-nowrap">Mark Paid</button>
+                                className="text-xs text-green-700 dark:text-green-400 hover:text-green-700 dark:text-green-300 whitespace-nowrap">Mark Paid</button>
                             )}
                           </td>
                         )}
@@ -2307,10 +2307,10 @@ export default function DealDetailPage() {
             </div>
           )}
           {!editingStages && payments.length === 0 && (
-            <div className="text-center py-6 text-white/40 text-sm">
+            <div className="text-center py-6 text-gray-500 dark:text-white/40 text-sm">
               No payment stages defined.
               {hasAnyRole(profile, ["admin", "accountant"]) && (
-                <button onClick={handleOpenEditStages} className="ml-2 text-blue-400 hover:text-blue-300 underline">Add stages</button>
+                <button onClick={handleOpenEditStages} className="ml-2 text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 underline">Add stages</button>
               )}
             </div>
           )}
@@ -2320,31 +2320,31 @@ export default function DealDetailPage() {
             <div className="mt-2">
               <div className="space-y-3 mb-4">
                 {editStageRows.map((row, idx) => (
-                  <div key={row.id} className={`rounded-lg border p-4 ${row.is_paid ? "border-green-500/30 bg-green-500/5 opacity-70" : "border-white/10 bg-white/5"}`}>
+                  <div key={row.id} className={`rounded-lg border p-4 ${row.is_paid ? "border-green-500/30 bg-green-500/5 opacity-70" : "border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5"}`}>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Stage {idx + 1}</span>
-                        {row.is_paid && <span className="text-xs text-green-400 bg-green-500/20 rounded-full px-2 py-0.5">Paid — locked</span>}
+                        <span className="text-xs font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider">Stage {idx + 1}</span>
+                        {row.is_paid && <span className="text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-500/20 rounded-full px-2 py-0.5">Paid — locked</span>}
                       </div>
                       {!row.is_paid && editStageRows.length > 1 && (
                         <button type="button" onClick={() => setEditStageRows(rs => rs.filter(r => r.id !== row.id))}
-                          className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                          className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300">Remove</button>
                       )}
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-3">
                       <div>
                         <label className={labelClass}>Stage Name</label>
                         {row.is_paid
-                          ? <p className="text-sm text-white/70 px-1">{row.stage_name}</p>
+                          ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{row.stage_name}</p>
                           : <select value={row.stage_name} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, stage_name: e.target.value } : r))} className={selectClass}>
-                              {STAGE_NAMES_DETAIL.map(n => <option key={n} value={n} className="bg-blue-900">{n}</option>)}
+                              {STAGE_NAMES_DETAIL.map(n => <option key={n} value={n} className="bg-white dark:bg-blue-900">{n}</option>)}
                             </select>
                         }
                       </div>
                       <div>
                         <label className={labelClass}>Stage Details</label>
                         {row.is_paid
-                          ? <p className="text-sm text-white/70 px-1">{row.stage_details || "—"}</p>
+                          ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{row.stage_details || "—"}</p>
                           : <input value={row.stage_details} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, stage_details: e.target.value } : r))}
                               placeholder="e.g. Signing agreement" className={inputClass} />
                         }
@@ -2378,18 +2378,18 @@ export default function DealDetailPage() {
                       <div>
                         <label className={labelClass}>GST</label>
                         {row.is_paid
-                          ? <p className="text-sm text-white/70 px-1">{row.gst_type}</p>
+                          ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{row.gst_type}</p>
                           : <select value={row.gst_type} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, gst_type: e.target.value } : r))} className={selectClass}>
-                              {GST_TYPES_DETAIL.map(g => <option key={g} value={g} className="bg-blue-900">{g}</option>)}
+                              {GST_TYPES_DETAIL.map(g => <option key={g} value={g} className="bg-white dark:bg-blue-900">{g}</option>)}
                             </select>
                         }
                       </div>
                       <div>
                         <label className={labelClass}>Currency</label>
                         {row.is_paid
-                          ? <p className="text-sm text-white/70 px-1">{row.currency}</p>
+                          ? <p className="text-sm text-gray-600 dark:text-white/70 px-1">{row.currency}</p>
                           : <select value={row.currency} onChange={e => setEditStageRows(rs => rs.map(r => r.id === row.id ? { ...r, currency: e.target.value } : r))} className={selectClass}>
-                              {CURRENCIES_DETAIL.map(c => <option key={c} value={c} className="bg-blue-900">{c}</option>)}
+                              {CURRENCIES_DETAIL.map(c => <option key={c} value={c} className="bg-white dark:bg-blue-900">{c}</option>)}
                             </select>
                         }
                       </div>
@@ -2399,18 +2399,18 @@ export default function DealDetailPage() {
               </div>
               {editStageRows.length < 6 && (
                 <button type="button" onClick={() => setEditStageRows(rs => [...rs, newEditRow()])}
-                  className="mb-4 text-sm text-blue-400 hover:text-blue-300 border border-blue-400/30 rounded-lg px-4 py-2 hover:bg-blue-400/10 transition-colors">
+                  className="mb-4 text-sm text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 border border-blue-400/30 rounded-lg px-4 py-2 hover:bg-blue-400/10 transition-colors">
                   + Add Payment Stage
                 </button>
               )}
 
               {/* Edit mode totals preview */}
-              <div className="rounded-lg border border-white/10 bg-white/5 p-3 mb-4">
+              <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3 mb-4">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
-                  <div><p className="text-white/50 text-xs">Service Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.service_fee) || 0), 0))}</p></div>
-                  <div><p className="text-white/50 text-xs">INZ Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.inz_fee) || 0), 0))}</p></div>
-                  <div><p className="text-white/50 text-xs">Other Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.other_fee) || 0), 0))}</p></div>
-                  <div><p className="text-white/50 text-xs">Total</p><p className="font-bold text-blue-300">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.service_fee) || 0) + (parseFloat(r.inz_fee) || 0) + (parseFloat(r.other_fee) || 0), 0))}</p></div>
+                  <div><p className="text-gray-500 dark:text-white/50 text-xs">Service Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.service_fee) || 0), 0))}</p></div>
+                  <div><p className="text-gray-500 dark:text-white/50 text-xs">INZ Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.inz_fee) || 0), 0))}</p></div>
+                  <div><p className="text-gray-500 dark:text-white/50 text-xs">Other Fee</p><p className="font-bold">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.other_fee) || 0), 0))}</p></div>
+                  <div><p className="text-gray-500 dark:text-white/50 text-xs">Total</p><p className="font-bold text-blue-700 dark:text-blue-300">${fmt(editStageRows.reduce((s, r) => s + (parseFloat(r.service_fee) || 0) + (parseFloat(r.inz_fee) || 0) + (parseFloat(r.other_fee) || 0), 0))}</p></div>
                 </div>
               </div>
 
@@ -2430,17 +2430,17 @@ export default function DealDetailPage() {
           const mpTotal = mp ? (mp.service_fee_amount || 0) + (mp.inz_fee_amount || 0) + (mp.other_fee_amount || 0) : 0;
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-sm rounded-xl border border-white/10 bg-blue-900 p-6">
+              <div className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
                 <h4 className="text-lg font-bold mb-1">Mark as Paid</h4>
                 {mp && (
-                  <p className="text-sm text-white/60 mb-4">{mp.stage_name}{mp.stage_details ? ` — ${mp.stage_details}` : ""}</p>
+                  <p className="text-sm text-gray-500 dark:text-white/60 mb-4">{mp.stage_name}{mp.stage_details ? ` — ${mp.stage_details}` : ""}</p>
                 )}
                 {/* Payment amount display */}
                 <div className="rounded-lg bg-green-500/10 border border-green-500/30 px-4 py-3 mb-4">
-                  <p className="text-xs text-green-400/80 mb-1">Payment Amount</p>
-                  <p className="text-2xl font-bold text-green-300">${fmt(mpTotal)}</p>
+                  <p className="text-xs text-green-700 dark:text-green-400/80 mb-1">Payment Amount</p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">${fmt(mpTotal)}</p>
                   {mp && (mp.service_fee_amount > 0 || mp.inz_fee_amount > 0 || mp.other_fee_amount > 0) && (
-                    <div className="mt-1.5 flex gap-3 text-xs text-white/50">
+                    <div className="mt-1.5 flex gap-3 text-xs text-gray-500 dark:text-white/50">
                       {mp.service_fee_amount > 0 && <span>Svc: ${fmt(mp.service_fee_amount)}</span>}
                       {mp.inz_fee_amount > 0 && <span>INZ: ${fmt(mp.inz_fee_amount)}</span>}
                       {mp.other_fee_amount > 0 && <span>Other: ${fmt(mp.other_fee_amount)}</span>}
@@ -2451,10 +2451,10 @@ export default function DealDetailPage() {
                   <div><label className={labelClass}>Paid Date</label><input value={markPaidForm.paid_date} onChange={e => setMarkPaidForm(f => ({ ...f, paid_date: e.target.value }))} type="date" className={inputClass} /></div>
                   <div><label className={labelClass}>Payment Method</label>
                     <select value={markPaidForm.payment_method} onChange={e => setMarkPaidForm(f => ({ ...f, payment_method: e.target.value }))} className={selectClass}>
-                      <option value="bank_transfer" className="bg-blue-900">Bank Transfer</option>
-                      <option value="credit_card" className="bg-blue-900">Credit Card</option>
-                      <option value="cash" className="bg-blue-900">Cash</option>
-                      <option value="other" className="bg-blue-900">Other</option>
+                      <option value="bank_transfer" className="bg-white dark:bg-blue-900">Bank Transfer</option>
+                      <option value="credit_card" className="bg-white dark:bg-blue-900">Credit Card</option>
+                      <option value="cash" className="bg-white dark:bg-blue-900">Cash</option>
+                      <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                     </select>
                   </div>
                 </div>
@@ -2481,36 +2481,36 @@ export default function DealDetailPage() {
             {invoices.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="border-b border-white/10">
-                    <th className="text-left py-2 px-2 text-white/50 font-medium">Invoice #</th>
-                    <th className="text-left py-2 px-2 text-white/50 font-medium">Date</th>
-                    <th className="text-left py-2 px-2 text-white/50 font-medium">Ccy</th>
-                    <th className="text-right py-2 px-2 text-white/50 font-medium">Amount</th>
-                    <th className="text-left py-2 px-2 text-white/50 font-medium">Status</th>
-                    <th className="text-left py-2 px-2 text-white/50 font-medium">Xero</th>
+                  <thead><tr className="border-b border-gray-200 dark:border-white/10">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Invoice #</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Date</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Ccy</th>
+                    <th className="text-right py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Amount</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Status</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-white/50 font-medium">Xero</th>
                     <th className="py-2 px-2"></th>
                   </tr></thead>
                   <tbody>
                     {invoices.map(inv => (
-                      <tr key={inv.id} className="border-b border-white/5">
-                        <td className="py-2 px-2 font-medium text-white/80">{inv.invoice_number}</td>
-                        <td className="py-2 px-2 text-white/60 text-xs">{inv.issue_date}</td>
-                        <td className="py-2 px-2 text-white/60">{inv.currency}</td>
+                      <tr key={inv.id} className="border-b border-gray-100 dark:border-white/5">
+                        <td className="py-2 px-2 font-medium text-gray-700 dark:text-white/80">{inv.invoice_number}</td>
+                        <td className="py-2 px-2 text-gray-500 dark:text-white/60 text-xs">{inv.issue_date}</td>
+                        <td className="py-2 px-2 text-gray-500 dark:text-white/60">{inv.currency}</td>
                         <td className="py-2 px-2 text-right font-semibold">${fmt(inv.total)}</td>
                         <td className="py-2 px-2">
                           <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
-                            inv.status === "paid" ? "bg-green-500/20 text-green-400" :
-                            inv.status === "partial" ? "bg-yellow-500/20 text-yellow-400" :
-                            inv.status === "sent" ? "bg-blue-500/20 text-blue-400" :
-                            inv.status === "cancelled" ? "bg-red-500/20 text-red-400" :
-                            "bg-gray-500/20 text-gray-400"
+                            inv.status === "paid" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" :
+                            inv.status === "partial" ? "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400" :
+                            inv.status === "sent" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" :
+                            inv.status === "cancelled" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400" :
+                            "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"
                           }`}>{inv.status === "partial" ? `Partial (${fmt(inv.paid_amount || 0)}/${fmt(inv.total)})` : inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</span>
                         </td>
                         <td className="py-2 px-2">
                           {(() => { console.log(`[Invoice ${inv.invoice_number}] xero_invoice_id:`, inv.xero_invoice_id); return null; })()}
                           {inv.xero_invoice_id ? (
                             <div className="flex items-center gap-1.5">
-                              <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                              <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" title={inv.xero_invoice_id}>Pushed</span>
                               <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
                                 setInvoiceActionLoading(inv.id);
                                 try {
@@ -2519,7 +2519,7 @@ export default function DealDetailPage() {
                                   else { const t = await res.text(); let err = "Unknown"; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: `Sync failed: ${err}` }); }
                                 } catch (e) { setMessage({ type: "error", text: `Sync error: ${e instanceof Error ? e.message : "Unknown"}` }); }
                                 await fetchInvoices(); await fetchPayments(); setInvoiceActionLoading(null);
-                              }} className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Syncing..." : "Sync"}</button>
+                              }} className="text-xs text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Syncing..." : "Sync"}</button>
                             </div>
                           ) : (inv.status === "draft" || inv.status === "sent") ? (
                             <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
@@ -2530,29 +2530,29 @@ export default function DealDetailPage() {
                                 else { const t = await res.text(); let err = "Failed"; try { err = JSON.parse(t).error || err; } catch {} setMessage({ type: "error", text: `Xero: ${err}` }); }
                               } catch (e) { setMessage({ type: "error", text: `Xero error: ${e instanceof Error ? e.message : "Unknown"}` }); }
                               await fetchInvoices(); setInvoiceActionLoading(null);
-                            }} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
+                            }} className="text-xs text-purple-700 dark:text-purple-400 hover:text-purple-700 dark:text-purple-300 disabled:opacity-50">{invoiceActionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
                           ) : (
-                            <span className="text-xs text-white/30">—</span>
+                            <span className="text-xs text-gray-500 dark:text-white/30">—</span>
                           )}
                         </td>
                         <td className="py-2 px-2">
                           <div className="flex gap-2 text-xs">
                             {inv.pdf_url ? (
-                              <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">PDF</a>
+                              <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300">PDF</a>
                             ) : (
                               <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
                                 setInvoiceActionLoading(inv.id);
                                 const res = await fetch(`/api/invoices/${inv.id}/generate-pdf`, { method: "POST" });
                                 if (res.ok) { const d = await res.json(); if (d.url) window.open(d.url, "_blank"); }
                                 await fetchInvoices(); setInvoiceActionLoading(null);
-                              }} className="text-blue-400 hover:text-blue-300 disabled:opacity-50">Gen PDF</button>
+                              }} className="text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 disabled:opacity-50">Gen PDF</button>
                             )}
                             {inv.status === "draft" && (
                               <button disabled={invoiceActionLoading === inv.id} onClick={async () => {
                                 setInvoiceActionLoading(inv.id);
                                 await fetch(`/api/invoices/${inv.id}/send`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
                                 await fetchInvoices(); setInvoiceActionLoading(null);
-                              }} className="text-green-400 hover:text-green-300 disabled:opacity-50">Send</button>
+                              }} className="text-green-700 dark:text-green-400 hover:text-green-700 dark:text-green-300 disabled:opacity-50">Send</button>
                             )}
                             {inv.status !== "paid" && inv.status !== "cancelled" && (
                               (inv.currency === "CNY" || inv.currency === "THB") ? (
@@ -2565,7 +2565,7 @@ export default function DealDetailPage() {
                                   setForeignRef("");
                                   setForeignNotes("");
                                   setForeignDate(new Date().toISOString().split("T")[0]);
-                                }} className="text-green-400 hover:text-green-300">Record {inv.currency} Payment</button>
+                                }} className="text-green-700 dark:text-green-400 hover:text-green-700 dark:text-green-300">Record {inv.currency} Payment</button>
                               ) : (
                                 <button onClick={() => {
                                   setShowPaymentModal(inv);
@@ -2574,7 +2574,7 @@ export default function DealDetailPage() {
                                   setPaymentDate(new Date().toISOString().split("T")[0]);
                                   setPaymentMethod("bank_transfer");
                                   setPaymentNotes("");
-                                }} className="text-green-400 hover:text-green-300">Record Payment</button>
+                                }} className="text-green-700 dark:text-green-400 hover:text-green-700 dark:text-green-300">Record Payment</button>
                               )
                             )}
                             {inv.status !== "cancelled" && inv.status !== "paid" && (
@@ -2582,7 +2582,7 @@ export default function DealDetailPage() {
                                 setInvoiceActionLoading(inv.id);
                                 await supabase.from("invoices").update({ status: "cancelled" }).eq("id", inv.id);
                                 await fetchInvoices(); setInvoiceActionLoading(null);
-                              }} className="text-red-400 hover:text-red-300 disabled:opacity-50">Cancel</button>
+                              }} className="text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300 disabled:opacity-50">Cancel</button>
                             )}
                           </div>
                         </td>
@@ -2592,7 +2592,7 @@ export default function DealDetailPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-sm text-white/40 text-center py-4">No invoices yet.</p>
+              <p className="text-sm text-gray-500 dark:text-white/40 text-center py-4">No invoices yet.</p>
             )}
           </div>
         )}
@@ -2644,7 +2644,7 @@ export default function DealDetailPage() {
 
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
+              <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
                 <h4 className="text-lg font-bold mb-4">Create Invoice</h4>
 
                 <p className={labelClass}>Select Payment Stages</p>
@@ -2653,12 +2653,12 @@ export default function DealDetailPage() {
                     const total = (s.service_fee_amount || 0) + (s.inz_fee_amount || 0) + (s.other_fee_amount || 0);
                     const checked = invoiceSelectedStages.includes(s.id);
                     return (
-                      <label key={s.id} className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${checked ? "border-blue-400 bg-blue-600/10" : "border-white/10 bg-white/5 hover:bg-white/10"}`}>
+                      <label key={s.id} className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${checked ? "border-blue-400 bg-blue-600/10" : "border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
                         <input type="checkbox" checked={checked} onChange={() => setInvoiceSelectedStages(prev => checked ? prev.filter(x => x !== s.id) : [...prev, s.id])} className="accent-blue-500" />
                         <div className="flex-1">
                           <span className="text-sm font-medium">{s.stage_name}</span>
-                          {s.stage_details && <span className="text-xs text-white/50 ml-2">{s.stage_details}</span>}
-                          <span className="text-xs text-white/40 ml-2">({s.currency ?? "NZD"})</span>
+                          {s.stage_details && <span className="text-xs text-gray-500 dark:text-white/50 ml-2">{s.stage_details}</span>}
+                          <span className="text-xs text-gray-500 dark:text-white/40 ml-2">({s.currency ?? "NZD"})</span>
                         </div>
                         <span className="text-sm font-semibold">${fmt(total)}</span>
                       </label>
@@ -2667,7 +2667,7 @@ export default function DealDetailPage() {
                 </div>
 
                 {currencyMismatch && (
-                  <div className="mb-4 rounded-lg bg-red-500/20 border border-red-500/30 px-3 py-2 text-sm text-red-300">
+                  <div className="mb-4 rounded-lg bg-red-100 dark:bg-red-500/20 border border-red-500/30 px-3 py-2 text-sm text-red-700 dark:text-red-300">
                     Selected stages have different currencies. All stages in an invoice must use the same currency.
                   </div>
                 )}
@@ -2690,12 +2690,12 @@ export default function DealDetailPage() {
 
                 {/* Preview */}
                 {invoiceSelectedStages.length > 0 && !currencyMismatch && (
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-3 mb-4">
-                    <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Preview</p>
-                    <div className="flex justify-between text-sm mb-1"><span className="text-white/60">Currency</span><span>{invoiceCurrency}</span></div>
-                    <div className="flex justify-between text-sm mb-1"><span className="text-white/60">Subtotal</span><span>${fmt(subtotal)}</span></div>
-                    <div className="flex justify-between text-sm mb-1"><span className="text-white/60">GST (15%)</span><span>${fmt(gst)}</span></div>
-                    <div className="flex justify-between text-sm font-bold border-t border-white/10 pt-1 mt-1"><span>Total</span><span>${fmt(invTotal)}</span></div>
+                  <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3 mb-4">
+                    <p className="text-xs font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider mb-2">Preview</p>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-gray-500 dark:text-white/60">Currency</span><span>{invoiceCurrency}</span></div>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-gray-500 dark:text-white/60">Subtotal</span><span>${fmt(subtotal)}</span></div>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-gray-500 dark:text-white/60">GST (15%)</span><span>${fmt(gst)}</span></div>
+                    <div className="flex justify-between text-sm font-bold border-t border-gray-200 dark:border-white/10 pt-1 mt-1"><span>Total</span><span>${fmt(invTotal)}</span></div>
                   </div>
                 )}
 
@@ -2713,30 +2713,30 @@ export default function DealDetailPage() {
         {/* ── Contract Create Modal ──────────────────────────────────────── */}
         {showContractCreateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-3xl rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
+            <div className="w-full max-w-3xl rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
               <h4 className="text-lg font-bold mb-5">Create Contract</h4>
-              <div className="mb-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
+              <div className="mb-4 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-3 text-sm text-gray-600 dark:text-white/70">
                 {(() => {
                   const matched = contractTemplates.find(t => t.id === selectedContractTemplateId);
                   return matched
-                    ? <><span className="text-white/40">Template: </span><span className="font-medium text-white">{matched.name}</span><span className="ml-2 text-white/40 text-xs">(auto-matched to deal language)</span></>
-                    : <span className="text-yellow-400/80">No matching template found for this language/type. Content will be blank.</span>;
+                    ? <><span className="text-gray-500 dark:text-white/40">Template: </span><span className="font-medium text-gray-900 dark:text-white">{matched.name}</span><span className="ml-2 text-gray-500 dark:text-white/40 text-xs">(auto-matched to deal language)</span></>
+                    : <span className="text-yellow-700 dark:text-yellow-400/80">No matching template found for this language/type. Content will be blank.</span>;
                 })()}
               </div>
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1">
                   <label className={labelClass}>Contract Content</label>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setContractPreviewMode(false)} className={`text-xs px-3 py-1 rounded ${!contractPreviewMode ? "bg-blue-600 text-white" : "border border-white/20 text-white/60 hover:text-white"}`}>Edit</button>
-                    <button type="button" onClick={() => setContractPreviewMode(true)} className={`text-xs px-3 py-1 rounded ${contractPreviewMode ? "bg-blue-600 text-white" : "border border-white/20 text-white/60 hover:text-white"}`}>Preview</button>
+                    <button type="button" onClick={() => setContractPreviewMode(false)} className={`text-xs px-3 py-1 rounded ${!contractPreviewMode ? "bg-blue-600 text-white" : "border border-gray-300 dark:border-white/20 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white"}`}>Edit</button>
+                    <button type="button" onClick={() => setContractPreviewMode(true)} className={`text-xs px-3 py-1 rounded ${contractPreviewMode ? "bg-blue-600 text-white" : "border border-gray-300 dark:border-white/20 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white"}`}>Preview</button>
                   </div>
                 </div>
                 {contractPreviewMode ? (
-                  <div className="rounded-lg border border-white/20 bg-white p-6 prose prose-sm max-w-none overflow-y-auto" style={{ color: "#111", maxHeight: "400px" }}>
+                  <div className="rounded-lg border border-gray-300 dark:border-white/20 bg-white p-6 prose prose-sm max-w-none overflow-y-auto" style={{ color: "#111", maxHeight: "400px" }}>
                     {contractContent ? (
                       <div dangerouslySetInnerHTML={{ __html: contractContent }} />
                     ) : (
-                      <p className="text-gray-400 italic">No content to preview.</p>
+                      <p className="text-gray-500 dark:text-gray-400 italic">No content to preview.</p>
                     )}
                   </div>
                 ) : (
@@ -2749,7 +2749,7 @@ export default function DealDetailPage() {
                   />
                 )}
               </div>
-              <p className="text-xs text-white/40 mb-4">
+              <p className="text-xs text-gray-500 dark:text-white/40 mb-4">
                 Template placeholders are auto-filled with deal and client data. You can edit the content before saving.
               </p>
               <div className="flex gap-2">
@@ -2765,10 +2765,10 @@ export default function DealDetailPage() {
         {/* ── Reject Contract Modal ──────────────────────────────────────── */}
         {showRejectModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-sm rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-4">Reject Contract</h4>
               <div className="mb-4">
-                <label className={labelClass}>Reason for rejection <span className="text-red-400">*</span></label>
+                <label className={labelClass}>Reason for rejection <span className="text-red-700 dark:text-red-400">*</span></label>
                 <textarea
                   value={rejectReason}
                   onChange={e => setRejectReason(e.target.value)}
@@ -2793,38 +2793,38 @@ export default function DealDetailPage() {
 
           {!contract ? (
             <div className="flex flex-col items-start gap-3">
-              <p className="text-white/50 text-sm">No contract created yet.</p>
+              <p className="text-gray-500 dark:text-white/50 text-sm">No contract created yet.</p>
               <button onClick={handleCreateContract} className={btnPrimary}>Create Contract</button>
             </div>
           ) : (
             <div>
               <div className="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-4">
-                <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">Number</p><p className="font-medium text-sm">{contract.contract_number}</p></div>
-                <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">Status</p>
-                  <p className={`font-medium text-sm ${contract.status === "completed" ? "text-green-400" : ["rejected", "cancelled"].includes(contract.status) ? "text-red-400" : "text-white"}`}>
+                <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2"><p className="text-xs text-gray-500 dark:text-white/50">Number</p><p className="font-medium text-sm">{contract.contract_number}</p></div>
+                <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2"><p className="text-xs text-gray-500 dark:text-white/50">Status</p>
+                  <p className={`font-medium text-sm ${contract.status === "completed" ? "text-green-700 dark:text-green-400" : ["rejected", "cancelled"].includes(contract.status) ? "text-red-700 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
                     {CONTRACT_STATUS_LABELS[contract.status] ?? contract.status}
                   </p>
                 </div>
-                {contract.sent_date && <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">Sent to LIA</p><p className="font-medium text-sm">{contract.sent_date}</p></div>}
-                {contract.lia_signed_date && <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">LIA Approved</p><p className="font-medium text-sm">{contract.lia_signed_date}</p></div>}
-                {contract.completed_date && <div className="rounded-lg bg-white/5 px-3 py-2"><p className="text-xs text-white/50">Completed</p><p className="font-medium text-sm">{contract.completed_date}</p></div>}
+                {contract.sent_date && <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2"><p className="text-xs text-gray-500 dark:text-white/50">Sent to LIA</p><p className="font-medium text-sm">{contract.sent_date}</p></div>}
+                {contract.lia_signed_date && <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2"><p className="text-xs text-gray-500 dark:text-white/50">LIA Approved</p><p className="font-medium text-sm">{contract.lia_signed_date}</p></div>}
+                {contract.completed_date && <div className="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2"><p className="text-xs text-gray-500 dark:text-white/50">Completed</p><p className="font-medium text-sm">{contract.completed_date}</p></div>}
               </div>
 
               {/* Rejection reason */}
               {contract.status === "rejected" && contract.rejected_reason && (
                 <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 mb-4">
-                  <p className="text-xs text-red-400 font-medium mb-1">Rejection Reason:</p>
-                  <p className="text-sm text-red-300">{contract.rejected_reason}</p>
+                  <p className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">Rejection Reason:</p>
+                  <p className="text-sm text-red-700 dark:text-red-300">{contract.rejected_reason}</p>
                 </div>
               )}
 
               {/* LIA Preview & Sign link */}
               {!["completed", "cancelled"].includes(contract.status) && (contract.contract_html || contract.content) && (
                 <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 px-3 py-2.5 mb-4">
-                  <p className="text-xs text-blue-300 mb-1 font-medium">LIA — Review & Sign</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mb-1 font-medium">LIA — Review & Sign</p>
                   <div className="flex items-center gap-2">
                     <a href={`/contract/preview/${contract.id}`} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-blue-300 hover:underline truncate flex-1">
+                      className="text-xs text-blue-700 dark:text-blue-300 hover:underline truncate flex-1">
                       {typeof window !== "undefined" ? window.location.origin : ""}/contract/preview/{contract.id}
                     </a>
                     <a href={`/contract/preview/${contract.id}`} target="_blank" rel="noopener noreferrer"
@@ -2837,15 +2837,15 @@ export default function DealDetailPage() {
 
               {/* Client sign link (when sent_to_client) */}
               {contract.status === "sent_to_client" && contract.client_sign_token && (
-                <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2.5 mb-4">
-                  <p className="text-xs text-white/50 mb-1">Client Sign Link</p>
+                <div className="rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2.5 mb-4">
+                  <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Client Sign Link</p>
                   <div className="flex items-center gap-2">
-                    <code className="text-xs text-green-300 truncate flex-1">
+                    <code className="text-xs text-green-700 dark:text-green-300 truncate flex-1">
                       {typeof window !== "undefined" ? window.location.origin : ""}/contract/sign/{contract.client_sign_token}
                     </code>
                     <button
                       onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/contract/sign/${contract.client_sign_token}`); setMessage({ type: "success", text: "Link copied!" }); }}
-                      className="text-xs text-white/50 hover:text-white border border-white/20 rounded px-2 py-0.5 shrink-0"
+                      className="text-xs text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/20 rounded px-2 py-0.5 shrink-0"
                     >Copy</button>
                   </div>
                 </div>
@@ -2853,9 +2853,9 @@ export default function DealDetailPage() {
 
               {/* Signature status */}
               {(contract.adviser_signed_at || contract.client_signed_at) && (
-                <div className="flex gap-4 mb-4 text-xs text-white/60">
-                  {contract.adviser_signed_at && <span className="text-green-400">✓ LIA signed {new Date(contract.adviser_signed_at).toLocaleDateString()}</span>}
-                  {contract.client_signed_at && <span className="text-green-400">✓ Client signed {new Date(contract.client_signed_at).toLocaleDateString()}</span>}
+                <div className="flex gap-4 mb-4 text-xs text-gray-500 dark:text-white/60">
+                  {contract.adviser_signed_at && <span className="text-green-700 dark:text-green-400">✓ LIA signed {new Date(contract.adviser_signed_at).toLocaleDateString()}</span>}
+                  {contract.client_signed_at && <span className="text-green-700 dark:text-green-400">✓ Client signed {new Date(contract.client_signed_at).toLocaleDateString()}</span>}
                 </div>
               )}
 
@@ -2911,26 +2911,26 @@ export default function DealDetailPage() {
 
               {/* Contract files */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                  <p className="text-xs text-white/50 mb-2">Contract File</p>
+                <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3">
+                  <p className="text-xs text-gray-500 dark:text-white/50 mb-2">Contract File</p>
                   {contract.contract_file_url ? (
                     <div className="flex items-center gap-2">
-                      <a href={contract.contract_file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline truncate">View File</a>
+                      <a href={contract.contract_file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 hover:underline truncate">View File</a>
                     </div>
-                  ) : <p className="text-xs text-white/30 mb-2">Not uploaded</p>}
-                  <label className="cursor-pointer text-xs text-white/60 hover:text-white border border-white/20 rounded px-2 py-1 inline-block">
+                  ) : <p className="text-xs text-gray-500 dark:text-white/30 mb-2">Not uploaded</p>}
+                  <label className="cursor-pointer text-xs text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/20 rounded px-2 py-1 inline-block">
                     Upload
                     <input type="file" className="hidden" onChange={e => handleContractFileUpload(e, "contract_file_url")} />
                   </label>
                 </div>
-                <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                  <p className="text-xs text-white/50 mb-2">Signed Contract</p>
+                <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3">
+                  <p className="text-xs text-gray-500 dark:text-white/50 mb-2">Signed Contract</p>
                   {contract.signed_file_url ? (
                     <div className="flex items-center gap-2">
-                      <a href={contract.signed_file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline truncate">View File</a>
+                      <a href={contract.signed_file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 hover:underline truncate">View File</a>
                     </div>
-                  ) : <p className="text-xs text-white/30 mb-2">Not uploaded</p>}
-                  <label className="cursor-pointer text-xs text-white/60 hover:text-white border border-white/20 rounded px-2 py-1 inline-block">
+                  ) : <p className="text-xs text-gray-500 dark:text-white/30 mb-2">Not uploaded</p>}
+                  <label className="cursor-pointer text-xs text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/20 rounded px-2 py-1 inline-block">
                     Upload
                     <input type="file" className="hidden" onChange={e => handleContractFileUpload(e, "signed_file_url")} />
                   </label>
@@ -2940,7 +2940,7 @@ export default function DealDetailPage() {
               {/* Prompt to create intake form after contract completion */}
               {showContractIntakePrompt && !intakeForm && (
                 <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-3 flex items-center justify-between gap-3">
-                  <p className="text-sm text-blue-300">Contract completed. Create and send intake form now?</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Contract completed. Create and send intake form now?</p>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={handleCreateIntakeForm} className={btnPrimary}>Yes</button>
                     <button onClick={() => setShowContractIntakePrompt(false)} className={btnSecondary}>Later</button>
@@ -2954,24 +2954,24 @@ export default function DealDetailPage() {
         {/* ── Intake Create Modal ────────────────────────────────────────── */}
         {showIntakeCreateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-5">Create Intake Form</h4>
               <div className="mb-5">
-                <label className={labelClass}>Select Template <span className="text-white/40">(optional)</span></label>
+                <label className={labelClass}>Select Template <span className="text-gray-500 dark:text-white/40">(optional)</span></label>
                 <select
                   value={selectedIntakeTemplateId}
                   onChange={e => setSelectedIntakeTemplateId(e.target.value)}
                   className={selectClass}
                 >
-                  <option value="" className="bg-blue-900">No template (blank form)</option>
+                  <option value="" className="bg-white dark:bg-blue-900">No template (blank form)</option>
                   {intakeTemplates.map(t => (
-                    <option key={t.id} value={t.id} className="bg-blue-900">
+                    <option key={t.id} value={t.id} className="bg-white dark:bg-blue-900">
                       {t.name}{t.category ? ` [${t.category.replace(/_/g, " ")}]` : ""}
                     </option>
                   ))}
                 </select>
                 {selectedIntakeTemplateId && (
-                  <p className="text-xs text-white/40 mt-1.5">The selected template will define the form fields shown to the client.</p>
+                  <p className="text-xs text-gray-500 dark:text-white/40 mt-1.5">The selected template will define the form fields shown to the client.</p>
                 )}
               </div>
               <div className="flex gap-2">
@@ -2991,7 +2991,7 @@ export default function DealDetailPage() {
 
           {intakeForms.length === 0 ? (
             <div className="flex flex-col items-start gap-3">
-              <p className="text-white/50 text-sm">No intake form created yet.</p>
+              <p className="text-gray-500 dark:text-white/50 text-sm">No intake form created yet.</p>
               <button onClick={handleCreateIntakeForm} className={btnPrimary}>Create Intake Form</button>
             </div>
           ) : (
@@ -3005,23 +3005,23 @@ export default function DealDetailPage() {
                 const formData = isDone ? (iForm.form_data ?? iForm.draft_data ?? {}) : null;
 
                 return (
-                  <div key={iForm.id} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                  <div key={iForm.id} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
                     {/* Form header row */}
                     <div className="px-4 py-3">
                       <div className="flex flex-wrap items-start gap-2 mb-2">
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${INTAKE_STATUS_COLORS[iForm.status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${INTAKE_STATUS_COLORS[iForm.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                           {INTAKE_STATUS_LABELS[iForm.status] ?? iForm.status}
                         </span>
                         {iForm.progress !== null && iForm.progress !== undefined && iForm.progress > 0 && !isDone && (
-                          <span className="text-xs text-white/40">{iForm.progress}% complete</span>
+                          <span className="text-xs text-gray-500 dark:text-white/40">{iForm.progress}% complete</span>
                         )}
                         {isDone && iForm.client_name && (
-                          <span className="text-xs text-green-400">by {iForm.client_name}</span>
+                          <span className="text-xs text-green-700 dark:text-green-400">by {iForm.client_name}</span>
                         )}
                       </div>
 
                       {/* Dates row */}
-                      <div className="flex flex-wrap gap-3 text-xs text-white/40 mb-3">
+                      <div className="flex flex-wrap gap-3 text-xs text-gray-500 dark:text-white/40 mb-3">
                         {iForm.sent_date && <span>Sent: {iForm.sent_date}</span>}
                         {iForm.last_saved_at && !isDone && (
                           <span>Last saved: {new Date(iForm.last_saved_at).toLocaleDateString()}</span>
@@ -3035,7 +3035,7 @@ export default function DealDetailPage() {
 
                       {/* Progress bar */}
                       {!isDone && iForm.progress !== null && (iForm.progress ?? 0) > 0 && (
-                        <div className="h-1 bg-white/10 rounded-full overflow-hidden mb-3">
+                        <div className="h-1 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden mb-3">
                           <div className="h-full bg-blue-500 rounded-full" style={{ width: `${iForm.progress}%` }} />
                         </div>
                       )}
@@ -3043,12 +3043,12 @@ export default function DealDetailPage() {
                       {/* Link */}
                       {formLink && (
                         <div className="rounded-lg bg-black/20 px-3 py-2 mb-2">
-                          <p className="text-xs text-white/40 mb-1">Client link</p>
+                          <p className="text-xs text-gray-500 dark:text-white/40 mb-1">Client link</p>
                           <div className="flex items-center gap-2">
-                            <code className="text-xs text-blue-300 truncate flex-1">{formLink}</code>
+                            <code className="text-xs text-blue-700 dark:text-blue-300 truncate flex-1">{formLink}</code>
                             <button
                               onClick={() => { navigator.clipboard.writeText(formLink); setMessage({ type: "success", text: "Link copied!" }); }}
-                              className="text-xs text-white/50 hover:text-white border border-white/20 rounded px-2 py-0.5 shrink-0"
+                              className="text-xs text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/20 rounded px-2 py-0.5 shrink-0"
                             >Copy</button>
                           </div>
                         </div>
@@ -3089,8 +3089,8 @@ export default function DealDetailPage() {
 
                     {/* Submitted data viewer */}
                     {isViewing && isDone && formData && Object.keys(formData).length > 0 && (
-                      <div className="border-t border-white/10 px-4 py-3">
-                        <p className="text-xs text-white/50 mb-3 font-medium">Submitted Information</p>
+                      <div className="border-t border-gray-200 dark:border-white/10 px-4 py-3">
+                        <p className="text-xs text-gray-500 dark:text-white/50 mb-3 font-medium">Submitted Information</p>
                         <div className="grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
                           {Object.entries(formData).filter(([, v]) => v !== null && v !== undefined && v !== "").map(([k, v]) => {
                             let displayVal = "";
@@ -3105,9 +3105,9 @@ export default function DealDetailPage() {
                             }
                             if (!displayVal) return null;
                             return (
-                              <div key={k} className="rounded bg-white/5 px-2 py-1.5">
-                                <span className="text-white/40 block capitalize">{k.replace(/_/g, " ")}</span>
-                                <span className="text-white/80 break-words">{displayVal}</span>
+                              <div key={k} className="rounded bg-gray-50 dark:bg-white/5 px-2 py-1.5">
+                                <span className="text-gray-500 dark:text-white/40 block capitalize">{k.replace(/_/g, " ")}</span>
+                                <span className="text-gray-700 dark:text-white/80 break-words">{displayVal}</span>
                               </div>
                             );
                           })}
@@ -3166,33 +3166,33 @@ export default function DealDetailPage() {
           </div>
 
           {checklist.length === 0 ? (
-            <p className="text-white/50 text-sm">No documents in checklist yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No documents in checklist yet.</p>
           ) : (
             <div className="space-y-2">
               {checklist.map(item => (
-                <div key={item.id} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 gap-3">
+                <div key={item.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2.5 gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${item.uploaded ? "bg-green-500/20 text-green-400" : "bg-white/10 text-white/30"}`}>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${item.uploaded ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/30"}`}>
                       {item.uploaded ? "✓" : "○"}
                     </span>
                     <div className="min-w-0">
-                      <p className={`text-sm ${item.uploaded ? "text-white" : "text-white/70"}`}>{item.item_name}</p>
+                      <p className={`text-sm ${item.uploaded ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-white/70"}`}>{item.item_name}</p>
                       <div className="flex gap-2">
-                        {item.required && <span className="text-xs text-white/30">Required</span>}
-                        {item.notes && <span className="text-xs text-white/40 italic">{item.notes}</span>}
+                        {item.required && <span className="text-xs text-gray-500 dark:text-white/30">Required</span>}
+                        {item.notes && <span className="text-xs text-gray-500 dark:text-white/40 italic">{item.notes}</span>}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {item.file_url ? (
-                      <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">View</a>
+                      <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View</a>
                     ) : (
-                      <label className="cursor-pointer text-xs text-white/50 hover:text-white border border-white/20 rounded px-2 py-0.5">
+                      <label className="cursor-pointer text-xs text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-white/20 rounded px-2 py-0.5">
                         {uploadingChecklist === item.id ? "Uploading..." : "Upload"}
                         <input type="file" className="hidden" onChange={e => handleChecklistUpload(e, item.id)} disabled={uploadingChecklist === item.id} />
                       </label>
                     )}
-                    <button onClick={() => handleDeleteChecklistItem(item.id)} className="text-xs text-red-400 hover:text-red-300">✕</button>
+                    <button onClick={() => handleDeleteChecklistItem(item.id)} className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300">✕</button>
                   </div>
                 </div>
               ))}
@@ -3202,13 +3202,13 @@ export default function DealDetailPage() {
           {/* Add checklist item modal */}
           {showChecklistModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-sm rounded-xl border border-white/10 bg-blue-900 p-6">
+              <div className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
                 <h4 className="text-lg font-bold mb-4">Add Document</h4>
                 <div className="space-y-3">
                   <div><label className={labelClass}>Document Name</label><input value={checklistName} onChange={e => setChecklistName(e.target.value)} className={inputClass} placeholder="e.g. Passport Copy" /></div>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={checklistRequired} onChange={e => setChecklistRequired(e.target.checked)} className="rounded" />
-                    <span className="text-sm text-white/70">Required document</span>
+                    <span className="text-sm text-gray-600 dark:text-white/70">Required document</span>
                   </label>
                 </div>
                 <div className="mt-4 flex gap-2">
@@ -3222,19 +3222,19 @@ export default function DealDetailPage() {
           {/* AI Checklist Preview Modal */}
           {showAiChecklistModal && aiChecklistPreview.length > 0 && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[80vh] overflow-y-auto">
+              <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6 max-h-[80vh] overflow-y-auto">
                 <h4 className="text-lg font-bold mb-2">AI Generated Checklist</h4>
-                <p className="text-sm text-white/60 mb-4">{aiChecklistPreview.length} documents suggested for {form.visa_type} visa</p>
+                <p className="text-sm text-gray-500 dark:text-white/60 mb-4">{aiChecklistPreview.length} documents suggested for {form.visa_type} visa</p>
                 <div className="space-y-2 mb-5">
                   {aiChecklistPreview.map((item, idx) => (
-                    <div key={idx} className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5">
+                    <div key={idx} className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-white">{item.item_name}</span>
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${item.required ? "bg-red-500/20 text-red-400" : "bg-white/10 text-white/40"}`}>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{item.item_name}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${item.required ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400" : "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/40"}`}>
                           {item.required ? "Required" : "Optional"}
                         </span>
                       </div>
-                      {item.notes && <p className="text-xs text-white/50 mt-1">{item.notes}</p>}
+                      {item.notes && <p className="text-xs text-gray-500 dark:text-white/50 mt-1">{item.notes}</p>}
                     </div>
                   ))}
                 </div>
@@ -3287,7 +3287,7 @@ export default function DealDetailPage() {
           {/* Generate Cover Letter Modal */}
           {showCoverLetterModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-950 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-blue-950 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
                 <h4 className="text-lg font-bold mb-4">Generate Cover Letter</h4>
 
                 <div className="mb-4">
@@ -3301,16 +3301,16 @@ export default function DealDetailPage() {
                   />
                 </div>
 
-                <div className="mb-5 rounded-lg border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-medium text-white/50 mb-2">Auto-included information:</p>
-                  <ul className="space-y-1 text-xs text-white/40">
-                    <li>Client: <span className="text-white/60">{clientName}</span></li>
-                    {deal?.contacts?.nationality && <li>Nationality: <span className="text-white/60">{deal.contacts.nationality}</span></li>}
-                    {form.visa_type && <li>Visa Type: <span className="text-white/60">{form.visa_type}</span></li>}
-                    {form.deal_type && <li>Deal Type: <span className="text-white/60">{form.deal_type.replace(/_/g, " ")}</span></li>}
-                    {form.description && <li>Description: <span className="text-white/60">{form.description.length > 80 ? form.description.slice(0, 80) + "..." : form.description}</span></li>}
-                    {applicants.length > 0 && <li>Family Members / Applicants: <span className="text-white/60">{applicants.length}</span></li>}
-                    {intakeForm && intakeForm.status !== "draft" && <li>Intake Form data: <span className="text-white/60">included</span></li>}
+                <div className="mb-5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                  <p className="text-xs font-medium text-gray-500 dark:text-white/50 mb-2">Auto-included information:</p>
+                  <ul className="space-y-1 text-xs text-gray-500 dark:text-white/40">
+                    <li>Client: <span className="text-gray-500 dark:text-white/60">{clientName}</span></li>
+                    {deal?.contacts?.nationality && <li>Nationality: <span className="text-gray-500 dark:text-white/60">{deal.contacts.nationality}</span></li>}
+                    {form.visa_type && <li>Visa Type: <span className="text-gray-500 dark:text-white/60">{form.visa_type}</span></li>}
+                    {form.deal_type && <li>Deal Type: <span className="text-gray-500 dark:text-white/60">{form.deal_type.replace(/_/g, " ")}</span></li>}
+                    {form.description && <li>Description: <span className="text-gray-500 dark:text-white/60">{form.description.length > 80 ? form.description.slice(0, 80) + "..." : form.description}</span></li>}
+                    {applicants.length > 0 && <li>Family Members / Applicants: <span className="text-gray-500 dark:text-white/60">{applicants.length}</span></li>}
+                    {intakeForm && intakeForm.status !== "draft" && <li>Intake Form data: <span className="text-gray-500 dark:text-white/60">included</span></li>}
                   </ul>
                 </div>
 
@@ -3335,16 +3335,16 @@ export default function DealDetailPage() {
               <h3 className="text-lg font-bold">
                 Agent Commission
                 {agentName && (
-                  <Link href={`/agents/${deal.agent_id}`} className="ml-2 text-sm font-normal text-blue-400 hover:underline">
+                  <Link href={`/agents/${deal.agent_id}`} className="ml-2 text-sm font-normal text-blue-700 dark:text-blue-400 hover:underline">
                     ({agentName})
                   </Link>
                 )}
               </h3>
               {agentCommission && (
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase ${
-                  agentCommission.status === "paid" ? "bg-green-500/20 text-green-400" :
-                  agentCommission.status === "approved" ? "bg-blue-500/20 text-blue-400" :
-                  "bg-yellow-500/20 text-yellow-400"
+                  agentCommission.status === "paid" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" :
+                  agentCommission.status === "approved" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" :
+                  "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
                 }`}>{agentCommission.status}</span>
               )}
             </div>
@@ -3358,8 +3358,8 @@ export default function DealDetailPage() {
                   className={selectClass}
                   disabled={agentCommission?.status === "paid"}
                 >
-                  <option value="percentage" className="bg-blue-900">Percentage</option>
-                  <option value="fixed" className="bg-blue-900">Fixed Amount</option>
+                  <option value="percentage" className="bg-white dark:bg-blue-900">Percentage</option>
+                  <option value="fixed" className="bg-white dark:bg-blue-900">Fixed Amount</option>
                 </select>
               </div>
               <div>
@@ -3378,11 +3378,11 @@ export default function DealDetailPage() {
               </div>
               <div>
                 <label className={labelClass}>Base Amount (Service Fees)</label>
-                <p className="text-white/90 font-medium py-2">${stageServiceTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p className="text-gray-800 dark:text-white/90 font-medium py-2">${stageServiceTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </div>
               <div>
                 <label className={labelClass}>Commission Amount</label>
-                <p className="text-lg font-bold text-green-400 py-1">
+                <p className="text-lg font-bold text-green-700 dark:text-green-400 py-1">
                   ${(agentCommissionForm.commission_type === "percentage"
                     ? (stageServiceTotal * (parseFloat(agentCommissionForm.commission_rate) || 0) / 100)
                     : (parseFloat(agentCommissionForm.commission_rate) || 0)
@@ -3412,7 +3412,7 @@ export default function DealDetailPage() {
             </div>
 
             {agentCommission?.status === "paid" && agentCommission.paid_date && (
-              <p className="text-sm text-white/60 mb-4">Paid on {agentCommission.paid_date}</p>
+              <p className="text-sm text-gray-500 dark:text-white/60 mb-4">Paid on {agentCommission.paid_date}</p>
             )}
 
             <div className="flex flex-wrap gap-2">
@@ -3490,7 +3490,7 @@ export default function DealDetailPage() {
             {/* Mark as Paid modal */}
             {showMarkCommissionPaidModal && agentCommission && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-                <div className="w-full max-w-sm rounded-xl border border-white/10 bg-blue-950 p-6 shadow-2xl">
+                <div className="w-full max-w-sm rounded-xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-blue-950 p-6 shadow-2xl">
                   <h4 className="text-lg font-bold mb-4">Mark Commission as Paid</h4>
                   <div className="mb-4">
                     <label className={labelClass}>Paid Date</label>
@@ -3538,17 +3538,17 @@ export default function DealDetailPage() {
 
             {showApplicantModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+                <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
                   <h4 className="text-lg font-bold mb-4">Add Applicant</h4>
                   <div className="mb-3">
                     <label className={labelClass}>Search Contact</label>
                     <input value={applicantSearch} onChange={e => searchApplicants(e.target.value)} placeholder="Type name..." className={inputClass} />
                     {applicantResults.length > 0 && (
-                      <ul className="mt-1 rounded-lg border border-white/10 bg-blue-950 max-h-40 overflow-y-auto">
+                      <ul className="mt-1 rounded-lg border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-blue-950 max-h-40 overflow-y-auto">
                         {applicantResults.map(c => (
                           <li key={c.id}>
                             <button type="button" onClick={() => { setNewApplicant(f => ({ ...f, contact_id: c.id })); setApplicantSearch(`${c.first_name} ${c.last_name}`); setApplicantResults([]); }}
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-white/10 ${newApplicant.contact_id === c.id ? "bg-white/10" : ""}`}>
+                              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-white/10 ${newApplicant.contact_id === c.id ? "bg-gray-100 dark:bg-white/10" : ""}`}>
                               {c.first_name} {c.last_name}
                             </button>
                           </li>
@@ -3559,11 +3559,11 @@ export default function DealDetailPage() {
                   <div className="mb-3">
                     <label className={labelClass}>Relationship</label>
                     <select value={newApplicant.relationship} onChange={e => setNewApplicant(f => ({ ...f, relationship: e.target.value }))} className={selectClass}>
-                      <option value="main" className="bg-blue-900">Main</option>
-                      <option value="spouse" className="bg-blue-900">Spouse</option>
-                      <option value="child" className="bg-blue-900">Child</option>
-                      <option value="parent" className="bg-blue-900">Parent</option>
-                      <option value="other" className="bg-blue-900">Other</option>
+                      <option value="main" className="bg-white dark:bg-blue-900">Main</option>
+                      <option value="spouse" className="bg-white dark:bg-blue-900">Spouse</option>
+                      <option value="child" className="bg-white dark:bg-blue-900">Child</option>
+                      <option value="parent" className="bg-white dark:bg-blue-900">Parent</option>
+                      <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                     </select>
                   </div>
                   <div className="mb-4"><label className={labelClass}>Notes</label><input value={newApplicant.notes} onChange={e => setNewApplicant(f => ({ ...f, notes: e.target.value }))} className={inputClass} /></div>
@@ -3576,19 +3576,19 @@ export default function DealDetailPage() {
             )}
 
             {applicants.length === 0 ? (
-              <p className="text-white/50 text-sm">No applicants yet.</p>
+              <p className="text-gray-500 dark:text-white/50 text-sm">No applicants yet.</p>
             ) : (
               <ul className="space-y-2">
                 {applicants.map(a => (
-                  <li key={a.id} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2.5">
+                  <li key={a.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2.5">
                     <div>
-                      <Link href={`/contacts/${a.contact_id}`} className="font-medium text-blue-400 hover:underline">
+                      <Link href={`/contacts/${a.contact_id}`} className="font-medium text-blue-700 dark:text-blue-400 hover:underline">
                         {a.contacts?.first_name} {a.contacts?.last_name}
                       </Link>
-                      <span className="ml-2 text-sm text-white/60 capitalize">{a.relationship ?? ""}</span>
-                      {a.notes && <span className="ml-2 text-xs text-white/40">{a.notes}</span>}
+                      <span className="ml-2 text-sm text-gray-500 dark:text-white/60 capitalize">{a.relationship ?? ""}</span>
+                      {a.notes && <span className="ml-2 text-xs text-gray-500 dark:text-white/40">{a.notes}</span>}
                     </div>
-                    <button onClick={() => handleRemoveApplicant(a.id)} className="text-xs text-red-400 hover:text-red-300 ml-4">Remove</button>
+                    <button onClick={() => handleRemoveApplicant(a.id)} className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300 ml-4">Remove</button>
                   </li>
                 ))}
               </ul>
@@ -3599,18 +3599,18 @@ export default function DealDetailPage() {
         {/* ── Section: Activity Timeline ──────────────────────────────────── */}
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Activity Timeline</h3>
-          {activityLogs.length === 0 ? <p className="text-white/50 text-sm">No activity yet.</p> : (
+          {activityLogs.length === 0 ? <p className="text-gray-500 dark:text-white/50 text-sm">No activity yet.</p> : (
             <ul className="space-y-3">
               {activityLogs.map(log => (
                 <li key={log.id} className="flex gap-3 text-sm">
-                  <span className="text-white/40 whitespace-nowrap shrink-0">
+                  <span className="text-gray-500 dark:text-white/40 whitespace-nowrap shrink-0">
                     {new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
-                  <span className="text-white/60 shrink-0">{userNames[log.user_id] ?? "Unknown"}</span>
-                  <span className="text-white/90">
+                  <span className="text-gray-500 dark:text-white/60 shrink-0">{userNames[log.user_id] ?? "Unknown"}</span>
+                  <span className="text-gray-800 dark:text-white/90">
                     {log.action.replace(/_/g, " ")}
                     {log.details && (log.details as { from?: string }).from && (
-                      <span className="ml-1 text-white/50"> ({(log.details as { from?: string }).from} → {(log.details as { to?: string }).to})</span>
+                      <span className="ml-1 text-gray-500 dark:text-white/50"> ({(log.details as { from?: string }).from} → {(log.details as { to?: string }).to})</span>
                     )}
                   </span>
                 </li>
@@ -3623,17 +3623,17 @@ export default function DealDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Attachments</h3>
           <div className="mb-3">
-            <label className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
+            <label className="cursor-pointer rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
               {isUploading ? "Uploading..." : "Upload File"}
               <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
             </label>
           </div>
-          {attachments.length === 0 ? <p className="text-white/50 text-sm">No attachments.</p> : (
+          {attachments.length === 0 ? <p className="text-gray-500 dark:text-white/50 text-sm">No attachments.</p> : (
             <ul className="space-y-2">
               {attachments.map(f => (
-                <li key={f.name} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2">
-                  <span className="text-sm text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
-                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline whitespace-nowrap">View</a>
+                <li key={f.name} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2">
+                  <span className="text-sm text-gray-800 dark:text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
+                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 hover:underline whitespace-nowrap">View</a>
                 </li>
               ))}
             </ul>
@@ -3643,31 +3643,31 @@ export default function DealDetailPage() {
         {/* ── Section: Email History ──────────────────────────────────────── */}
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Email History</h3>
-          {emailLogs.length === 0 ? <p className="text-white/50 text-sm">No emails sent for this deal.</p> : (
+          {emailLogs.length === 0 ? <p className="text-gray-500 dark:text-white/50 text-sm">No emails sent for this deal.</p> : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="border-b border-white/10">
-                  <th className="text-left py-2 text-white/50 font-medium">Date</th>
-                  <th className="text-left py-2 text-white/50 font-medium">Type</th>
-                  <th className="text-left py-2 text-white/50 font-medium">Recipient</th>
-                  <th className="text-left py-2 text-white/50 font-medium">Subject</th>
-                  <th className="text-left py-2 text-white/50 font-medium">Status</th>
+                <thead><tr className="border-b border-gray-200 dark:border-white/10">
+                  <th className="text-left py-2 text-gray-500 dark:text-white/50 font-medium">Date</th>
+                  <th className="text-left py-2 text-gray-500 dark:text-white/50 font-medium">Type</th>
+                  <th className="text-left py-2 text-gray-500 dark:text-white/50 font-medium">Recipient</th>
+                  <th className="text-left py-2 text-gray-500 dark:text-white/50 font-medium">Subject</th>
+                  <th className="text-left py-2 text-gray-500 dark:text-white/50 font-medium">Status</th>
                 </tr></thead>
                 <tbody>
                   {emailLogs.map(log => (
-                    <tr key={log.id} className="border-b border-white/5">
-                      <td className="py-2 pr-3 text-white/60 whitespace-nowrap text-xs">
+                    <tr key={log.id} className="border-b border-gray-100 dark:border-white/5">
+                      <td className="py-2 pr-3 text-gray-500 dark:text-white/60 whitespace-nowrap text-xs">
                         {new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </td>
                       <td className="py-2 pr-3">
-                        <span className="text-xs bg-blue-500/20 text-blue-300 rounded-full px-2 py-0.5">
+                        <span className="text-xs bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-full px-2 py-0.5">
                           {EMAIL_TYPE_LABELS[log.email_type ?? ""] ?? log.email_type ?? "—"}
                         </span>
                       </td>
-                      <td className="py-2 pr-3 text-white/70 text-xs">{log.recipient_name}<br /><span className="text-white/40">{log.recipient_email}</span></td>
-                      <td className="py-2 pr-3 text-white/70 text-xs max-w-xs truncate">{log.subject}</td>
+                      <td className="py-2 pr-3 text-gray-600 dark:text-white/70 text-xs">{log.recipient_name}<br /><span className="text-gray-500 dark:text-white/40">{log.recipient_email}</span></td>
+                      <td className="py-2 pr-3 text-gray-600 dark:text-white/70 text-xs max-w-xs truncate">{log.subject}</td>
                       <td className="py-2">
-                        <span className={`text-xs rounded-full px-2 py-0.5 font-bold ${log.status === "sent" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                        <span className={`text-xs rounded-full px-2 py-0.5 font-bold ${log.status === "sent" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"}`}>
                           {log.status}
                         </span>
                       </td>
@@ -3685,46 +3685,46 @@ export default function DealDetailPage() {
           const remaining = inv.total - (inv.paid_amount || 0);
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-              <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-950 p-6 shadow-2xl">
+              <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-blue-950 p-6 shadow-2xl">
                 <h3 className="text-lg font-bold mb-4">Record Payment</h3>
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between text-white/60">
-                    <span>Invoice</span><span className="text-white font-medium">{inv.invoice_number}</span>
+                  <div className="flex justify-between text-gray-500 dark:text-white/60">
+                    <span>Invoice</span><span className="text-gray-900 dark:text-white font-medium">{inv.invoice_number}</span>
                   </div>
-                  <div className="flex justify-between text-white/60">
-                    <span>Total</span><span className="text-white font-medium">${fmt(inv.total)}</span>
+                  <div className="flex justify-between text-gray-500 dark:text-white/60">
+                    <span>Total</span><span className="text-gray-900 dark:text-white font-medium">${fmt(inv.total)}</span>
                   </div>
-                  <div className="flex justify-between text-white/60">
-                    <span>Already Paid</span><span className="text-white font-medium">${fmt(inv.paid_amount || 0)}</span>
+                  <div className="flex justify-between text-gray-500 dark:text-white/60">
+                    <span>Already Paid</span><span className="text-gray-900 dark:text-white font-medium">${fmt(inv.paid_amount || 0)}</span>
                   </div>
-                  <div className="flex justify-between text-white/60">
-                    <span>Remaining</span><span className="text-white font-bold">${fmt(remaining)}</span>
+                  <div className="flex justify-between text-gray-500 dark:text-white/60">
+                    <span>Remaining</span><span className="text-gray-900 dark:text-white font-bold">${fmt(remaining)}</span>
                   </div>
-                  <hr className="border-white/10" />
+                  <hr className="border-gray-200 dark:border-white/10" />
                   <div>
-                    <label className="block text-white/60 mb-1">Payment Amount</label>
+                    <label className="block text-gray-500 dark:text-white/60 mb-1">Payment Amount</label>
                     <input type="number" step="0.01" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)}
-                      className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white focus:border-blue-400 focus:outline-none" />
+                      className="w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-white/60 mb-1">Payment Date</label>
+                    <label className="block text-gray-500 dark:text-white/60 mb-1">Payment Date</label>
                     <input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)}
-                      className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white focus:border-blue-400 focus:outline-none" />
+                      className="w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-white/60 mb-1">Payment Method</label>
+                    <label className="block text-gray-500 dark:text-white/60 mb-1">Payment Method</label>
                     <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
-                      className="w-full rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-white focus:border-blue-400 focus:outline-none">
-                      <option value="bank_transfer" className="bg-blue-900">Bank Transfer</option>
-                      <option value="cash" className="bg-blue-900">Cash</option>
-                      <option value="card" className="bg-blue-900">Card</option>
-                      <option value="other" className="bg-blue-900">Other</option>
+                      className="w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none">
+                      <option value="bank_transfer" className="bg-white dark:bg-blue-900">Bank Transfer</option>
+                      <option value="cash" className="bg-white dark:bg-blue-900">Cash</option>
+                      <option value="card" className="bg-white dark:bg-blue-900">Card</option>
+                      <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-white/60 mb-1">Notes (optional)</label>
+                    <label className="block text-gray-500 dark:text-white/60 mb-1">Notes (optional)</label>
                     <input type="text" value={paymentNotes} onChange={e => setPaymentNotes(e.target.value)} placeholder="Payment reference..."
-                      className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none" />
+                      className="w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none" />
                   </div>
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -3767,7 +3767,7 @@ export default function DealDetailPage() {
                   >
                     {isRecordingPayment ? "Recording..." : "Record Payment"}
                   </button>
-                  <button onClick={() => setShowPaymentModal(null)} className="rounded-lg border border-white/20 px-4 py-2.5 text-sm font-bold hover:bg-white/10 transition-colors">
+                  <button onClick={() => setShowPaymentModal(null)} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                     Cancel
                   </button>
                 </div>
@@ -3789,36 +3789,36 @@ export default function DealDetailPage() {
               )}
             </div>
             {refunds.length === 0 ? (
-              <p className="text-sm text-white/40 text-center py-4">No refund requests.</p>
+              <p className="text-sm text-gray-500 dark:text-white/40 text-center py-4">No refund requests.</p>
             ) : (
               <div className="space-y-3">
                 {refunds.map((r) => {
                   const displayAmt = r.actual_refund ?? r.approved_refund ?? r.calculated_refund;
                   const statusColors: Record<string, string> = {
-                    pending: "bg-yellow-500/20 text-yellow-400", approved: "bg-blue-500/20 text-blue-400",
-                    rejected: "bg-red-500/20 text-red-400", processing: "bg-orange-500/20 text-orange-400",
-                    completed: "bg-green-500/20 text-green-400", cancelled: "bg-gray-500/20 text-gray-400",
+                    pending: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400", approved: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+                    rejected: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400", processing: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+                    completed: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400", cancelled: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400",
                   };
                   return (
-                    <div key={r.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                    <div key={r.id} className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[r.status] ?? ""}`}>
                             {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                           </span>
-                          <span className="text-sm text-white/60">{new Date(r.requested_at).toLocaleDateString()}</span>
+                          <span className="text-sm text-gray-500 dark:text-white/60">{new Date(r.requested_at).toLocaleDateString()}</span>
                         </div>
-                        <span className="text-red-400 font-bold">${Number(displayAmt).toFixed(2)}</span>
+                        <span className="text-red-700 dark:text-red-400 font-bold">${Number(displayAmt).toFixed(2)}</span>
                       </div>
-                      <div className="text-sm text-white/70">
-                        <span className="text-white/50">Reason:</span> {r.reason}
+                      <div className="text-sm text-gray-600 dark:text-white/70">
+                        <span className="text-gray-500 dark:text-white/50">Reason:</span> {r.reason}
                       </div>
                       {r.deduction_details?.length > 0 && (
-                        <div className="text-sm text-white/50 mt-1">
+                        <div className="text-sm text-gray-500 dark:text-white/50 mt-1">
                           Deductions: {r.deduction_details.map(d => `${d.description} ($${d.amount})`).join(", ")}
                         </div>
                       )}
-                      {r.review_notes && <div className="text-sm text-white/50 mt-1">Review: {r.review_notes}</div>}
+                      {r.review_notes && <div className="text-sm text-gray-500 dark:text-white/50 mt-1">Review: {r.review_notes}</div>}
                     </div>
                   );
                 })}
@@ -3871,25 +3871,25 @@ export default function DealDetailPage() {
 
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
+              <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6 max-h-[90vh] overflow-y-auto">
                 <h4 className="text-lg font-bold mb-4">Request Refund</h4>
 
-                <div className="space-y-3 text-sm mb-4 rounded-lg bg-white/5 p-3">
-                  <div className="flex justify-between"><span className="text-white/50">Total Paid:</span><span>${totalPaidAmount.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span className="text-white/50">Refund %:</span><span>{refundPct}%</span></div>
-                  <div className="flex justify-between"><span className="text-white/50">Calculated Refund:</span><span>${calcRefund.toFixed(2)}</span></div>
-                  {totalDed > 0 && <div className="flex justify-between text-red-400"><span>Deductions:</span><span>-${totalDed.toFixed(2)}</span></div>}
-                  <div className="flex justify-between font-bold border-t border-white/10 pt-2"><span>Final Refund:</span><span className="text-red-400">${finalRefund.toFixed(2)}</span></div>
+                <div className="space-y-3 text-sm mb-4 rounded-lg bg-gray-50 dark:bg-white/5 p-3">
+                  <div className="flex justify-between"><span className="text-gray-500 dark:text-white/50">Total Paid:</span><span>${totalPaidAmount.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500 dark:text-white/50">Refund %:</span><span>{refundPct}%</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500 dark:text-white/50">Calculated Refund:</span><span>${calcRefund.toFixed(2)}</span></div>
+                  {totalDed > 0 && <div className="flex justify-between text-red-700 dark:text-red-400"><span>Deductions:</span><span>-${totalDed.toFixed(2)}</span></div>}
+                  <div className="flex justify-between font-bold border-t border-gray-200 dark:border-white/10 pt-2"><span>Final Refund:</span><span className="text-red-700 dark:text-red-400">${finalRefund.toFixed(2)}</span></div>
                 </div>
 
                 <div className="space-y-3 mb-4">
                   <div>
                     <label className={labelClass}>Reason *</label>
                     <select value={refundReason} onChange={e => setRefundReason(e.target.value)} className={selectClass}>
-                      <option value="Client cancelled" className="bg-blue-900">Client cancelled</option>
-                      <option value="Service not provided" className="bg-blue-900">Service not provided</option>
-                      <option value="Dispute" className="bg-blue-900">Dispute</option>
-                      <option value="Other" className="bg-blue-900">Other</option>
+                      <option value="Client cancelled" className="bg-white dark:bg-blue-900">Client cancelled</option>
+                      <option value="Service not provided" className="bg-white dark:bg-blue-900">Service not provided</option>
+                      <option value="Dispute" className="bg-white dark:bg-blue-900">Dispute</option>
+                      <option value="Other" className="bg-white dark:bg-blue-900">Other</option>
                     </select>
                   </div>
                   {refundReason === "Other" && (
@@ -3902,13 +3902,13 @@ export default function DealDetailPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className={labelClass + " mb-0"}>Deductions</label>
-                      <button onClick={() => setRefundDeductions([...refundDeductions, { description: "", amount: "" }])} className="text-xs text-blue-400 hover:underline">+ Add</button>
+                      <button onClick={() => setRefundDeductions([...refundDeductions, { description: "", amount: "" }])} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">+ Add</button>
                     </div>
                     {refundDeductions.map((d, i) => (
                       <div key={i} className="flex gap-2 mb-2">
                         <input value={d.description} onChange={e => { const arr = [...refundDeductions]; arr[i].description = e.target.value; setRefundDeductions(arr); }} placeholder="e.g. INZ fee incurred" className={inputClass + " flex-1"} />
                         <input type="number" step="0.01" value={d.amount} onChange={e => { const arr = [...refundDeductions]; arr[i].amount = e.target.value; setRefundDeductions(arr); }} placeholder="0.00" className={inputClass + " w-28"} />
-                        <button onClick={() => setRefundDeductions(refundDeductions.filter((_, j) => j !== i))} className="text-red-400 text-xs hover:text-red-300">Remove</button>
+                        <button onClick={() => setRefundDeductions(refundDeductions.filter((_, j) => j !== i))} className="text-red-700 dark:text-red-400 text-xs hover:text-red-700 dark:text-red-300">Remove</button>
                       </div>
                     ))}
                   </div>
@@ -3971,9 +3971,9 @@ export default function DealDetailPage() {
 
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+              <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
                 <h4 className="text-lg font-bold mb-4">Record {curr} Payment</h4>
-                <p className="text-sm text-white/50 mb-4">Invoice: {inv.invoice_number} — Total: {curr === "CNY" ? "¥" : "฿"}{Number(inv.total).toFixed(2)}</p>
+                <p className="text-sm text-gray-500 dark:text-white/50 mb-4">Invoice: {inv.invoice_number} — Total: {curr === "CNY" ? "¥" : "฿"}{Number(inv.total).toFixed(2)}</p>
 
                 <div className="space-y-3 mb-4">
                   <div>
@@ -4003,11 +4003,11 @@ export default function DealDetailPage() {
                   <div>
                     <label className={labelClass}>Payment Method</label>
                     <select value={foreignMethod} onChange={e => setForeignMethod(e.target.value)} className={selectClass}>
-                      <option value="bank_transfer" className="bg-blue-900">Bank Transfer</option>
-                      <option value="wechat" className="bg-blue-900">WeChat Pay</option>
-                      <option value="alipay" className="bg-blue-900">Alipay</option>
-                      <option value="cash" className="bg-blue-900">Cash</option>
-                      <option value="other" className="bg-blue-900">Other</option>
+                      <option value="bank_transfer" className="bg-white dark:bg-blue-900">Bank Transfer</option>
+                      <option value="wechat" className="bg-white dark:bg-blue-900">WeChat Pay</option>
+                      <option value="alipay" className="bg-white dark:bg-blue-900">Alipay</option>
+                      <option value="cash" className="bg-white dark:bg-blue-900">Cash</option>
+                      <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                     </select>
                   </div>
                   <div>

@@ -95,22 +95,22 @@ export default function NewCompanyPage() {
     router.push(`/companies/${data.id}`);
   };
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges />
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <Link href="/companies" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">← Companies</Link>
+          <Link href="/companies" className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">← Companies</Link>
           <h2 className="text-2xl font-bold sm:text-3xl">Add Company</h2>
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
@@ -140,10 +140,10 @@ export default function NewCompanyPage() {
               <div>
                 <label className={labelClass}>Gender</label>
                 <select name="key_person_gender" value={form.key_person_gender} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="male" className="bg-blue-900">Male</option>
-                  <option value="female" className="bg-blue-900">Female</option>
-                  <option value="other" className="bg-blue-900">Other</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="male" className="bg-white dark:bg-blue-900">Male</option>
+                  <option value="female" className="bg-white dark:bg-blue-900">Female</option>
+                  <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                 </select>
               </div>
               <div><label className={labelClass}>Passport No</label><input name="key_person_passport_no" value={form.key_person_passport_no} onChange={handleChange} className={inputClass} /></div>
@@ -160,9 +160,9 @@ export default function NewCompanyPage() {
               <div>
                 <label className={labelClass}>Accreditation Status</label>
                 <select name="accreditation_status" value={form.accreditation_status} onChange={handleChange} className={selectClass}>
-                  <option value="none" className="bg-blue-900">None</option>
-                  <option value="standard" className="bg-blue-900">Standard</option>
-                  <option value="high_volume" className="bg-blue-900">High Volume</option>
+                  <option value="none" className="bg-white dark:bg-blue-900">None</option>
+                  <option value="standard" className="bg-white dark:bg-blue-900">Standard</option>
+                  <option value="high_volume" className="bg-white dark:bg-blue-900">High Volume</option>
                 </select>
               </div>
               <div><label className={labelClass}>Accreditation Expiry</label><input name="accreditation_expiry" value={form.accreditation_expiry} onChange={handleChange} type="date" className={inputClass} /></div>
@@ -182,14 +182,14 @@ export default function NewCompanyPage() {
           <div className={sectionClass}>
             <h3 className="text-base font-bold mb-4">Department *</h3>
             {isSales ? (
-              <p className="text-white/70">{DEPT_LABELS[userDept] ?? userDept}</p>
+              <p className="text-gray-600 dark:text-white/70">{DEPT_LABELS[userDept] ?? userDept}</p>
             ) : (
               <select name="department" value={form.department} onChange={handleChange} required className={`${selectClass} max-w-xs`}>
-                <option value="" className="bg-blue-900">Select Department *</option>
-                <option value="china" className="bg-blue-900">China</option>
-                <option value="thailand" className="bg-blue-900">Thailand</option>
-                <option value="myanmar" className="bg-blue-900">Myanmar</option>
-                <option value="korea_japan" className="bg-blue-900">Korea & Japan</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select Department *</option>
+                <option value="china" className="bg-white dark:bg-blue-900">China</option>
+                <option value="thailand" className="bg-white dark:bg-blue-900">Thailand</option>
+                <option value="myanmar" className="bg-white dark:bg-blue-900">Myanmar</option>
+                <option value="korea_japan" className="bg-white dark:bg-blue-900">Korea & Japan</option>
               </select>
             )}
             <div className="mt-4">
@@ -202,7 +202,7 @@ export default function NewCompanyPage() {
             <button type="submit" disabled={isSaving} className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50">
               {isSaving ? "Saving..." : "Save Company"}
             </button>
-            <button type="button" onClick={() => router.push("/companies")} className="rounded-lg border border-white/20 px-6 py-3 font-bold hover:bg-white/10">
+            <button type="button" onClick={() => router.push("/companies")} className="rounded-lg border border-gray-300 dark:border-white/20 px-6 py-3 font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Cancel
             </button>
           </div>

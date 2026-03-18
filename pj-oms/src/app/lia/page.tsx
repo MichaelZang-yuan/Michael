@@ -35,15 +35,15 @@ type IntakeForm = {
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400",
-  quoted: "bg-blue-500/20 text-blue-400",
-  contracted: "bg-purple-500/20 text-purple-400",
-  in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-orange-500/20 text-orange-400",
-  approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400",
-  completed: "bg-green-600/20 text-green-300",
-  cancelled: "bg-red-600/20 text-red-300",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400",
+  quoted: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contracted: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  completed: "bg-green-100 dark:bg-green-600/20 text-green-700 dark:text-green-300",
+  cancelled: "bg-red-100 dark:bg-red-600/20 text-red-700 dark:text-red-300",
 };
 
 const DEAL_STATUS_LABELS: Record<string, string> = {
@@ -122,7 +122,7 @@ export default function LiaDashboardPage() {
     init();
   }, [router]);
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
   const isAdmin = hasRole(profile, "admin");
 
@@ -176,16 +176,16 @@ export default function LiaDashboardPage() {
   const inProgressDeals = myDeals.filter(d => d.status === "in_progress");
   const submittedDeals = myDeals.filter(d => d.status === "submitted");
 
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 
         <div className="mb-8">
           <h1 className="text-2xl font-bold sm:text-3xl">LIA Dashboard</h1>
-          <p className="mt-1 text-white/60">
+          <p className="mt-1 text-gray-500 dark:text-white/60">
             {isAdmin ? "All active deals" : `Welcome, ${profile?.full_name ?? "LIA"} — your assigned deals`}
           </p>
         </div>
@@ -193,14 +193,14 @@ export default function LiaDashboardPage() {
         {/* Summary stats */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
           {[
-            { label: "Active Deals", value: myDeals.length, color: "text-blue-400" },
-            { label: "In Progress", value: inProgressDeals.length, color: "text-yellow-400" },
-            { label: "Submitted", value: submittedDeals.length, color: "text-orange-400" },
-            { label: "Payment Alerts", value: paymentAlerts.length, color: "text-red-400" },
+            { label: "Active Deals", value: myDeals.length, color: "text-blue-700 dark:text-blue-400" },
+            { label: "In Progress", value: inProgressDeals.length, color: "text-yellow-700 dark:text-yellow-400" },
+            { label: "Submitted", value: submittedDeals.length, color: "text-orange-700 dark:text-orange-400" },
+            { label: "Payment Alerts", value: paymentAlerts.length, color: "text-red-700 dark:text-red-400" },
           ].map(stat => (
-            <div key={stat.label} className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+            <div key={stat.label} className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 text-center">
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-              <p className="text-sm text-white/60 mt-1">{stat.label}</p>
+              <p className="text-sm text-gray-500 dark:text-white/60 mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -208,16 +208,16 @@ export default function LiaDashboardPage() {
         {/* Payment Alerts */}
         {paymentAlerts.length > 0 && (
           <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-5 mb-6">
-            <h3 className="text-base font-bold text-yellow-300 mb-3">⚠ Payment Alerts ({paymentAlerts.length})</h3>
+            <h3 className="text-base font-bold text-yellow-700 dark:text-yellow-300 mb-3">⚠ Payment Alerts ({paymentAlerts.length})</h3>
             <div className="space-y-2">
               {paymentAlerts.map(deal => (
                 <div key={deal.id} className="flex items-center justify-between rounded-lg bg-yellow-500/10 px-4 py-2.5">
                   <div>
-                    <span className="font-medium text-white">{deal.deal_number}</span>
-                    <span className="ml-2 text-sm text-white/60">{getClientName(deal)}</span>
-                    <span className="ml-2 text-xs text-yellow-300">Service fee pending</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{deal.deal_number}</span>
+                    <span className="ml-2 text-sm text-gray-500 dark:text-white/60">{getClientName(deal)}</span>
+                    <span className="ml-2 text-xs text-yellow-700 dark:text-yellow-300">Service fee pending</span>
                   </div>
-                  <Link href={`/deals/${deal.id}`} className="text-xs text-blue-400 hover:underline">View →</Link>
+                  <Link href={`/deals/${deal.id}`} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View →</Link>
                 </div>
               ))}
             </div>
@@ -227,20 +227,20 @@ export default function LiaDashboardPage() {
         {/* Pending Intake Forms */}
         {pendingIntake.length > 0 && (
           <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-5 mb-6">
-            <h3 className="text-base font-bold text-orange-300 mb-3">Pending Intake Forms ({pendingIntake.length})</h3>
+            <h3 className="text-base font-bold text-orange-700 dark:text-orange-300 mb-3">Pending Intake Forms ({pendingIntake.length})</h3>
             <div className="space-y-2">
               {pendingIntake.map(deal => {
                 const form = intakeForms.find(f => f.deal_id === deal.id);
                 return (
                   <div key={deal.id} className="flex items-center justify-between rounded-lg bg-orange-500/10 px-4 py-2.5">
                     <div>
-                      <span className="font-medium text-white">{deal.deal_number}</span>
-                      <span className="ml-2 text-sm text-white/60">{getClientName(deal)}</span>
-                      <span className="ml-2 text-xs text-orange-300">
+                      <span className="font-medium text-gray-900 dark:text-white">{deal.deal_number}</span>
+                      <span className="ml-2 text-sm text-gray-500 dark:text-white/60">{getClientName(deal)}</span>
+                      <span className="ml-2 text-xs text-orange-700 dark:text-orange-300">
                         {!form || form.status === "draft" ? "Not sent yet" : form.status === "sent" ? "Sent — awaiting client" : "In Progress"}
                       </span>
                     </div>
-                    <Link href={`/deals/${deal.id}`} className="text-xs text-blue-400 hover:underline">View →</Link>
+                    <Link href={`/deals/${deal.id}`} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View →</Link>
                   </div>
                 );
               })}
@@ -252,7 +252,7 @@ export default function LiaDashboardPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Active Deals ({myDeals.length})</h3>
           {myDeals.length === 0 ? (
-            <p className="text-white/50 text-sm">No active deals{!isAdmin ? " assigned to you" : ""}.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No active deals{!isAdmin ? " assigned to you" : ""}.</p>
           ) : (
             <div className="space-y-3">
               {myDeals.map(deal => {
@@ -263,29 +263,29 @@ export default function LiaDashboardPage() {
                 const clientEmail = getClientEmail(deal);
 
                 return (
-                  <div key={deal.id} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                  <div key={deal.id} className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                          <Link href={`/deals/${deal.id}`} className="font-bold text-blue-400 hover:underline">
+                          <Link href={`/deals/${deal.id}`} className="font-bold text-blue-700 dark:text-blue-400 hover:underline">
                             {deal.deal_number}
                           </Link>
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[deal.status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[deal.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                             {DEAL_STATUS_LABELS[deal.status] ?? deal.status}
                           </span>
-                          <span className="text-xs text-white/40 uppercase bg-white/5 rounded px-2 py-0.5">
+                          <span className="text-xs text-gray-500 dark:text-white/40 uppercase bg-gray-50 dark:bg-white/5 rounded px-2 py-0.5">
                             {deal.visa_type ?? deal.deal_type?.replace(/_/g, " ")}
                           </span>
                         </div>
-                        <p className="text-white/80 text-sm">{getClientName(deal)}{clientEmail && <span className="ml-2 text-white/40">{clientEmail}</span>}</p>
-                        <p className="text-xs text-white/50 mt-1.5">{nextStep}</p>
+                        <p className="text-gray-700 dark:text-white/80 text-sm">{getClientName(deal)}{clientEmail && <span className="ml-2 text-gray-500 dark:text-white/40">{clientEmail}</span>}</p>
+                        <p className="text-xs text-gray-500 dark:text-white/50 mt-1.5">{nextStep}</p>
                         {totalDue > 0 && (
-                          <p className="text-xs text-white/40 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-white/40 mt-1">
                             Paid: ${totalPaid.toLocaleString()} / ${totalDue.toLocaleString()} NZD
                           </p>
                         )}
                       </div>
-                      <Link href={`/deals/${deal.id}`} className="shrink-0 rounded-lg border border-white/20 px-3 py-1.5 text-xs font-bold hover:bg-white/10">
+                      <Link href={`/deals/${deal.id}`} className="shrink-0 rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                         Open
                       </Link>
                     </div>
@@ -302,15 +302,15 @@ export default function LiaDashboardPage() {
             <h3 className="text-lg font-bold mb-4">Recently Resolved</h3>
             <div className="space-y-2">
               {recentDeals.map(deal => (
-                <div key={deal.id} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2.5">
+                <div key={deal.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2.5">
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{deal.deal_number}</span>
-                    <span className="text-sm text-white/60">{getClientName(deal)}</span>
+                    <span className="text-sm text-gray-500 dark:text-white/60">{getClientName(deal)}</span>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[deal.status] ?? ""}`}>
                       {DEAL_STATUS_LABELS[deal.status] ?? deal.status}
                     </span>
                   </div>
-                  <Link href={`/deals/${deal.id}`} className="text-xs text-blue-400 hover:underline">View →</Link>
+                  <Link href={`/deals/${deal.id}`} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">View →</Link>
                 </div>
               ))}
             </div>

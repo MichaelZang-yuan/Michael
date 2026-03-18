@@ -32,12 +32,12 @@ const STATUS_LABELS: Record<string, string> = {
   draft: "Draft", sent: "Sent", paid: "Paid", cancelled: "Cancelled", overdue: "Overdue", partial: "Partial",
 };
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400",
-  sent: "bg-blue-500/20 text-blue-400",
-  paid: "bg-green-500/20 text-green-400",
-  cancelled: "bg-red-500/20 text-red-400",
-  overdue: "bg-orange-500/20 text-orange-400",
-  partial: "bg-yellow-500/20 text-yellow-400",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400",
+  sent: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  paid: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  cancelled: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  overdue: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  partial: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
 };
 
 const CURRENCY_SYMBOLS: Record<string, string> = { NZD: "NZ$", CNY: "\u00A5", THB: "\u0E3F" };
@@ -201,15 +201,15 @@ export default function InvoicesPage() {
     return sym + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const selectClass = "rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none";
-  const inputClass = "rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
+  const selectClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const inputClass = "rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex items-center justify-between mb-6">
@@ -223,47 +223,47 @@ export default function InvoicesPage() {
         <div className="flex flex-wrap gap-3 mb-6">
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice #, client, deal..." className={`${inputClass} w-64`} />
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectClass}>
-            <option value="" className="bg-blue-900">All Statuses</option>
-            <option value="draft" className="bg-blue-900">Draft</option>
-            <option value="sent" className="bg-blue-900">Sent</option>
-            <option value="partial" className="bg-blue-900">Partial</option>
-            <option value="paid" className="bg-blue-900">Paid</option>
-            <option value="cancelled" className="bg-blue-900">Cancelled</option>
+            <option value="" className="bg-white dark:bg-blue-900">All Statuses</option>
+            <option value="draft" className="bg-white dark:bg-blue-900">Draft</option>
+            <option value="sent" className="bg-white dark:bg-blue-900">Sent</option>
+            <option value="partial" className="bg-white dark:bg-blue-900">Partial</option>
+            <option value="paid" className="bg-white dark:bg-blue-900">Paid</option>
+            <option value="cancelled" className="bg-white dark:bg-blue-900">Cancelled</option>
           </select>
           <select value={filterCurrency} onChange={e => setFilterCurrency(e.target.value)} className={selectClass}>
-            <option value="" className="bg-blue-900">All Currencies</option>
-            <option value="NZD" className="bg-blue-900">NZD</option>
-            <option value="CNY" className="bg-blue-900">CNY</option>
-            <option value="THB" className="bg-blue-900">THB</option>
+            <option value="" className="bg-white dark:bg-blue-900">All Currencies</option>
+            <option value="NZD" className="bg-white dark:bg-blue-900">NZD</option>
+            <option value="CNY" className="bg-white dark:bg-blue-900">CNY</option>
+            <option value="THB" className="bg-white dark:bg-blue-900">THB</option>
           </select>
         </div>
 
         {xeroMsg && (
-          <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${xeroMsg.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+          <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${xeroMsg.type === "success" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"}`}>
             {xeroMsg.text}
           </div>
         )}
 
         {/* Table */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-white/40">
+          <div className="text-center py-16 text-gray-500 dark:text-white/40">
             <p className="text-lg">No invoices found.</p>
           </div>
         ) : (
-          <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 bg-white/5">
-                    <th className="text-left py-3 px-4 text-white/50 font-medium">Invoice #</th>
-                    <th className="text-left py-3 px-4 text-white/50 font-medium">Deal</th>
-                    <th className="text-left py-3 px-4 text-white/50 font-medium">Client</th>
-                    <th className="text-left py-3 px-4 text-white/50 font-medium">Ccy</th>
-                    <th className="text-right py-3 px-4 text-white/50 font-medium">Amount</th>
-                    <th className="text-left py-3 px-4 text-white/50 font-medium">Status</th>
-                    <th className="text-left py-3 px-4 text-white/50 font-medium">Date</th>
-                    <th className="text-left py-3 px-4 text-white/50 font-medium">Xero</th>
-                    <th className="py-3 px-4 text-white/50 font-medium">Actions</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Invoice #</th>
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Deal</th>
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Client</th>
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Ccy</th>
+                    <th className="text-right py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Amount</th>
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Status</th>
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Date</th>
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Xero</th>
+                    <th className="py-3 px-4 text-gray-500 dark:text-white/50 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -272,49 +272,49 @@ export default function InvoicesPage() {
                       ? `${inv.deals.contacts.first_name} ${inv.deals.contacts.last_name}`
                       : inv.deals?.companies?.company_name ?? "—";
                     return (
-                      <tr key={inv.id} className="border-b border-white/5 hover:bg-white/5">
-                        <td className="py-3 px-4 font-medium text-white/90">{inv.invoice_number}</td>
+                      <tr key={inv.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
+                        <td className="py-3 px-4 font-medium text-gray-800 dark:text-white/90">{inv.invoice_number}</td>
                         <td className="py-3 px-4">
-                          <Link href={`/deals/${inv.deal_id}`} className="text-blue-400 hover:underline text-xs">
+                          <Link href={`/deals/${inv.deal_id}`} className="text-blue-700 dark:text-blue-400 hover:underline text-xs">
                             {inv.deals?.deal_number ?? inv.deal_id.slice(0, 8)}
                           </Link>
                         </td>
-                        <td className="py-3 px-4 text-white/70">{clientName}</td>
-                        <td className="py-3 px-4 text-white/60">{inv.currency}</td>
+                        <td className="py-3 px-4 text-gray-600 dark:text-white/70">{clientName}</td>
+                        <td className="py-3 px-4 text-gray-500 dark:text-white/60">{inv.currency}</td>
                         <td className="py-3 px-4 text-right font-semibold">{fmt(inv.total, inv.currency)}</td>
                         <td className="py-3 px-4">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_COLORS[inv.status] ?? "bg-gray-500/20 text-gray-400"}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_COLORS[inv.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                             {STATUS_LABELS[inv.status] ?? inv.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-white/60 text-xs">{inv.issue_date}</td>
+                        <td className="py-3 px-4 text-gray-500 dark:text-white/60 text-xs">{inv.issue_date}</td>
                         <td className="py-3 px-4">
                           {inv.xero_invoice_id ? (
                             <div className="flex items-center gap-2">
-                              <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-500/20 text-green-400" title={inv.xero_invoice_id}>Pushed</span>
-                              <button onClick={() => handleSyncFromXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-cyan-400 hover:text-cyan-300 disabled:opacity-50">{actionLoading === inv.id ? "Syncing..." : "Sync"}</button>
+                              <span className="rounded-full px-2 py-0.5 text-xs font-bold bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" title={inv.xero_invoice_id}>Pushed</span>
+                              <button onClick={() => handleSyncFromXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-cyan-700 dark:text-cyan-400 hover:text-cyan-700 dark:text-cyan-300 disabled:opacity-50">{actionLoading === inv.id ? "Syncing..." : "Sync"}</button>
                             </div>
                           ) : (inv.status === "draft" || inv.status === "sent") ? (
-                            <button onClick={() => handlePushToXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50">{actionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
+                            <button onClick={() => handlePushToXero(inv.id)} disabled={actionLoading === inv.id} className="text-xs text-purple-700 dark:text-purple-400 hover:text-purple-700 dark:text-purple-300 disabled:opacity-50">{actionLoading === inv.id ? "Pushing..." : "Push to Xero"}</button>
                           ) : (
-                            <span className="text-xs text-white/30">—</span>
+                            <span className="text-xs text-gray-500 dark:text-white/30">—</span>
                           )}
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex gap-2 text-xs">
                             {inv.pdf_url ? (
-                              <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">PDF</a>
+                              <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300">PDF</a>
                             ) : (
-                              <button onClick={() => handleGeneratePdf(inv.id)} disabled={actionLoading === inv.id} className="text-blue-400 hover:text-blue-300 disabled:opacity-50">Gen PDF</button>
+                              <button onClick={() => handleGeneratePdf(inv.id)} disabled={actionLoading === inv.id} className="text-blue-700 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 disabled:opacity-50">Gen PDF</button>
                             )}
                             {inv.status === "draft" && (
-                              <button onClick={() => handleSend(inv.id)} disabled={actionLoading === inv.id} className="text-green-400 hover:text-green-300 disabled:opacity-50">Send</button>
+                              <button onClick={() => handleSend(inv.id)} disabled={actionLoading === inv.id} className="text-green-700 dark:text-green-400 hover:text-green-700 dark:text-green-300 disabled:opacity-50">Send</button>
                             )}
                             {inv.status !== "paid" && inv.status !== "cancelled" && (
-                              <Link href={`/deals/${inv.deal_id}`} className="text-green-400 hover:text-green-300">Record Pay</Link>
+                              <Link href={`/deals/${inv.deal_id}`} className="text-green-700 dark:text-green-400 hover:text-green-700 dark:text-green-300">Record Pay</Link>
                             )}
                             {inv.status !== "cancelled" && inv.status !== "paid" && (
-                              <button onClick={() => handleCancel(inv.id)} disabled={actionLoading === inv.id} className="text-red-400 hover:text-red-300 disabled:opacity-50">Cancel</button>
+                              <button onClick={() => handleCancel(inv.id)} disabled={actionLoading === inv.id} className="text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300 disabled:opacity-50">Cancel</button>
                             )}
                           </div>
                         </td>

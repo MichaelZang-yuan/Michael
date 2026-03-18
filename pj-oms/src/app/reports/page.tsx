@@ -200,52 +200,52 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-950">
-        <p className="text-white/60">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+        <p className="text-gray-500 dark:text-white/60">Loading...</p>
       </div>
     );
   }
 
   if (!hasRole(profile, "admin")) {
     return (
-      <div className="min-h-screen bg-blue-950 text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
         <Navbar />
         <main className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-          <p className="text-2xl font-bold text-red-400">Access Denied</p>
-          <p className="text-white/50 mt-2">You do not have permission to view this page.</p>
-          <Link href="/dashboard" className="mt-6 inline-block text-blue-400 hover:underline">← Back to Dashboard</Link>
+          <p className="text-2xl font-bold text-red-700 dark:text-red-400">Access Denied</p>
+          <p className="text-gray-500 dark:text-white/50 mt-2">You do not have permission to view this page.</p>
+          <Link href="/dashboard" className="mt-6 inline-block text-blue-700 dark:text-blue-400 hover:underline">← Back to Dashboard</Link>
         </main>
       </div>
     );
   }
 
   const tableClass = "w-full min-w-[500px] border-collapse";
-  const thClass = "px-4 py-3 text-left text-sm font-semibold text-white/80 border-b border-white/20";
-  const tdClass = "px-4 py-3 text-white/90 border-b border-white/10";
+  const thClass = "px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-white/80 border-b border-gray-300 dark:border-white/20";
+  const tdClass = "px-4 py-3 text-gray-800 dark:text-white/90 border-b border-gray-200 dark:border-white/10";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <h2 className="text-2xl font-bold mb-8 sm:text-3xl">Reports</h2>
 
         {/* Date range filter */}
-        <div className="mb-10 flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="mb-10 flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <div className="flex flex-wrap items-center gap-3">
-            <label className="text-sm font-semibold text-white/70">From</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">From</label>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
             />
-            <label className="text-sm font-semibold text-white/70">To</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-white/70">To</label>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
+              className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -258,7 +258,7 @@ export default function ReportsPage() {
               <button
                 key={key}
                 onClick={() => setPreset(key)}
-                className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10"
+                className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 {label}
               </button>
@@ -267,9 +267,9 @@ export default function ReportsPage() {
         </div>
 
         {/* Commission Summary */}
-        <div className="mb-10 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="mb-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <h3 className="mb-4 text-lg font-bold sm:text-xl">Commission Summary</h3>
-          <p className="text-sm text-white/50 mb-4">By department (commissions created in date range)</p>
+          <p className="text-sm text-gray-500 dark:text-white/50 mb-4">By department (commissions created in date range)</p>
           <div className="overflow-x-auto mb-8">
             <table className={tableClass}>
               <thead>
@@ -294,7 +294,7 @@ export default function ReportsPage() {
               </tbody>
             </table>
           </div>
-          <p className="text-sm text-white/50 mb-4">By school</p>
+          <p className="text-sm text-gray-500 dark:text-white/50 mb-4">By school</p>
           <div className="overflow-x-auto">
             <table className={tableClass}>
               <thead>
@@ -322,7 +322,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Sales Performance */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 sm:p-6">
           <h3 className="mb-4 text-lg font-bold sm:text-xl">Sales Performance</h3>
           <div className="overflow-x-auto">
             <table className={tableClass}>

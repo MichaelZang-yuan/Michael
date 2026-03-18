@@ -17,11 +17,11 @@ const DEPT_LABELS: Record<string, string> = {
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400", quoted: "bg-blue-500/20 text-blue-400",
-  contracted: "bg-purple-500/20 text-purple-400", in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-orange-500/20 text-orange-400", approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400", completed: "bg-green-600/20 text-green-300",
-  cancelled: "bg-red-600/20 text-red-300",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400", quoted: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contracted: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400", in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400", approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400", completed: "bg-green-100 dark:bg-green-600/20 text-green-700 dark:text-green-300",
+  cancelled: "bg-red-100 dark:bg-red-600/20 text-red-700 dark:text-red-300",
 };
 
 export default function CompanyDetailPage() {
@@ -194,34 +194,34 @@ export default function CompanyDetailPage() {
     e.target.value = "";
   };
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges={hasUnsavedChanges} />
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
 
         {/* Header */}
         <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <Link href="/companies" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">← Companies</Link>
+            <Link href="/companies" className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">← Companies</Link>
             <h2 className="text-2xl font-bold sm:text-3xl">{form.company_name}</h2>
-            {form.department && <span className="mt-2 inline-block rounded-full bg-blue-500/20 px-3 py-0.5 text-xs font-bold text-blue-400">{DEPT_LABELS[form.department] ?? form.department}</span>}
+            {form.department && <span className="mt-2 inline-block rounded-full bg-blue-100 dark:bg-blue-500/20 px-3 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-400">{DEPT_LABELS[form.department] ?? form.department}</span>}
           </div>
           {isAdmin && (
-            <button onClick={handleDelete} disabled={isDeleting} className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50">
+            <button onClick={handleDelete} disabled={isDeleting} className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20 disabled:opacity-50">
               {isDeleting ? "Deleting..." : "Delete Company"}
             </button>
           )}
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
@@ -241,11 +241,11 @@ export default function CompanyDetailPage() {
               <div>
                 <label className={labelClass}>Department</label>
                 <select name="department" value={form.department} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="china" className="bg-blue-900">China</option>
-                  <option value="thailand" className="bg-blue-900">Thailand</option>
-                  <option value="myanmar" className="bg-blue-900">Myanmar</option>
-                  <option value="korea_japan" className="bg-blue-900">Korea & Japan</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="china" className="bg-white dark:bg-blue-900">China</option>
+                  <option value="thailand" className="bg-white dark:bg-blue-900">Thailand</option>
+                  <option value="myanmar" className="bg-white dark:bg-blue-900">Myanmar</option>
+                  <option value="korea_japan" className="bg-white dark:bg-blue-900">Korea & Japan</option>
                 </select>
               </div>
             )}
@@ -267,10 +267,10 @@ export default function CompanyDetailPage() {
             <div>
               <label className={labelClass}>Gender</label>
               <select name="key_person_gender" value={form.key_person_gender} onChange={handleChange} className={selectClass}>
-                <option value="" className="bg-blue-900">Select...</option>
-                <option value="male" className="bg-blue-900">Male</option>
-                <option value="female" className="bg-blue-900">Female</option>
-                <option value="other" className="bg-blue-900">Other</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                <option value="male" className="bg-white dark:bg-blue-900">Male</option>
+                <option value="female" className="bg-white dark:bg-blue-900">Female</option>
+                <option value="other" className="bg-white dark:bg-blue-900">Other</option>
               </select>
             </div>
             <div><label className={labelClass}>Passport No</label><input name="key_person_passport_no" value={form.key_person_passport_no} onChange={handleChange} className={inputClass} /></div>
@@ -292,9 +292,9 @@ export default function CompanyDetailPage() {
             <div>
               <label className={labelClass}>Accreditation Status</label>
               <select name="accreditation_status" value={form.accreditation_status} onChange={handleChange} className={selectClass}>
-                <option value="none" className="bg-blue-900">None</option>
-                <option value="standard" className="bg-blue-900">Standard</option>
-                <option value="high_volume" className="bg-blue-900">High Volume</option>
+                <option value="none" className="bg-white dark:bg-blue-900">None</option>
+                <option value="standard" className="bg-white dark:bg-blue-900">Standard</option>
+                <option value="high_volume" className="bg-white dark:bg-blue-900">High Volume</option>
               </select>
             </div>
             <div><label className={labelClass}>Accreditation Expiry</label><input name="accreditation_expiry" value={form.accreditation_expiry} onChange={handleChange} type="date" className={inputClass} /></div>
@@ -312,22 +312,22 @@ export default function CompanyDetailPage() {
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Deals ({deals.length})</h3>
-            <Link href={`/deals/new?company_id=${id}`} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-white/10">+ New Deal</Link>
+            <Link href={`/deals/new?company_id=${id}`} className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">+ New Deal</Link>
           </div>
           {deals.length === 0 ? (
-            <p className="text-white/50 text-sm">No deals yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No deals yet.</p>
           ) : (
             <div className="space-y-2">
               {deals.map(d => (
-                <Link key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 hover:bg-white/10">
+                <Link key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-white/10">
                   <div>
-                    <span className="font-medium text-blue-400">{d.deal_number ?? "—"}</span>
-                    <span className="ml-3 text-sm text-white/70">{d.deal_type?.replace(/_/g, " ") ?? ""}</span>
-                    <span className="ml-3 text-xs text-white/40">{new Date(d.created_at).toLocaleDateString()}</span>
+                    <span className="font-medium text-blue-700 dark:text-blue-400">{d.deal_number ?? "—"}</span>
+                    <span className="ml-3 text-sm text-gray-600 dark:text-white/70">{d.deal_type?.replace(/_/g, " ") ?? ""}</span>
+                    <span className="ml-3 text-xs text-gray-500 dark:text-white/40">{new Date(d.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {d.total_amount != null && <span className="text-sm text-white/70">${d.total_amount.toLocaleString()}</span>}
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-500/20 text-gray-400"}`}>{d.status}</span>
+                    {d.total_amount != null && <span className="text-sm text-gray-600 dark:text-white/70">${d.total_amount.toLocaleString()}</span>}
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>{d.status}</span>
                   </div>
                 </Link>
               ))}
@@ -339,17 +339,17 @@ export default function CompanyDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Attachments</h3>
           <div className="mb-3">
-            <label className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
+            <label className="cursor-pointer rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
               {isUploading ? "Uploading..." : "Upload File"}
               <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
             </label>
           </div>
-          {attachments.length === 0 ? <p className="text-white/50 text-sm">No attachments.</p> : (
+          {attachments.length === 0 ? <p className="text-gray-500 dark:text-white/50 text-sm">No attachments.</p> : (
             <ul className="space-y-2">
               {attachments.map(f => (
-                <li key={f.name} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2">
-                  <span className="text-sm text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
-                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline whitespace-nowrap">View</a>
+                <li key={f.name} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2">
+                  <span className="text-sm text-gray-800 dark:text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
+                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 hover:underline whitespace-nowrap">View</a>
                 </li>
               ))}
             </ul>
@@ -359,13 +359,13 @@ export default function CompanyDetailPage() {
         {/* Activity Timeline */}
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Activity Timeline</h3>
-          {activityLogs.length === 0 ? <p className="text-white/50 text-sm">No activity yet.</p> : (
+          {activityLogs.length === 0 ? <p className="text-gray-500 dark:text-white/50 text-sm">No activity yet.</p> : (
             <ul className="space-y-3">
               {activityLogs.map(log => (
                 <li key={log.id} className="flex gap-3 text-sm">
-                  <span className="text-white/40 whitespace-nowrap">{new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                  <span className="text-white/60">{userNames[log.user_id] ?? "Unknown"}</span>
-                  <span className="text-white/90">{log.action.replace(/_/g, " ")}</span>
+                  <span className="text-gray-500 dark:text-white/40 whitespace-nowrap">{new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span className="text-gray-500 dark:text-white/60">{userNames[log.user_id] ?? "Unknown"}</span>
+                  <span className="text-gray-800 dark:text-white/90">{log.action.replace(/_/g, " ")}</span>
                 </li>
               ))}
             </ul>

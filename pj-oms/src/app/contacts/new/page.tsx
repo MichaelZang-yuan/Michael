@@ -300,23 +300,23 @@ export default function NewContactPage() {
     router.push(`/contacts/${data.id}`);
   };
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
-  const sectionTitle = "text-base font-bold mb-4 text-white/90";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
+  const sectionTitle = "text-base font-bold mb-4 text-gray-800 dark:text-white/90";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges />
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <Link href="/contacts" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">&larr; Contacts</Link>
+          <Link href="/contacts" className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">&larr; Contacts</Link>
           <h2 className="text-2xl font-bold sm:text-3xl">Add Contact</h2>
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
@@ -326,8 +326,8 @@ export default function NewContactPage() {
           {/* ── Quick Import from Documents ── */}
           <div className={`${sectionClass} border-dashed border-blue-400/40`}>
             <div className="flex items-center gap-2 mb-4">
-              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-              <h3 className="text-base font-bold text-white/90">Quick Import from Documents</h3>
+              <svg className="w-5 h-5 text-blue-700 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <h3 className="text-base font-bold text-gray-800 dark:text-white/90">Quick Import from Documents</h3>
             </div>
             <div className="flex flex-wrap gap-3 mb-3">
               {/* Upload Passport */}
@@ -343,26 +343,26 @@ export default function NewContactPage() {
                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleVisaExtract} disabled={isExtractingVisa} />
               </label>
               {/* Upload Other */}
-              <button type="button" onClick={() => otherFileRef.current?.click()} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2.5 text-sm font-bold text-white/70 hover:bg-white/10 transition">
+              <button type="button" onClick={() => otherFileRef.current?.click()} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2.5 text-sm font-bold text-gray-600 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-white/10 transition">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                 Upload Other
               </button>
               <input ref={otherFileRef} type="file" multiple className="hidden" onChange={handleOtherFiles} />
             </div>
-            <p className="text-xs text-white/40">Upload passport or visa to auto-extract information. All files will be saved as attachments.</p>
+            <p className="text-xs text-gray-500 dark:text-white/40">Upload passport or visa to auto-extract information. All files will be saved as attachments.</p>
 
             {/* Pending files list */}
             {pendingFiles.length > 0 && (
               <div className="mt-3 space-y-1">
                 {pendingFiles.map((pf, idx) => (
-                  <div key={idx} className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-sm">
+                  <div key={idx} className="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-1.5 text-sm">
                     <span className={`text-xs font-bold uppercase px-1.5 py-0.5 rounded ${
-                      pf.category === "passport" ? "bg-blue-500/20 text-blue-400" :
-                      pf.category === "visa" ? "bg-emerald-500/20 text-emerald-400" :
-                      "bg-gray-500/20 text-gray-400"
+                      pf.category === "passport" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" :
+                      pf.category === "visa" ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400" :
+                      "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"
                     }`}>{pf.category}</span>
-                    <span className="text-white/70 truncate flex-1">{pf.file.name}</span>
-                    <button type="button" onClick={() => removePendingFile(idx)} className="text-white/30 hover:text-red-400 text-xs">✕</button>
+                    <span className="text-gray-600 dark:text-white/70 truncate flex-1">{pf.file.name}</span>
+                    <button type="button" onClick={() => removePendingFile(idx)} className="text-gray-500 dark:text-white/30 hover:text-red-700 dark:text-red-400 text-xs">✕</button>
                   </div>
                 ))}
               </div>
@@ -384,10 +384,10 @@ export default function NewContactPage() {
               <div>
                 <label className={labelClass}>Gender</label>
                 <select name="gender" value={form.gender} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="male" className="bg-blue-900">Male</option>
-                  <option value="female" className="bg-blue-900">Female</option>
-                  <option value="other" className="bg-blue-900">Other</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="male" className="bg-white dark:bg-blue-900">Male</option>
+                  <option value="female" className="bg-white dark:bg-blue-900">Female</option>
+                  <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                 </select>
               </div>
               <div>
@@ -428,16 +428,16 @@ export default function NewContactPage() {
               <div>
                 <label className={labelClass}>Type</label>
                 <select name="type" value={form.type} onChange={handleChange} className={selectClass}>
-                  <option value="lead" className="bg-blue-900">Lead</option>
-                  <option value="client" className="bg-blue-900">Client</option>
+                  <option value="lead" className="bg-white dark:bg-blue-900">Lead</option>
+                  <option value="client" className="bg-white dark:bg-blue-900">Client</option>
                 </select>
               </div>
               <div>
                 <label className={labelClass}>On/Offshore</label>
                 <select name="on_offshore" value={form.on_offshore} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="onshore" className="bg-blue-900">Onshore</option>
-                  <option value="offshore" className="bg-blue-900">Offshore</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="onshore" className="bg-white dark:bg-blue-900">Onshore</option>
+                  <option value="offshore" className="bg-white dark:bg-blue-900">Offshore</option>
                 </select>
               </div>
               <div className="sm:col-span-2">
@@ -447,13 +447,13 @@ export default function NewContactPage() {
               <div>
                 <label className={labelClass}>Lead Source</label>
                 <select name="lead_source" value={form.lead_source} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="referral" className="bg-blue-900">Referral</option>
-                  <option value="walk-in" className="bg-blue-900">Walk-In</option>
-                  <option value="online" className="bg-blue-900">Online</option>
-                  <option value="social_media" className="bg-blue-900">Social Media</option>
-                  <option value="agent" className="bg-blue-900">Agent</option>
-                  <option value="other" className="bg-blue-900">Other</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="referral" className="bg-white dark:bg-blue-900">Referral</option>
+                  <option value="walk-in" className="bg-white dark:bg-blue-900">Walk-In</option>
+                  <option value="online" className="bg-white dark:bg-blue-900">Online</option>
+                  <option value="social_media" className="bg-white dark:bg-blue-900">Social Media</option>
+                  <option value="agent" className="bg-white dark:bg-blue-900">Agent</option>
+                  <option value="other" className="bg-white dark:bg-blue-900">Other</option>
                 </select>
               </div>
               <div>
@@ -463,9 +463,9 @@ export default function NewContactPage() {
               <div>
                 <label className={labelClass}>Agent</label>
                 <select name="agent_id" value={form.agent_id} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">No Agent</option>
+                  <option value="" className="bg-white dark:bg-blue-900">No Agent</option>
                   {agents.map((a) => (
-                    <option key={a.id} value={a.id} className="bg-blue-900">{a.agent_name}</option>
+                    <option key={a.id} value={a.id} className="bg-white dark:bg-blue-900">{a.agent_name}</option>
                   ))}
                 </select>
               </div>
@@ -483,12 +483,12 @@ export default function NewContactPage() {
               <div>
                 <label className={labelClass}>Marital Status</label>
                 <select name="marital_status" value={form.marital_status} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="single" className="bg-blue-900">Single</option>
-                  <option value="married" className="bg-blue-900">Married</option>
-                  <option value="partnered" className="bg-blue-900">Partnered</option>
-                  <option value="divorced" className="bg-blue-900">Divorced</option>
-                  <option value="widowed" className="bg-blue-900">Widowed</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="single" className="bg-white dark:bg-blue-900">Single</option>
+                  <option value="married" className="bg-white dark:bg-blue-900">Married</option>
+                  <option value="partnered" className="bg-white dark:bg-blue-900">Partnered</option>
+                  <option value="divorced" className="bg-white dark:bg-blue-900">Divorced</option>
+                  <option value="widowed" className="bg-white dark:bg-blue-900">Widowed</option>
                 </select>
               </div>
               <div>
@@ -517,7 +517,7 @@ export default function NewContactPage() {
           {/* Visa & Passport */}
           <div className={sectionClass}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-white/90">Visa & Passport</h3>
+              <h3 className="text-base font-bold text-gray-800 dark:text-white/90">Visa & Passport</h3>
               <div className="flex gap-2">
                 <label className={`cursor-pointer rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 ${isExtractingPassport ? "opacity-50 pointer-events-none" : ""}`}>
                   {isExtractingPassport ? "Extracting..." : "Extract from Passport"}
@@ -533,13 +533,13 @@ export default function NewContactPage() {
               <div>
                 <label className={labelClass}>Current Visa Type</label>
                 <select name="current_visa_type" value={form.current_visa_type} onChange={handleChange} className={selectClass}>
-                  <option value="" className="bg-blue-900">Select...</option>
-                  <option value="Student Visa" className="bg-blue-900">Student Visa</option>
-                  <option value="Work Visa" className="bg-blue-900">Work Visa</option>
-                  <option value="Visitor Visa" className="bg-blue-900">Visitor Visa</option>
-                  <option value="Resident Visa" className="bg-blue-900">Resident Visa</option>
-                  <option value="Partnership Visa" className="bg-blue-900">Partnership Visa</option>
-                  <option value="Other" className="bg-blue-900">Other</option>
+                  <option value="" className="bg-white dark:bg-blue-900">Select...</option>
+                  <option value="Student Visa" className="bg-white dark:bg-blue-900">Student Visa</option>
+                  <option value="Work Visa" className="bg-white dark:bg-blue-900">Work Visa</option>
+                  <option value="Visitor Visa" className="bg-white dark:bg-blue-900">Visitor Visa</option>
+                  <option value="Resident Visa" className="bg-white dark:bg-blue-900">Resident Visa</option>
+                  <option value="Partnership Visa" className="bg-white dark:bg-blue-900">Partnership Visa</option>
+                  <option value="Other" className="bg-white dark:bg-blue-900">Other</option>
                 </select>
               </div>
               <div>
@@ -584,14 +584,14 @@ export default function NewContactPage() {
           <div className={sectionClass}>
             <h3 className={sectionTitle}>Department *</h3>
             {isSales ? (
-              <p className="text-white/70">{DEPT_LABELS[userDept] ?? userDept}</p>
+              <p className="text-gray-600 dark:text-white/70">{DEPT_LABELS[userDept] ?? userDept}</p>
             ) : (
               <select name="department" value={form.department} onChange={handleChange} required className={`${selectClass} max-w-xs`}>
-                <option value="" className="bg-blue-900">Select Department *</option>
-                <option value="china" className="bg-blue-900">China</option>
-                <option value="thailand" className="bg-blue-900">Thailand</option>
-                <option value="myanmar" className="bg-blue-900">Myanmar</option>
-                <option value="korea_japan" className="bg-blue-900">Korea & Japan</option>
+                <option value="" className="bg-white dark:bg-blue-900">Select Department *</option>
+                <option value="china" className="bg-white dark:bg-blue-900">China</option>
+                <option value="thailand" className="bg-white dark:bg-blue-900">Thailand</option>
+                <option value="myanmar" className="bg-white dark:bg-blue-900">Myanmar</option>
+                <option value="korea_japan" className="bg-white dark:bg-blue-900">Korea & Japan</option>
               </select>
             )}
           </div>
@@ -600,7 +600,7 @@ export default function NewContactPage() {
             <button type="submit" disabled={isSaving} className="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50">
               {isSaving ? (pendingFiles.length > 0 ? "Saving & Uploading..." : "Saving...") : "Save Contact"}
             </button>
-            <button type="button" onClick={() => router.push("/contacts")} className="rounded-lg border border-white/20 px-6 py-3 font-bold hover:bg-white/10">
+            <button type="button" onClick={() => router.push("/contacts")} className="rounded-lg border border-gray-300 dark:border-white/20 px-6 py-3 font-bold hover:bg-gray-100 dark:hover:bg-white/10">
               Cancel
             </button>
           </div>
@@ -609,9 +609,9 @@ export default function NewContactPage() {
         {/* Passport Extraction Confirm Modal */}
         {showPassportConfirm && passportExtraction && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-4">Passport Data Extracted</h4>
-              <p className="text-sm text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
+              <p className="text-sm text-gray-500 dark:text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
               <div className="space-y-2 mb-5">
                 {([
                   ["Full Name", passportExtraction.full_name, `${form.first_name} ${form.last_name}`.trim()],
@@ -621,13 +621,13 @@ export default function NewContactPage() {
                   ["Passport Expiry", passportExtraction.expiry_date, form.passport_expiry_date],
                   ["Gender", passportExtraction.gender, form.gender],
                 ] as [string, string | null, string][]).map(([label, extracted, current]) => (
-                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm">
-                    <span className="text-white/50">{label}</span>
-                    <span className="text-green-400">{extracted ?? "\u2014"}</span>
-                    <span className="text-white/40">{current || "\u2014"}</span>
+                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm">
+                    <span className="text-gray-500 dark:text-white/50">{label}</span>
+                    <span className="text-green-700 dark:text-green-400">{extracted ?? "\u2014"}</span>
+                    <span className="text-gray-500 dark:text-white/40">{current || "\u2014"}</span>
                   </div>
                 ))}
-                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-white/30">
+                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-gray-500 dark:text-white/30">
                   <span>Field</span>
                   <span>Extracted</span>
                   <span>Current</span>
@@ -637,7 +637,7 @@ export default function NewContactPage() {
                 <button onClick={handleApplyPassportData} className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700">
                   Apply
                 </button>
-                <button onClick={() => { setShowPassportConfirm(false); setPassportExtraction(null); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                <button onClick={() => { setShowPassportConfirm(false); setPassportExtraction(null); }} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                   Cancel
                 </button>
               </div>
@@ -648,9 +648,9 @@ export default function NewContactPage() {
         {/* Visa Extraction Confirm Modal */}
         {showVisaConfirm && visaExtraction && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-lg rounded-xl border border-white/10 bg-blue-900 p-6">
+            <div className="w-full max-w-lg rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
               <h4 className="text-lg font-bold mb-4">Visa Data Extracted</h4>
-              <p className="text-sm text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
+              <p className="text-sm text-gray-500 dark:text-white/60 mb-4">Review the extracted data below. Click Apply to fill the form fields.</p>
               <div className="space-y-2 mb-5">
                 {([
                   ["Visa Type", visaExtraction.visa_type, form.current_visa_type],
@@ -659,13 +659,13 @@ export default function NewContactPage() {
                   ["Visa Number", visaExtraction.visa_number, null],
                   ["Entry Permission", visaExtraction.entry_permission, null],
                 ] as [string, string | null, string | null][]).map(([label, extracted, current]) => (
-                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm">
-                    <span className="text-white/50">{label}</span>
-                    <span className="text-green-400">{extracted ?? "\u2014"}</span>
-                    <span className="text-white/40">{current || "\u2014"}</span>
+                  <div key={label} className="grid grid-cols-3 gap-2 rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm">
+                    <span className="text-gray-500 dark:text-white/50">{label}</span>
+                    <span className="text-green-700 dark:text-green-400">{extracted ?? "\u2014"}</span>
+                    <span className="text-gray-500 dark:text-white/40">{current || "\u2014"}</span>
                   </div>
                 ))}
-                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-white/30">
+                <div className="grid grid-cols-3 gap-2 px-3 text-xs text-gray-500 dark:text-white/30">
                   <span>Field</span>
                   <span>Extracted</span>
                   <span>Current</span>
@@ -675,7 +675,7 @@ export default function NewContactPage() {
                 <button onClick={handleApplyVisaData} className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-700">
                   Apply
                 </button>
-                <button onClick={() => { setShowVisaConfirm(false); setVisaExtraction(null); }} className="rounded-lg border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10">
+                <button onClick={() => { setShowVisaConfirm(false); setVisaExtraction(null); }} className="rounded-lg border border-gray-300 dark:border-white/20 px-5 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10">
                   Cancel
                 </button>
               </div>

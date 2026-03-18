@@ -51,21 +51,21 @@ type AgentCommission = {
 };
 
 const DEAL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-400",
-  quoted: "bg-blue-500/20 text-blue-400",
-  contracted: "bg-purple-500/20 text-purple-400",
-  in_progress: "bg-yellow-500/20 text-yellow-400",
-  submitted: "bg-orange-500/20 text-orange-400",
-  approved: "bg-green-500/20 text-green-400",
-  declined: "bg-red-500/20 text-red-400",
-  completed: "bg-green-600/20 text-green-300",
-  cancelled: "bg-red-600/20 text-red-300",
+  draft: "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400",
+  quoted: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contracted: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  in_progress: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  submitted: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  approved: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  declined: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  completed: "bg-green-100 dark:bg-green-600/20 text-green-700 dark:text-green-300",
+  cancelled: "bg-red-100 dark:bg-red-600/20 text-red-700 dark:text-red-300",
 };
 
 const COMMISSION_STATUS_COLORS: Record<string, string> = {
-  pending: "bg-yellow-500/20 text-yellow-400",
-  approved: "bg-blue-500/20 text-blue-400",
-  paid: "bg-green-500/20 text-green-400",
+  pending: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+  approved: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  paid: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
 };
 
 export default function AgentDetailPage() {
@@ -235,39 +235,39 @@ export default function AgentDetailPage() {
   const paidCommission = commissions.filter(c => c.status === "paid").reduce((s, c) => s + (c.commission_amount || 0), 0);
 
   if (isLoading) return (
-    <div className="flex min-h-screen items-center justify-center bg-blue-950">
-      <p className="text-white/60">Loading...</p>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950">
+      <p className="text-gray-500 dark:text-white/60">Loading...</p>
     </div>
   );
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
-  const sectionClass = "rounded-xl border border-white/10 bg-white/5 p-6 mb-6";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
+  const sectionClass = "rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-6";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar hasUnsavedChanges={hasUnsavedChanges} />
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
 
         {/* Header */}
         <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <Link href="/agents" className="text-sm text-white/50 hover:text-white/80 mb-2 inline-block">← Agents</Link>
+            <Link href="/agents" className="text-sm text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/80 mb-2 inline-block">← Agents</Link>
             <h2 className="text-2xl font-bold sm:text-3xl">{form.agent_name}</h2>
-            <span className="mt-1 inline-block rounded-full bg-orange-500/20 px-3 py-0.5 text-xs font-bold uppercase text-orange-400 capitalize">
+            <span className="mt-1 inline-block rounded-full bg-orange-100 dark:bg-orange-500/20 px-3 py-0.5 text-xs font-bold uppercase text-orange-700 dark:text-orange-400 capitalize">
               {form.agent_type}
             </span>
           </div>
           {hasRole(profile, "admin") && (
-            <button onClick={handleDelete} disabled={isDeleting} className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-50">
+            <button onClick={handleDelete} disabled={isDeleting} className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/20 disabled:opacity-50">
               {isDeleting ? "Deleting..." : "Delete Agent"}
             </button>
           )}
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
@@ -291,8 +291,8 @@ export default function AgentDetailPage() {
             <div>
               <label className={labelClass}>Agent Type</label>
               <select name="agent_type" value={form.agent_type} onChange={handleChange} className={selectClass}>
-                <option value="individual" className="bg-blue-900">Individual</option>
-                <option value="company" className="bg-blue-900">Company</option>
+                <option value="individual" className="bg-white dark:bg-blue-900">Individual</option>
+                <option value="company" className="bg-white dark:bg-blue-900">Company</option>
               </select>
             </div>
             <div>
@@ -315,33 +315,33 @@ export default function AgentDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Referred Contacts ({referredContacts.length})</h3>
           {referredContacts.length === 0 ? (
-            <p className="text-white/50 text-sm">No referred contacts yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No referred contacts yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[400px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Name</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Type</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Email</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Mobile</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10">
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Name</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Type</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Email</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Mobile</th>
                   </tr>
                 </thead>
                 <tbody>
                   {referredContacts.map((c) => (
-                    <tr key={c.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                    <tr key={c.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                       <td className="px-3 py-2 text-sm font-medium">
-                        <Link href={`/contacts/${c.id}`} className="text-blue-400 hover:underline">
+                        <Link href={`/contacts/${c.id}`} className="text-blue-700 dark:text-blue-400 hover:underline">
                           {c.first_name} {c.last_name}
                         </Link>
                       </td>
                       <td className="px-3 py-2 text-sm">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${c.type === "client" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${c.type === "client" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"}`}>
                           {c.type}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-sm text-white/70">{c.email ?? "—"}</td>
-                      <td className="px-3 py-2 text-sm text-white/70">{c.mobile ?? "—"}</td>
+                      <td className="px-3 py-2 text-sm text-gray-600 dark:text-white/70">{c.email ?? "—"}</td>
+                      <td className="px-3 py-2 text-sm text-gray-600 dark:text-white/70">{c.mobile ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -354,33 +354,33 @@ export default function AgentDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Related Deals ({relatedDeals.length})</h3>
           {relatedDeals.length === 0 ? (
-            <p className="text-white/50 text-sm">No deals linked to this agent.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No deals linked to this agent.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[500px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Deal #</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Client</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Type</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Status</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Amount</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10">
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Deal #</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Client</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Type</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Status</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {relatedDeals.map((d) => {
                     const clientName = d.contacts ? `${d.contacts.first_name} ${d.contacts.last_name}` : d.companies?.company_name ?? "—";
                     return (
-                      <tr key={d.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                      <tr key={d.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                         <td className="px-3 py-2 text-sm">
-                          <Link href={`/deals/${d.id}`} className="text-blue-400 hover:underline">{d.deal_number ?? "—"}</Link>
+                          <Link href={`/deals/${d.id}`} className="text-blue-700 dark:text-blue-400 hover:underline">{d.deal_number ?? "—"}</Link>
                         </td>
-                        <td className="px-3 py-2 text-sm text-white/90">{clientName}</td>
-                        <td className="px-3 py-2 text-sm text-white/70">{d.deal_type?.replace(/_/g, " ") ?? "—"}</td>
+                        <td className="px-3 py-2 text-sm text-gray-800 dark:text-white/90">{clientName}</td>
+                        <td className="px-3 py-2 text-sm text-gray-600 dark:text-white/70">{d.deal_type?.replace(/_/g, " ") ?? "—"}</td>
                         <td className="px-3 py-2 text-sm">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-500/20 text-gray-400"}`}>{d.status}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${DEAL_STATUS_COLORS[d.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>{d.status}</span>
                         </td>
-                        <td className="px-3 py-2 text-sm text-white/90">{d.total_amount != null ? `$${d.total_amount.toLocaleString()}` : "—"}</td>
+                        <td className="px-3 py-2 text-sm text-gray-800 dark:text-white/90">{d.total_amount != null ? `$${d.total_amount.toLocaleString()}` : "—"}</td>
                       </tr>
                     );
                   })}
@@ -396,24 +396,24 @@ export default function AgentDetailPage() {
 
           {/* Summary cards */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 mb-4">
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-              <p className="text-xs text-white/50 mb-1">Total Commission</p>
+            <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Total Commission</p>
               <p className="text-xl font-bold">${totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-              <p className="text-xs text-white/50 mb-1">Pending</p>
-              <p className="text-xl font-bold text-yellow-400">${pendingCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Pending</p>
+              <p className="text-xl font-bold text-yellow-700 dark:text-yellow-400">${pendingCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-              <p className="text-xs text-white/50 mb-1">Paid</p>
-              <p className="text-xl font-bold text-green-400">${paidCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Paid</p>
+              <p className="text-xl font-bold text-green-700 dark:text-green-400">${paidCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
           </div>
 
           {/* Date filter */}
           <div className="flex flex-wrap gap-3 mb-4">
             <div>
-              <label className="block text-xs text-white/50 mb-1">From</label>
+              <label className="block text-xs text-gray-500 dark:text-white/50 mb-1">From</label>
               <input
                 type="date"
                 value={commissionFilter.from}
@@ -422,11 +422,11 @@ export default function AgentDetailPage() {
                   setCommissionFilter(f);
                   fetchCommissions(f);
                 }}
-                className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white focus:border-blue-400 focus:outline-none"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-1.5 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1">To</label>
+              <label className="block text-xs text-gray-500 dark:text-white/50 mb-1">To</label>
               <input
                 type="date"
                 value={commissionFilter.to}
@@ -435,7 +435,7 @@ export default function AgentDetailPage() {
                   setCommissionFilter(f);
                   fetchCommissions(f);
                 }}
-                className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white focus:border-blue-400 focus:outline-none"
+                className="rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-3 py-1.5 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"
               />
             </div>
             {(commissionFilter.from || commissionFilter.to) && (
@@ -446,7 +446,7 @@ export default function AgentDetailPage() {
                     setCommissionFilter(f);
                     fetchCommissions(f);
                   }}
-                  className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-bold hover:bg-white/10"
+                  className="rounded-lg border border-gray-300 dark:border-white/20 px-3 py-1.5 text-xs font-bold hover:bg-gray-100 dark:hover:bg-white/10"
                 >
                   Clear
                 </button>
@@ -456,19 +456,19 @@ export default function AgentDetailPage() {
 
           {/* Commission table */}
           {commissions.length === 0 ? (
-            <p className="text-white/50 text-sm">No commission records yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No commission records yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[700px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Deal #</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Client</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Service Fee</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Rate</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Commission</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Status</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-white/70">Paid Date</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10">
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Deal #</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Client</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Service Fee</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Rate</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Commission</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Status</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-white/70">Paid Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -477,18 +477,18 @@ export default function AgentDetailPage() {
                     const client = deal?.contacts ? `${deal.contacts.first_name} ${deal.contacts.last_name}` : deal?.companies?.company_name ?? "—";
                     const rateDisplay = c.commission_type === "percentage" ? `${c.commission_rate}%` : `$${c.commission_rate}`;
                     return (
-                      <tr key={c.id} className="border-b border-white/10 last:border-b-0 hover:bg-white/5">
+                      <tr key={c.id} className="border-b border-gray-200 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                         <td className="px-3 py-2 text-sm">
-                          <Link href={`/deals/${c.deal_id}`} className="text-blue-400 hover:underline">{deal?.deal_number ?? "—"}</Link>
+                          <Link href={`/deals/${c.deal_id}`} className="text-blue-700 dark:text-blue-400 hover:underline">{deal?.deal_number ?? "—"}</Link>
                         </td>
-                        <td className="px-3 py-2 text-sm text-white/90">{client}</td>
-                        <td className="px-3 py-2 text-sm text-white/90">${(c.base_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        <td className="px-3 py-2 text-sm text-white/90">{rateDisplay}</td>
+                        <td className="px-3 py-2 text-sm text-gray-800 dark:text-white/90">{client}</td>
+                        <td className="px-3 py-2 text-sm text-gray-800 dark:text-white/90">${(c.base_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="px-3 py-2 text-sm text-gray-800 dark:text-white/90">{rateDisplay}</td>
                         <td className="px-3 py-2 text-sm font-medium">${(c.commission_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td className="px-3 py-2 text-sm">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${COMMISSION_STATUS_COLORS[c.status] ?? "bg-gray-500/20 text-gray-400"}`}>{c.status}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${COMMISSION_STATUS_COLORS[c.status] ?? "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>{c.status}</span>
                         </td>
-                        <td className="px-3 py-2 text-sm text-white/70">{c.paid_date ?? "—"}</td>
+                        <td className="px-3 py-2 text-sm text-gray-600 dark:text-white/70">{c.paid_date ?? "—"}</td>
                       </tr>
                     );
                   })}
@@ -502,19 +502,19 @@ export default function AgentDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Attachments</h3>
           <div className="mb-3">
-            <label className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
+            <label className="cursor-pointer rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">
               {isUploading ? "Uploading..." : "Upload File"}
               <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
             </label>
           </div>
           {attachments.length === 0 ? (
-            <p className="text-white/50 text-sm">No attachments yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No attachments yet.</p>
           ) : (
             <ul className="space-y-2">
               {attachments.map((f) => (
-                <li key={f.name} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2">
-                  <span className="text-sm text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
-                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline whitespace-nowrap">View</a>
+                <li key={f.name} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2">
+                  <span className="text-sm text-gray-800 dark:text-white/90 truncate mr-4">{f.name.replace(/^\d+-/, "")}</span>
+                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 hover:underline whitespace-nowrap">View</a>
                 </li>
               ))}
             </ul>
@@ -525,14 +525,14 @@ export default function AgentDetailPage() {
         <div className={sectionClass}>
           <h3 className="text-lg font-bold mb-4">Activity Timeline</h3>
           {activityLogs.length === 0 ? (
-            <p className="text-white/50 text-sm">No activity yet.</p>
+            <p className="text-gray-500 dark:text-white/50 text-sm">No activity yet.</p>
           ) : (
             <ul className="space-y-3">
               {activityLogs.map((log) => (
                 <li key={log.id} className="flex gap-3 text-sm">
-                  <span className="text-white/40 whitespace-nowrap">{new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                  <span className="text-white/60">{userNames[log.user_id] ?? "Unknown"}</span>
-                  <span className="text-white/90">{log.action.replace(/_/g, " ")}</span>
+                  <span className="text-gray-500 dark:text-white/40 whitespace-nowrap">{new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span className="text-gray-500 dark:text-white/60">{userNames[log.user_id] ?? "Unknown"}</span>
+                  <span className="text-gray-800 dark:text-white/90">{log.action.replace(/_/g, " ")}</span>
                 </li>
               ))}
             </ul>

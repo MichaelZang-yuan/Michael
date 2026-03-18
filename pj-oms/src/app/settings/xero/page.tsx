@@ -107,39 +107,39 @@ function XeroSettingsInner() {
     setSaving(false);
   };
 
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
         <h2 className="text-2xl font-bold mb-6">Xero Connection</h2>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 text-sm ${message.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 text-sm ${message.type === "success" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"}`}>
             {message.text}
           </div>
         )}
 
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-6">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 space-y-6">
           <div>
             <h3 className="text-lg font-semibold mb-2">Connection Status</h3>
             {connected ? (
               <div className="flex items-center gap-3">
                 <span className="inline-block w-3 h-3 rounded-full bg-green-400"></span>
-                <span className="text-green-400 font-medium">Connected</span>
+                <span className="text-green-700 dark:text-green-400 font-medium">Connected</span>
                 {connectedAt && (
-                  <span className="text-white/40 text-xs">since {new Date(connectedAt).toLocaleDateString()}</span>
+                  <span className="text-gray-500 dark:text-white/40 text-xs">since {new Date(connectedAt).toLocaleDateString()}</span>
                 )}
               </div>
             ) : (
               <div className="flex items-center gap-3">
                 <span className="inline-block w-3 h-3 rounded-full bg-red-400"></span>
-                <span className="text-red-400 font-medium">Not Connected</span>
+                <span className="text-red-700 dark:text-red-400 font-medium">Not Connected</span>
               </div>
             )}
           </div>
@@ -152,33 +152,33 @@ function XeroSettingsInner() {
           </a>
 
           {connected && tenants.length > 0 && (
-            <div className="border-t border-white/10 pt-6">
+            <div className="border-t border-gray-200 dark:border-white/10 pt-6">
               <h3 className="text-lg font-semibold mb-4">Tenant Mapping</h3>
-              <p className="text-white/50 text-sm mb-4">
+              <p className="text-gray-500 dark:text-white/50 text-sm mb-4">
                 Map each Xero organisation to its CRM module. CRM invoices go to the Immigration tenant, commission invoices go to the International tenant.
               </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">
+                  <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">
                     PJ Immigration Limited (CRM Invoices)
                   </label>
                   <select value={immigrationId} onChange={e => setImmigrationId(e.target.value)} className={selectClass}>
-                    <option value="" className="bg-blue-900">— Select tenant —</option>
+                    <option value="" className="bg-white dark:bg-blue-900">— Select tenant —</option>
                     {tenants.map(t => (
-                      <option key={t.tenantId} value={t.tenantId} className="bg-blue-900">{t.tenantName}</option>
+                      <option key={t.tenantId} value={t.tenantId} className="bg-white dark:bg-blue-900">{t.tenantName}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">
+                  <label className="block text-sm font-medium text-gray-600 dark:text-white/70 mb-1">
                     PJ International Limited (Commission Invoices)
                   </label>
                   <select value={internationalId} onChange={e => setInternationalId(e.target.value)} className={selectClass}>
-                    <option value="" className="bg-blue-900">— Select tenant —</option>
+                    <option value="" className="bg-white dark:bg-blue-900">— Select tenant —</option>
                     {tenants.map(t => (
-                      <option key={t.tenantId} value={t.tenantId} className="bg-blue-900">{t.tenantName}</option>
+                      <option key={t.tenantId} value={t.tenantId} className="bg-white dark:bg-blue-900">{t.tenantName}</option>
                     ))}
                   </select>
                 </div>
@@ -195,15 +195,15 @@ function XeroSettingsInner() {
           )}
 
           {connected && mapping && (mapping.immigration.tenantName || mapping.international.tenantName) && (
-            <div className="border-t border-white/10 pt-6">
+            <div className="border-t border-gray-200 dark:border-white/10 pt-6">
               <h3 className="text-lg font-semibold mb-3">Current Mapping</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-white/50">CRM Invoices (Immigration):</span>
+                  <span className="text-gray-500 dark:text-white/50">CRM Invoices (Immigration):</span>
                   <span className="font-medium">{mapping.immigration.tenantName || "Not mapped"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">Commission Invoices (International):</span>
+                  <span className="text-gray-500 dark:text-white/50">Commission Invoices (International):</span>
                   <span className="font-medium">{mapping.international.tenantName || "Not mapped"}</span>
                 </div>
               </div>
@@ -211,20 +211,20 @@ function XeroSettingsInner() {
           )}
 
           {connected && (
-            <div className="border-t border-white/10 pt-6">
+            <div className="border-t border-gray-200 dark:border-white/10 pt-6">
               <h3 className="text-lg font-semibold mb-3">Auto Sync</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-white/50">Schedule:</span>
+                  <span className="text-gray-500 dark:text-white/50">Schedule:</span>
                   <span>Daily at 18:00 NZST</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">Last auto sync:</span>
+                  <span className="text-gray-500 dark:text-white/50">Last auto sync:</span>
                   <span>{lastSync ? new Date(lastSync.time).toLocaleString("en-NZ", { timeZone: "Pacific/Auckland" }) : "Never"}</span>
                 </div>
                 {lastSync?.details && (
                   <div className="flex justify-between">
-                    <span className="text-white/50">Result:</span>
+                    <span className="text-gray-500 dark:text-white/50">Result:</span>
                     <span>Checked {String(lastSync.details.total_checked ?? 0)} invoices, {String(lastSync.details.new_payments ?? 0)} payment(s) synced{Array.isArray(lastSync.details.errors) && lastSync.details.errors.length > 0 ? `, ${lastSync.details.errors.length} error(s)` : ""}</span>
                   </div>
                 )}
@@ -239,7 +239,7 @@ function XeroSettingsInner() {
 
 export default function XeroSettingsPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>}>
       <XeroSettingsInner />
     </Suspense>
   );

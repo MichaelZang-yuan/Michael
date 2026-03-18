@@ -203,22 +203,22 @@ export default function IntakeTemplatesPage() {
   // Group fields by section for preview
   const sections = [...new Set(fields.map(f => f.section || "General"))];
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-blue-950"><p className="text-white/60">Loading...</p></div>;
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-blue-950"><p className="text-gray-500 dark:text-white/60">Loading...</p></div>;
 
-  const inputClass = "w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none";
-  const selectClass = "w-full rounded-lg border border-white/20 bg-blue-900 px-4 py-2.5 text-white focus:border-blue-400 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-white/70 mb-1";
+  const inputClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:text-white/30 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const selectClass = "w-full rounded-lg border border-gray-300 dark:border-white/20 bg-white dark:bg-blue-900 px-4 py-2.5 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none";
+  const labelClass = "block text-sm font-medium text-gray-600 dark:text-white/70 mb-1";
   const btnPrimary = "rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50";
-  const btnSecondary = "rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10";
+  const btnSecondary = "rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10";
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-blue-950 text-gray-900 dark:text-white">
       <Navbar />
 
       {/* Field editor modal */}
       {editingField !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-xl border border-white/10 bg-blue-900 p-6">
+          <div className="w-full max-w-md rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-blue-900 p-6">
             <h4 className="text-lg font-bold mb-4">{editingField.id ? "Edit Field" : "Add Field"}</h4>
             <div className="space-y-3">
               <div>
@@ -226,13 +226,13 @@ export default function IntakeTemplatesPage() {
                 <input value={fieldForm.section} onChange={e => setFieldForm(f => ({ ...f, section: e.target.value }))} className={inputClass} placeholder="e.g. Personal Information" />
               </div>
               <div>
-                <label className={labelClass}>Field Label <span className="text-red-400">*</span></label>
+                <label className={labelClass}>Field Label <span className="text-red-700 dark:text-red-400">*</span></label>
                 <input value={fieldForm.label} onChange={e => setFieldForm(f => ({ ...f, label: e.target.value }))} className={inputClass} placeholder="e.g. Full Legal Name" />
               </div>
               <div>
                 <label className={labelClass}>Field Type</label>
                 <select value={fieldForm.type} onChange={e => setFieldForm(f => ({ ...f, type: e.target.value as FieldType }))} className={selectClass}>
-                  {FIELD_TYPES.map(t => <option key={t.value} value={t.value} className="bg-blue-900">{t.label}</option>)}
+                  {FIELD_TYPES.map(t => <option key={t.value} value={t.value} className="bg-white dark:bg-blue-900">{t.label}</option>)}
                 </select>
               </div>
               {!HAS_OPTIONS.includes(fieldForm.type) && (
@@ -249,7 +249,7 @@ export default function IntakeTemplatesPage() {
               )}
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={fieldForm.required} onChange={e => setFieldForm(f => ({ ...f, required: e.target.checked }))} className="rounded" />
-                <span className="text-sm text-white/70">Required field</span>
+                <span className="text-sm text-gray-600 dark:text-white/70">Required field</span>
               </label>
             </div>
             <div className="mt-4 flex gap-2">
@@ -265,12 +265,12 @@ export default function IntakeTemplatesPage() {
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <p className="text-sm text-white/50 mb-1">Settings</p>
+            <p className="text-sm text-gray-500 dark:text-white/50 mb-1">Settings</p>
             <h1 className="text-2xl font-bold">Intake Form Templates</h1>
           </div>
           {editingId === null && (
             <div className="flex gap-2">
-              <button onClick={handleSeedTemplates} disabled={isSeeding} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-bold hover:bg-white/10 disabled:opacity-50">
+              <button onClick={handleSeedTemplates} disabled={isSeeding} className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50">
                 {isSeeding ? "Seeding..." : "Seed Default Templates"}
               </button>
               <button onClick={openNew} className={btnPrimary}>+ New Template</button>
@@ -279,37 +279,37 @@ export default function IntakeTemplatesPage() {
         </div>
 
         {message && (
-          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-green-500/20 text-green-300 border border-green-500/30"}`}>
+          <div className={`mb-6 rounded-lg px-4 py-3 ${message.type === "error" ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30" : "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30"}`}>
             {message.text}
           </div>
         )}
 
         {/* Editor */}
         {editingId !== null && (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6 mb-8">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 mb-8">
             <h3 className="text-lg font-bold mb-5">{editingId === "new" ? "New Template" : "Edit Template"}</h3>
 
             {/* Template meta */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div>
-                <label className={labelClass}>Name <span className="text-red-400">*</span></label>
+                <label className={labelClass}>Name <span className="text-red-700 dark:text-red-400">*</span></label>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputClass} placeholder="e.g. Individual Visa Form EN" />
               </div>
               <div>
                 <label className={labelClass}>Form Type</label>
                 <select value={form.form_type} onChange={e => setForm(f => ({ ...f, form_type: e.target.value }))} className={selectClass}>
-                  <option value="individual_visa" className="bg-blue-900">Individual Visa</option>
-                  <option value="company_accreditation" className="bg-blue-900">Company Accreditation</option>
-                  <option value="job_check" className="bg-blue-900">Job Check</option>
-                  <option value="school_application" className="bg-blue-900">School Application</option>
+                  <option value="individual_visa" className="bg-white dark:bg-blue-900">Individual Visa</option>
+                  <option value="company_accreditation" className="bg-white dark:bg-blue-900">Company Accreditation</option>
+                  <option value="job_check" className="bg-white dark:bg-blue-900">Job Check</option>
+                  <option value="school_application" className="bg-white dark:bg-blue-900">School Application</option>
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Language</label>
                 <select value={form.language} onChange={e => setForm(f => ({ ...f, language: e.target.value }))} className={selectClass}>
-                  <option value="english" className="bg-blue-900">English</option>
-                  <option value="chinese" className="bg-blue-900">Chinese</option>
-                  <option value="thai" className="bg-blue-900">Thai</option>
+                  <option value="english" className="bg-white dark:bg-blue-900">English</option>
+                  <option value="chinese" className="bg-white dark:bg-blue-900">Chinese</option>
+                  <option value="thai" className="bg-white dark:bg-blue-900">Thai</option>
                 </select>
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function IntakeTemplatesPage() {
             {/* Field editor */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-bold text-white/80">Fields ({fields.length})</h4>
+                <h4 className="font-bold text-gray-700 dark:text-white/80">Fields ({fields.length})</h4>
                 <div className="flex gap-2">
                   <button onClick={() => setShowPreview(!showPreview)} className={btnSecondary}>
                     {showPreview ? "Hide Preview" : "Preview Form"}
@@ -327,36 +327,36 @@ export default function IntakeTemplatesPage() {
               </div>
 
               {fields.length === 0 ? (
-                <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
-                  <p className="text-white/40 text-sm">No fields yet. Click &ldquo;+ Add Field&rdquo; to start building your form.</p>
+                <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-8 text-center">
+                  <p className="text-gray-500 dark:text-white/40 text-sm">No fields yet. Click &ldquo;+ Add Field&rdquo; to start building your form.</p>
                 </div>
               ) : (
-                <div className="rounded-lg border border-white/10 overflow-hidden">
+                <div className="rounded-lg border border-gray-200 dark:border-white/10 overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-white/10 bg-white/5">
-                        <th className="text-left px-4 py-2 text-white/50 font-medium">Section</th>
-                        <th className="text-left px-4 py-2 text-white/50 font-medium">Label</th>
-                        <th className="text-left px-4 py-2 text-white/50 font-medium">Type</th>
-                        <th className="text-left px-4 py-2 text-white/50 font-medium">Required</th>
+                      <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                        <th className="text-left px-4 py-2 text-gray-500 dark:text-white/50 font-medium">Section</th>
+                        <th className="text-left px-4 py-2 text-gray-500 dark:text-white/50 font-medium">Label</th>
+                        <th className="text-left px-4 py-2 text-gray-500 dark:text-white/50 font-medium">Type</th>
+                        <th className="text-left px-4 py-2 text-gray-500 dark:text-white/50 font-medium">Required</th>
                         <th className="px-4 py-2"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {fields.map((f, i) => (
-                        <tr key={f.id} className="border-b border-white/5 hover:bg-white/5">
-                          <td className="px-4 py-2 text-white/50 text-xs">{f.section || "—"}</td>
+                        <tr key={f.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
+                          <td className="px-4 py-2 text-gray-500 dark:text-white/50 text-xs">{f.section || "—"}</td>
                           <td className="px-4 py-2 font-medium">{f.label}</td>
-                          <td className="px-4 py-2 text-white/60 capitalize text-xs">{FIELD_TYPES.find(t => t.value === f.type)?.label ?? f.type}</td>
+                          <td className="px-4 py-2 text-gray-500 dark:text-white/60 capitalize text-xs">{FIELD_TYPES.find(t => t.value === f.type)?.label ?? f.type}</td>
                           <td className="px-4 py-2">
-                            {f.required && <span className="text-xs text-red-400">Required</span>}
+                            {f.required && <span className="text-xs text-red-700 dark:text-red-400">Required</span>}
                           </td>
                           <td className="px-4 py-2">
                             <div className="flex items-center gap-1 justify-end">
-                              <button onClick={() => moveField(f.id, -1)} disabled={i === 0} className="text-xs text-white/40 hover:text-white disabled:opacity-20 px-1">↑</button>
-                              <button onClick={() => moveField(f.id, 1)} disabled={i === fields.length - 1} className="text-xs text-white/40 hover:text-white disabled:opacity-20 px-1">↓</button>
-                              <button onClick={() => openEditField(f)} className="text-xs text-blue-400 hover:underline px-1">Edit</button>
-                              <button onClick={() => removeField(f.id)} className="text-xs text-red-400 hover:text-red-300 px-1">✕</button>
+                              <button onClick={() => moveField(f.id, -1)} disabled={i === 0} className="text-xs text-gray-500 dark:text-white/40 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 px-1">↑</button>
+                              <button onClick={() => moveField(f.id, 1)} disabled={i === fields.length - 1} className="text-xs text-gray-500 dark:text-white/40 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 px-1">↓</button>
+                              <button onClick={() => openEditField(f)} className="text-xs text-blue-700 dark:text-blue-400 hover:underline px-1">Edit</button>
+                              <button onClick={() => removeField(f.id)} className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300 px-1">✕</button>
                             </div>
                           </td>
                         </tr>
@@ -369,7 +369,7 @@ export default function IntakeTemplatesPage() {
 
             {/* Preview */}
             {showPreview && fields.length > 0 && (
-              <div className="rounded-xl border border-white/20 bg-white p-6 mb-4">
+              <div className="rounded-xl border border-gray-300 dark:border-white/20 bg-white p-6 mb-4">
                 <p className="text-sm font-bold text-gray-500 mb-4">Form Preview</p>
                 {sections.map(section => (
                   <div key={section} className="mb-6">
@@ -394,7 +394,7 @@ export default function IntakeTemplatesPage() {
                           ) : f.type === "checkbox" ? (
                             <div className="space-y-1">{(f.options ?? []).map(o => <label key={o} className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" disabled />{o}</label>)}</div>
                           ) : f.type === "file" ? (
-                            <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-400">File Upload</div>
+                            <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500 dark:text-gray-400">File Upload</div>
                           ) : null}
                         </div>
                       ))}
@@ -409,7 +409,7 @@ export default function IntakeTemplatesPage() {
               <button onClick={() => { setEditingId(null); setMessage(null); }} className={btnSecondary}>Cancel</button>
               <label className="flex items-center gap-2 ml-auto cursor-pointer">
                 <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} className="rounded" />
-                <span className="text-sm text-white/70">Active</span>
+                <span className="text-sm text-gray-600 dark:text-white/70">Active</span>
               </label>
             </div>
           </div>
@@ -417,39 +417,39 @@ export default function IntakeTemplatesPage() {
 
         {/* Template list */}
         {templates.length === 0 && editingId === null ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-            <p className="text-white/50 mb-4">No intake form templates yet.</p>
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-10 text-center">
+            <p className="text-gray-500 dark:text-white/50 mb-4">No intake form templates yet.</p>
             <button onClick={openNew} className={btnPrimary}>Create your first template</button>
           </div>
         ) : templates.length > 0 && (
-          <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Name</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Form Type</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Language</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Fields</th>
-                  <th className="text-left px-4 py-3 text-white/50 font-medium">Status</th>
+                <tr className="border-b border-gray-200 dark:border-white/10">
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Name</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Form Type</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Language</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Fields</th>
+                  <th className="text-left px-4 py-3 text-gray-500 dark:text-white/50 font-medium">Status</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {templates.map(t => (
-                  <tr key={t.id} className="border-b border-white/5 hover:bg-white/5">
+                  <tr key={t.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
                     <td className="px-4 py-3 font-medium">{t.name}</td>
-                    <td className="px-4 py-3 text-white/70 capitalize text-sm">{t.form_type?.replace(/_/g, " ") ?? "—"}</td>
-                    <td className="px-4 py-3 text-white/70 capitalize text-sm">{t.language ?? "—"}</td>
-                    <td className="px-4 py-3 text-white/60 text-sm">{t.fields?.length ?? 0} fields</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-white/70 capitalize text-sm">{t.form_type?.replace(/_/g, " ") ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-white/70 capitalize text-sm">{t.language ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-white/60 text-sm">{t.fields?.length ?? 0} fields</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${t.is_active ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${t.is_active ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400"}`}>
                         {t.is_active ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3 justify-end">
-                        <button onClick={() => openEdit(t)} className="text-xs text-blue-400 hover:underline">Edit</button>
-                        <button onClick={() => handleDelete(t.id, t.name)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                        <button onClick={() => openEdit(t)} className="text-xs text-blue-700 dark:text-blue-400 hover:underline">Edit</button>
+                        <button onClick={() => handleDelete(t.id, t.name)} className="text-xs text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300">Delete</button>
                       </div>
                     </td>
                   </tr>
